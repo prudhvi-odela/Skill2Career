@@ -21,6 +21,7 @@ import { AssessmentsPage } from './pages/AssessmentsPage';
 import { PortfolioPage } from './pages/PortfolioPage';
 import { ModelVersionsPage } from './pages/ModelVersionsPage';
 import { CareerAIPage } from './pages/CareerAIPage';
+import { CareerMarketIntelligencePage } from './pages/CareerMarketIntelligencePage';
 
 const ProtectedLayout: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -69,6 +70,7 @@ export const App: React.FC = () => {
               <Route path="careers" element={<CareerExplorerPage />} />
               <Route path="careers/:careerId" element={<CareerDetailPage />} />
               <Route path="skill-gap" element={<SkillGapPage />} />
+              <Route path="market-intelligence" element={<CareerMarketIntelligencePage />} />
               <Route path="job-readiness" element={<JobReadinessPage />} />
               <Route path="trajectory" element={<TrajectoryPage />} />
               <Route path="roadmap" element={<RoadmapPage />} />

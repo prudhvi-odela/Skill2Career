@@ -18,7 +18,8 @@ from backend.routers import (
     roadmap_router,
     assessment_router,
     ml_admin_router,
-    ai_router
+    ai_router,
+    market_router
 )
 
 
@@ -61,6 +62,7 @@ app.include_router(roadmap_router.router, prefix=settings.API_V1_STR)
 app.include_router(assessment_router.router, prefix=settings.API_V1_STR)
 app.include_router(ml_admin_router.router, prefix=settings.API_V1_STR)
 app.include_router(ai_router.router, prefix=settings.API_V1_STR)
+app.include_router(market_router.router, prefix=settings.API_V1_STR)
 
 
 @app.get("/")

@@ -12,7 +12,8 @@ import {
   BookOpenCheck,
   FolderGit2,
   Cpu,
-  Sparkles
+  Sparkles,
+  Globe2
 } from 'lucide-react';
 
 const NAV_ITEMS = [
@@ -26,6 +27,7 @@ const NAV_ITEMS = [
 
   { section: 'CAREER & GAP ANALYSIS' },
   { path: '/app/careers', label: 'Career Explorer', icon: Compass },
+  { path: '/app/market-intelligence', label: 'Market Intelligence', icon: Globe2 },
   { path: '/app/skill-gap', label: 'Skill Gap Analysis', icon: GitPullRequest },
   { path: '/app/job-readiness', label: 'Job Readiness', icon: CheckCircle2 },
 

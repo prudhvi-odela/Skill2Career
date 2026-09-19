@@ -117,4 +117,18 @@ export const aiApi = {
   getHistory: (limit?: number) => apiClient.get('/ai/history', { params: { limit } }),
 };
 
+export const marketApi = {
+  getSources: () => apiClient.get('/market/sources'),
+  getCareerSignal: (careerId: string, region?: string) =>
+    apiClient.get(`/market/careers/${careerId}`, { params: { region } }),
+  getSkillSignal: (skillId: string, region?: string) =>
+    apiClient.get(`/market/skills/${skillId}`, { params: { region } }),
+  getCareerSkillsMarket: (careerId: string) =>
+    apiClient.get(`/market/careers/${careerId}/skills`),
+  getStudentAnalysis: (targetCareerId?: string) =>
+    apiClient.post('/market/student-analysis', { target_career_id: targetCareerId }),
+  compareCareers: (careerIds: string[]) =>
+    apiClient.post('/market/career-comparison', { career_ids: careerIds }),
+};
+
 

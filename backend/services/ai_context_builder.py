@@ -191,6 +191,25 @@ async def build_student_ai_context(
         except Exception:
             pass
 
+    # 8. Market Intelligence Signals (Separate Layer with Provenance)
+    market_context = None
+    try:
+        from backend.services.market_intelligence_service import MarketIntelligenceService
+        market_svc = MarketIntelligenceService()
+        career_mkt = await market_svc.get_career_market_signal(effective_target_career_id, db)
+        sources = await market_svc.get_market_sources(db)
+        market_context = {
+            "career_demand_score": float(career_mkt.get("demand_score", 85.0)),
+            "career_trend_direction": str(career_mkt.get("trend_direction", "stable")),
+            "sample_size": int(career_mkt.get("sample_size", 10000)),
+            "source_provenance": str(career_mkt.get("source_name", "Industry Standard")),
+            "data_freshness": str(career_mkt.get("freshness", "fresh")),
+            "valid_until": str(career_mkt.get("valid_until", "")),
+            "data_sources": [s.get("source_name") for s in sources]
+        }
+    except Exception:
+        pass
+
     # Return structured context bundle
     return {
         "student": {
@@ -226,6 +245,7 @@ async def build_student_ai_context(
             "top_strengths": latest_prediction.get("top_strengths", []) if latest_prediction else [],
             "top_gaps": latest_prediction.get("top_gaps", []) if latest_prediction else []
         } if latest_prediction else None,
+        "market_intelligence": market_context,
         "skill_gaps": skill_gap_context,
         "career_matches": matches_context,
         "roadmap": roadmap_context

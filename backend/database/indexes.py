@@ -77,4 +77,21 @@ async def ensure_indexes(db: AsyncDatabase):
     await db.prediction_logs.create_index([("student_id", ASCENDING), ("created_at", DESCENDING)])
     await db.prediction_logs.create_index([("model_version_id", ASCENDING), ("created_at", DESCENDING)])
 
+    # 17. career_market_signals
+    await db.career_market_signals.create_index([("career_id", ASCENDING), ("region", ASCENDING)], unique=True)
+    await db.career_market_signals.create_index([("career_id", ASCENDING)])
+    await db.career_market_signals.create_index([("source_id", ASCENDING)])
+    await db.career_market_signals.create_index([("retrieved_at", DESCENDING)])
+
+    # 18. skill_market_signals
+    await db.skill_market_signals.create_index([("skill_id", ASCENDING), ("region", ASCENDING)], unique=True)
+    await db.skill_market_signals.create_index([("skill_id", ASCENDING)])
+    await db.skill_market_signals.create_index([("source_id", ASCENDING)])
+    await db.skill_market_signals.create_index([("retrieved_at", DESCENDING)])
+
+    # 19. market_data_sources
+    await db.market_data_sources.create_index([("source_id", ASCENDING)], unique=True)
+    await db.market_data_sources.create_index([("source_name", ASCENDING)])
+    await db.market_data_sources.create_index([("provider", ASCENDING)])
+
     print("[MongoDB] All collection indexes successfully created and verified.")
