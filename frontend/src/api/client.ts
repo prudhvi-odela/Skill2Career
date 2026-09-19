@@ -150,4 +150,26 @@ export const marketApi = {
     apiClient.post('/market/career-comparison', { career_ids: careerIds }),
 };
 
+export const evidenceApi = {
+  getEvidence: (params?: { skill_id?: string; evidence_type?: string; verification_status?: string }) =>
+    apiClient.get('/evidence', { params }),
+  getSummary: () => apiClient.get('/evidence/summary'),
+  getSkillEvidence: (skillId: string) => apiClient.get(`/evidence/skills/${skillId}`),
+  getSkillHistory: (skillId: string) => apiClient.get(`/evidence/skills/${skillId}/history`),
+  createEvidence: (data: {
+    skill_id: string;
+    evidence_type: string;
+    source_entity: string;
+    source_entity_id: string;
+    title: string;
+    description?: string;
+    observed_proficiency: number;
+    source_metadata?: any;
+  }) => apiClient.post('/evidence', data),
+  verifyEvidence: (evidenceId: string, data: { verification_status: string; validator_type: string; notes?: string }) =>
+    apiClient.post(`/evidence/${evidenceId}/verify`, data),
+  applySkillState: (skillId: string) => apiClient.post(`/evidence/skills/${skillId}/apply-state`),
+  syncArtifacts: () => apiClient.post('/evidence/sync-artifacts'),
+};
+
 

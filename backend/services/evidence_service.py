@@ -175,17 +175,26 @@ class EvidenceService:
             source_col = None
 
         if source_col is not None:
-            # Check ID validity
+            # Check ID and student ownership
             try:
                 obj_id = ObjectId(source_entity_id) if ObjectId.is_valid(source_entity_id) else source_entity_id
                 source_doc = await source_col.find_one({
-                    "$or": [{"_id": obj_id}, {"id": source_entity_id}],
-                    "student_id": student_id
+                    "$and": [
+                        {"$or": [{"_id": obj_id}, {"_id": source_entity_id}, {"id": source_entity_id}]},
+                        {"$or": [
+                            {"student_id": student_id},
+                            {"user_id": student_id},
+                            {"student_id": ObjectId(student_id) if ObjectId.is_valid(student_id) else student_id},
+                            {"user_id": ObjectId(student_id) if ObjectId.is_valid(student_id) else student_id}
+                        ]}
+                    ]
                 })
             except Exception:
                 source_doc = await source_col.find_one({
-                    "$or": [{"_id": source_entity_id}, {"id": source_entity_id}],
-                    "student_id": student_id
+                    "$and": [
+                        {"$or": [{"_id": source_entity_id}, {"id": source_entity_id}]},
+                        {"$or": [{"student_id": student_id}, {"user_id": student_id}]}
+                    ]
                 })
 
             if not source_doc:

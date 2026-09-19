@@ -71,12 +71,14 @@ def serialize_doc(doc: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
             result["_id"] = str_id
         elif isinstance(val, ObjectId):
             result[key] = str(val)
+        elif isinstance(val, datetime):
+            result[key] = val.isoformat()
         elif isinstance(val, dict):
             result[key] = serialize_doc(val)
         elif isinstance(val, list):
             result[key] = [
                 serialize_doc(item) if isinstance(item, dict)
-                else (str(item) if isinstance(item, ObjectId) else item)
+                else (item.isoformat() if isinstance(item, datetime) else (str(item) if isinstance(item, ObjectId) else item))
                 for item in val
             ]
         else:

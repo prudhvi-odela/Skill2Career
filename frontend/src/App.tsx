@@ -22,6 +22,7 @@ import { PortfolioPage } from './pages/PortfolioPage';
 import { ModelVersionsPage } from './pages/ModelVersionsPage';
 import { CareerAIPage } from './pages/CareerAIPage';
 import { CareerMarketIntelligencePage } from './pages/CareerMarketIntelligencePage';
+import { LearningEvidencePage } from './pages/LearningEvidencePage';
 
 const ProtectedLayout: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -74,6 +75,7 @@ export const App: React.FC = () => {
               <Route path="job-readiness" element={<JobReadinessPage />} />
               <Route path="trajectory" element={<TrajectoryPage />} />
               <Route path="roadmap" element={<RoadmapPage />} />
+              <Route path="evidence" element={<LearningEvidencePage />} />
               <Route path="assessments" element={<AssessmentsPage />} />
               <Route path="portfolio" element={<PortfolioPage />} />
               <Route path="ml-models" element={<ModelVersionsPage />} />
