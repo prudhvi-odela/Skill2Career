@@ -1,0 +1,67 @@
+{
+  "version_tag": "v1.0.0-49042392d6",
+  "created_at": "2026-09-19T17:20:16.503091+00:00",
+  "readiness_model": {
+    "model_name": "job_readiness_model",
+    "selected_algorithm": "HistGradientBoostingRegressor",
+    "features": [
+      "gpa",
+      "career_skill_match_pct",
+      "total_skills_count",
+      "avg_skill_proficiency",
+      "core_cs_score",
+      "projects_count",
+      "avg_project_complexity",
+      "certifications_count",
+      "assessments_passed_pct",
+      "weekly_study_hours",
+      "learning_velocity_index",
+      "degree",
+      "institution_tier"
+    ],
+    "baseline_metrics": {
+      "val_r2": 0.9844,
+      "val_mae": 2.1559,
+      "val_rmse": 2.6948,
+      "test_r2": 0.9832,
+      "test_mae": 2.272,
+      "test_rmse": 2.8282
+    },
+    "candidate_metrics": {
+      "val_r2": 0.9849,
+      "val_mae": 2.1199,
+      "val_rmse": 2.6519,
+      "test_r2": 0.9843,
+      "test_mae": 2.2043,
+      "test_rmse": 2.7335
+    },
+    "best_metrics": {
+      "val_r2": 0.9849,
+      "val_mae": 2.1199,
+      "val_rmse": 2.6519,
+      "test_r2": 0.9843,
+      "test_mae": 2.2043,
+      "test_rmse": 2.7335
+    },
+    "artifact_file": "readiness_pipeline.joblib"
+  },
+  "trajectory_model": {
+    "model_name": "future_readiness_trajectory_model",
+    "algorithm": "HistGradientBoostingRegressor",
+    "features": [
+      "initial_readiness",
+      "weekly_study_hours",
+      "learning_consistency",
+      "cumulative_hours",
+      "milestones_completed",
+      "week"
+    ],
+    "metrics": {
+      "test_r2": 0.999,
+      "test_mae": 0.4191,
+      "test_rmse": 0.533
+    },
+    "artifact_file": "trajectory_pipeline.joblib"
+  },
+  "training_duration_seconds": 3.17
+}
