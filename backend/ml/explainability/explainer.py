@@ -59,20 +59,28 @@ class ModelExplainer:
             return self._heuristic_feature_importance()
 
     def _heuristic_feature_importance(self) -> List[Dict[str, Any]]:
-        """Fallback canonical importance rankings."""
+        """
+        Fallback canonical importance rankings across all 13 model schema features.
+        NOTE: These values are static heuristic priors used strictly as a runtime fallback
+        if dynamic permutation importance on validation data cannot be computed.
+        """
         default_ranking = [
-            ("career_skill_match_pct", 0.42, 42.0),
-            ("core_cs_score", 0.16, 16.0),
-            ("avg_skill_proficiency", 0.12, 12.0),
-            ("avg_project_complexity", 0.10, 10.0),
-            ("projects_count", 0.08, 8.0),
+            ("career_skill_match_pct", 0.45, 45.0),
+            ("core_cs_score", 0.15, 15.0),
+            ("avg_skill_proficiency", 0.10, 10.0),
+            ("avg_project_complexity", 0.08, 8.0),
+            ("projects_count", 0.07, 7.0),
             ("assessments_passed_pct", 0.05, 5.0),
             ("weekly_study_hours", 0.04, 4.0),
-            ("certifications_count", 0.02, 2.0),
-            ("gpa", 0.01, 1.0)
+            ("certifications_count", 0.03, 3.0),
+            ("total_skills_count", 0.01, 1.0),
+            ("learning_velocity_index", 0.01, 1.0),
+            ("gpa", 0.005, 0.5),
+            ("degree", 0.0025, 0.25),
+            ("institution_tier", 0.0025, 0.25)
         ]
         return [
-            {"feature": f, "importance": imp, "importance_std": 0.01, "normalized_pct": pct}
+            {"feature": f, "importance": imp, "importance_std": 0.0, "normalized_pct": pct}
             for f, imp, pct in default_ranking
         ]
 
