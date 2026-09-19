@@ -102,3 +102,19 @@ export const mlAdminApi = {
     apiClient.post('/ml/train', null, { params: { dataset_name: datasetName } }),
 };
 
+export const aiApi = {
+  explainReadiness: () => apiClient.post('/ai/explain-readiness'),
+  explainGap: (careerId?: string, skillId?: string) =>
+    apiClient.post('/ai/explain-gap', { career_id: careerId, skill_id: skillId }),
+  getNextAction: (careerId?: string) =>
+    apiClient.post('/ai/next-action', { career_id: careerId }),
+  explainCareer: (careerId: string) =>
+    apiClient.post('/ai/explain-career', { career_id: careerId }),
+  explainTrajectory: (weeklyHours?: number, consistency?: number) =>
+    apiClient.post('/ai/explain-trajectory', { weekly_hours: weeklyHours, consistency }),
+  chat: (message: string, conversationId?: string, targetCareerId?: string) =>
+    apiClient.post('/ai/chat', { message, conversation_id: conversationId, target_career_id: targetCareerId }),
+  getHistory: (limit?: number) => apiClient.get('/ai/history', { params: { limit } }),
+};
+
+

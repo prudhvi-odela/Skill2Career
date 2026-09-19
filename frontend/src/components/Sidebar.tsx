@@ -11,7 +11,8 @@ import {
   Map,
   BookOpenCheck,
   FolderGit2,
-  Cpu
+  Cpu,
+  Sparkles
 } from 'lucide-react';
 
 const NAV_ITEMS = [
@@ -19,6 +20,9 @@ const NAV_ITEMS = [
   { path: '/app/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/app/profile', label: 'Student Profile', icon: User },
   { path: '/app/skills', label: 'Skills Inventory', icon: Sliders },
+
+  { section: 'AI & INTELLIGENCE' },
+  { path: '/app/ai-advisor', label: 'AI Career Advisor', icon: Sparkles },
 
   { section: 'CAREER & GAP ANALYSIS' },
   { path: '/app/careers', label: 'Career Explorer', icon: Compass },

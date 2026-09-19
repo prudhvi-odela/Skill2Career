@@ -6,6 +6,7 @@ import { ScoreGauge } from '../components/ScoreGauge';
 import { RadarChart } from '../components/RadarChart';
 import { KPICard } from '../components/KPICard';
 import { SkeletonLoader, ErrorState, IncompleteProfileBanner, EmptyState } from '../components/StateFeedback';
+import { CareerAI } from '../components/CareerAI';
 import {
   Sparkles,
   TrendingUp,
@@ -209,6 +210,9 @@ export const DashboardPage: React.FC = () => {
               badgeColor="amber"
             />
           </div>
+
+          {/* AI Career Advisor Intelligence Bar */}
+          <CareerAI contextCareerId={profile?.target_career_id} />
 
           {/* Center Section: Readiness Hero + Radar Chart */}
           <div

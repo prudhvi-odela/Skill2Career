@@ -21,6 +21,9 @@ class Settings(BaseSettings):
 
     # AI / LLM Configuration
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
+    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
+    AI_PROVIDER: str = os.getenv("AI_PROVIDER", "auto")  # 'gemini', 'openai', 'fallback', or 'auto'
+    AI_MODEL_NAME: str = os.getenv("AI_MODEL_NAME", "gemini-1.5-flash")
 
     # CORS
     BACKEND_CORS_ORIGINS: list[str] = [

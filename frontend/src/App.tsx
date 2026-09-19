@@ -20,6 +20,7 @@ import { RoadmapPage } from './pages/RoadmapPage';
 import { AssessmentsPage } from './pages/AssessmentsPage';
 import { PortfolioPage } from './pages/PortfolioPage';
 import { ModelVersionsPage } from './pages/ModelVersionsPage';
+import { CareerAIPage } from './pages/CareerAIPage';
 
 const ProtectedLayout: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -62,6 +63,7 @@ export const App: React.FC = () => {
             <Route path="/app" element={<ProtectedLayout />}>
               <Route index element={<Navigate to="/app/dashboard" replace />} />
               <Route path="dashboard" element={<DashboardPage />} />
+              <Route path="ai-advisor" element={<CareerAIPage />} />
               <Route path="profile" element={<ProfilePage />} />
               <Route path="skills" element={<SkillsPage />} />
               <Route path="careers" element={<CareerExplorerPage />} />
