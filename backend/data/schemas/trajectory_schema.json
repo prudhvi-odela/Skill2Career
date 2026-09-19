@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "LearningTrajectoryTrainingDataset",
+  "description": "Schema definition for Skill2Career Longitudinal Learning Trajectory CSV dataset.",
+  "type": "object",
+  "required": [
+    "student_id",
+    "initial_readiness",
+    "weekly_study_hours",
+    "learning_consistency",
+    "cumulative_hours",
+    "milestones_completed",
+    "week",
+    "readiness_at_week"
+  ],
+  "properties": {
+    "student_id": { "type": "string" },
+    "initial_readiness": { "type": "number", "minimum": 0.0, "maximum": 100.0 },
+    "weekly_study_hours": { "type": "number", "minimum": 0.0, "maximum": 100.0 },
+    "learning_consistency": { "type": "number", "minimum": 0.0, "maximum": 2.0 },
+    "cumulative_hours": { "type": "number", "minimum": 0.0 },
+    "milestones_completed": { "type": "integer", "minimum": 0 },
+    "week": { "type": "integer", "minimum": 0, "maximum": 52 },
+    "readiness_at_week": { "type": "number", "minimum": 0.0, "maximum": 100.0 }
+  }
+}

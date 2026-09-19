@@ -306,7 +306,7 @@ class RoadmapItemToggle(BaseModel):
     is_completed: bool
 
 
-# ==================== Model Versions ====================
+# ==================== Model Versions & ML Admin ====================
 class ModelVersionItem(BaseModel):
     id: str
     model_name: str
@@ -316,3 +316,21 @@ class ModelVersionItem(BaseModel):
     features: List[str]
     is_active: bool
     created_at: datetime
+
+
+class DatasetListItem(BaseModel):
+    id: str
+    filename: str
+    filepath: str
+    size_bytes: int
+    row_count: int
+    columns_count: int
+    has_quality_report: bool
+
+
+class FeatureImportanceItem(BaseModel):
+    feature: str
+    importance: float
+    importance_std: float
+    normalized_pct: float
+

@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "StudentProfilesTrainingDataset",
+  "description": "Schema definition for Skill2Career Student Profiles Training CSV dataset.",
+  "type": "object",
+  "required": [
+    "gpa",
+    "career_skill_match_pct",
+    "total_skills_count",
+    "avg_skill_proficiency",
+    "core_cs_score",
+    "projects_count",
+    "avg_project_complexity",
+    "certifications_count",
+    "assessments_passed_pct",
+    "weekly_study_hours",
+    "learning_velocity_index",
+    "degree",
+    "institution_tier",
+    "readiness_score"
+  ],
+  "properties": {
+    "student_id": { "type": "string" },
+    "target_career_id": { "type": "string" },
+    "gpa": { "type": "number", "minimum": 0.0, "maximum": 10.0 },
+    "career_skill_match_pct": { "type": "number", "minimum": 0.0, "maximum": 100.0 },
+    "total_skills_count": { "type": "integer", "minimum": 0 },
+    "avg_skill_proficiency": { "type": "number", "minimum": 0.0, "maximum": 5.0 },
+    "core_cs_score": { "type": "number", "minimum": 0.0, "maximum": 100.0 },
+    "projects_count": { "type": "integer", "minimum": 0 },
+    "avg_project_complexity": { "type": "number", "minimum": 1.0, "maximum": 5.0 },
+    "certifications_count": { "type": "integer", "minimum": 0 },
+    "assessments_passed_pct": { "type": "number", "minimum": 0.0, "maximum": 100.0 },
+    "weekly_study_hours": { "type": "number", "minimum": 0.0, "maximum": 100.0 },
+    "learning_velocity_index": { "type": "number", "minimum": 0.1, "maximum": 5.0 },
+    "degree": { "type": "string" },
+    "institution_tier": { "type": "integer", "minimum": 1, "maximum": 3 },
+    "readiness_score": { "type": "number", "minimum": 0.0, "maximum": 100.0 }
+  }
+}

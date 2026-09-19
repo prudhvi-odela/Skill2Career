@@ -94,5 +94,11 @@ export const assessmentsApi = {
 export const mlAdminApi = {
   getModelVersions: () => apiClient.get('/ml/versions'),
   getMetrics: () => apiClient.get('/ml/metrics'),
-  triggerRetraining: () => apiClient.post('/ml/train'),
+  getDatasets: () => apiClient.get('/ml/datasets'),
+  getDatasetQuality: (datasetId: string) => apiClient.get(`/ml/datasets/${datasetId}/quality`),
+  getFeatureImportance: () => apiClient.get('/ml/feature-importance'),
+  activateVersion: (versionId: string) => apiClient.post(`/ml/versions/${versionId}/activate`),
+  triggerRetraining: (datasetName?: string) =>
+    apiClient.post('/ml/train', null, { params: { dataset_name: datasetName } }),
 };
+
