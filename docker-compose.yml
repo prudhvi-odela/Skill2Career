@@ -8,11 +8,12 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/skill2career
-      - SECRET_KEY=production-secret-key-change-in-env
+      - MONGODB_URI=mongodb://mongodb:27017
+      - MONGODB_DATABASE=skill2career
+      - JWT_SECRET=production-secret-key-change-in-env
       - ACCESS_TOKEN_EXPIRE_MINUTES=1440
     depends_on:
-      - db
+      - mongodb
     volumes:
       - ./backend/data:/app/backend/data
       - ./backend/ml/artifacts:/app/backend/ml/artifacts
@@ -26,17 +27,13 @@ services:
     depends_on:
       - backend
 
-  db:
-    image: postgres:16-alpine
+  mongodb:
+    image: mongo:7-jammy
     restart: always
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=skill2career
     ports:
-      - "5432:5432"
+      - "27017:27017"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - mongo_data:/data/db
 
 volumes:
-  postgres_data:
+  mongo_data:

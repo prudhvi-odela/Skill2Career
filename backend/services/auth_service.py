@@ -1,19 +1,19 @@
 """
-Skill2Career Authentication & Authorization Service
-Provides direct bcrypt password hashing, JWT generation, and FastAPI user dependency injection.
+Skill2Career Authentication & Authorization Service (MongoDB Async)
+Provides bcrypt password hashing, JWT generation, and async FastAPI user dependency injection.
 """
 
 from datetime import datetime, timedelta, timezone
-from typing import Optional
+from typing import Optional, Dict, Any
 import bcrypt
+from bson import ObjectId
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
-from sqlalchemy.orm import Session
+from pymongo.asynchronous.database import AsyncDatabase
 
 from backend.config import settings
-from backend.database.session import get_db
-from backend.models.models import User
+from backend.database.mongodb import get_db, serialize_doc
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/login")
 
@@ -41,7 +41,10 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     return encoded_jwt
 
 
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
+async def get_current_user(
+    token: str = Depends(oauth2_scheme),
+    db: AsyncDatabase = Depends(get_db)
+) -> Dict[str, Any]:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -55,9 +58,13 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     except JWTError:
         raise credentials_exception
 
-    user = db.query(User).filter(User.id == user_id).first()
+    # Query user by ObjectId or string id
+    query = {"_id": ObjectId(user_id)} if ObjectId.is_valid(user_id) else {"_id": user_id}
+    user = await db.users.find_one(query)
+
     if user is None:
         raise credentials_exception
-    if not user.is_active:
+    if not user.get("is_active", True):
         raise HTTPException(status_code=400, detail="Inactive user account")
-    return user
+
+    return serialize_doc(user)

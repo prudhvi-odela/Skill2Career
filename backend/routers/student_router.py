@@ -1,18 +1,16 @@
 """
-Skill2Career Student Router
-Manages student profiles, skills inventory, projects, certifications, and learning activities.
+Skill2Career Student Router (MongoDB Async)
+Manages student profiles, embedded skill state, projects, certifications, and learning activities.
 """
 
+from typing import List, Dict, Any
+from bson import ObjectId
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
-from typing import List
+from pymongo.asynchronous.database import AsyncDatabase
 
-from backend.database.session import get_db
-from backend.models.models import (
-    User, StudentProfile, Skill, StudentSkill, Project, Certification, LearningActivity, LearningSnapshot, CareerRole
-)
+from backend.database.mongodb import get_db, get_utc_now, serialize_doc, serialize_docs
 from backend.schemas.schemas import (
-    ProfileUpdate, ProfileResponse, StudentSkillCreate, StudentSkillUpdate, StudentSkillResponse,
+    ProfileUpdate, ProfileResponse, StudentSkillCreate, StudentSkillResponse,
     ProjectCreate, ProjectResponse, CertificationCreate, CertificationResponse
 )
 from backend.services.auth_service import get_current_user
@@ -20,259 +18,351 @@ from backend.services.auth_service import get_current_user
 router = APIRouter(prefix="/student", tags=["Student Management"])
 
 
-def get_or_create_profile(user: User, db: Session) -> StudentProfile:
-    profile = db.query(StudentProfile).filter(StudentProfile.user_id == user.id).first()
+async def get_or_create_profile(user_id: str, db: AsyncDatabase) -> Dict[str, Any]:
+    profile = await db.student_profiles.find_one({"user_id": user_id})
     if not profile:
-        profile = StudentProfile(user_id=user.id)
-        db.add(profile)
-        db.commit()
-        db.refresh(profile)
+        now = get_utc_now()
+        profile_doc = {
+            "user_id": user_id,
+            "headline": "",
+            "bio": "",
+            "degree": "B.Tech Computer Science",
+            "institution": "University Institute of Technology",
+            "institution_tier": 2,
+            "graduation_year": 2027,
+            "gpa": 8.0,
+            "target_career_id": "CR001",
+            "target_career_title": "Full-Stack Software Engineer",
+            "skills": [],
+            "statistics": {
+                "weekly_study_hours": 12.0,
+                "learning_velocity_index": 1.0,
+                "assessments_passed": 0,
+                "projects_count": 0,
+                "certifications_count": 0
+            },
+            "created_at": now,
+            "updated_at": now
+        }
+        res = await db.student_profiles.insert_one(profile_doc)
+        profile = await db.student_profiles.find_one({"_id": res.inserted_id})
     return profile
 
 
 # ==================== Profile ====================
 @router.get("/profile", response_model=ProfileResponse)
-def get_profile(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    profile = get_or_create_profile(current_user, db)
-    
-    # Format student skills
+async def get_profile(
+    current_user: dict = Depends(get_current_user),
+    db: AsyncDatabase = Depends(get_db)
+):
+    user_id = current_user["id"]
+    profile = await get_or_create_profile(user_id, db)
+
+    # Count projects and certifications
+    projects_count = await db.projects.count_documents({"student_id": user_id})
+    certs_count = await db.certifications.count_documents({"student_id": user_id})
+
+    # Format embedded skills
     skills_response = []
-    for ss in profile.skills:
+    for ss in profile.get("skills", []):
         skills_response.append(StudentSkillResponse(
-            id=ss.id,
-            skill_id=ss.skill_id,
-            skill_name=ss.skill.name if ss.skill else ss.skill_id,
-            category=ss.skill.category if ss.skill else "General",
-            domain=ss.skill.domain if ss.skill else "General",
-            proficiency_level=ss.proficiency_level,
-            years_experience=ss.years_experience,
-            is_verified=ss.is_verified,
-            verification_source=ss.verification_source,
-            updated_at=ss.updated_at
+            id=ss.get("skill_id", ""),
+            skill_id=ss.get("skill_id", ""),
+            skill_name=ss.get("name", ss.get("skill_id", "")),
+            category=ss.get("category", "General"),
+            domain=ss.get("domain", "General"),
+            proficiency_level=float(ss.get("level", ss.get("proficiency_level", 1.0))),
+            years_experience=float(ss.get("years_experience", 0.5)),
+            is_verified=bool(ss.get("verified", ss.get("is_verified", False))),
+            verification_source=ss.get("verification_source", "Self-Reported"),
+            updated_at=ss.get("last_assessed_at") or profile.get("updated_at")
         ))
 
-    target_title = profile.target_career.title if profile.target_career else None
-
+    stats = profile.get("statistics", {})
     return ProfileResponse(
-        id=profile.id,
-        user_id=current_user.id,
-        full_name=current_user.full_name,
-        email=current_user.email,
-        headline=profile.headline,
-        bio=profile.bio,
-        degree=profile.degree,
-        institution=profile.institution,
-        institution_tier=profile.institution_tier,
-        graduation_year=profile.graduation_year,
-        gpa=profile.gpa,
-        target_career_id=profile.target_career_id,
-        target_career_title=target_title,
-        weekly_study_hours=profile.weekly_study_hours,
-        learning_velocity_index=profile.learning_velocity_index,
+        id=str(profile["_id"]),
+        user_id=user_id,
+        full_name=current_user.get("full_name", ""),
+        email=current_user.get("email", ""),
+        headline=profile.get("headline"),
+        bio=profile.get("bio"),
+        degree=profile.get("degree", "B.Tech Computer Science"),
+        institution=profile.get("institution", "University Institute of Technology"),
+        institution_tier=int(profile.get("institution_tier", 2)),
+        graduation_year=int(profile.get("graduation_year", 2027)),
+        gpa=float(profile.get("gpa", 8.0)),
+        target_career_id=profile.get("target_career_id"),
+        target_career_title=profile.get("target_career_title"),
+        weekly_study_hours=float(stats.get("weekly_study_hours", 12.0)),
+        learning_velocity_index=float(stats.get("learning_velocity_index", 1.0)),
         skills=skills_response,
-        projects_count=len(profile.projects),
-        certifications_count=len(profile.certifications),
-        created_at=profile.created_at
+        projects_count=projects_count,
+        certifications_count=certs_count,
+        created_at=profile.get("created_at")
     )
 
 
 @router.put("/profile", response_model=ProfileResponse)
-def update_profile(
+async def update_profile(
     payload: ProfileUpdate,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    current_user: dict = Depends(get_current_user),
+    db: AsyncDatabase = Depends(get_db)
 ):
-    profile = get_or_create_profile(current_user, db)
+    user_id = current_user["id"]
+    profile = await get_or_create_profile(user_id, db)
 
+    update_fields: Dict[str, Any] = {"updated_at": get_utc_now()}
     if payload.headline is not None:
-        profile.headline = payload.headline
+        update_fields["headline"] = payload.headline
     if payload.bio is not None:
-        profile.bio = payload.bio
+        update_fields["bio"] = payload.bio
     if payload.degree is not None:
-        profile.degree = payload.degree
+        update_fields["degree"] = payload.degree
     if payload.institution is not None:
-        profile.institution = payload.institution
+        update_fields["institution"] = payload.institution
     if payload.institution_tier is not None:
-        profile.institution_tier = payload.institution_tier
+        update_fields["institution_tier"] = payload.institution_tier
     if payload.graduation_year is not None:
-        profile.graduation_year = payload.graduation_year
+        update_fields["graduation_year"] = payload.graduation_year
     if payload.gpa is not None:
-        profile.gpa = payload.gpa
+        update_fields["gpa"] = payload.gpa
     if payload.target_career_id is not None:
-        # Validate career exists
-        career = db.query(CareerRole).filter(CareerRole.id == payload.target_career_id).first()
+        career = await db.career_roles.find_one({"career_code": payload.target_career_id})
         if not career:
             raise HTTPException(status_code=400, detail="Specified target career does not exist.")
-        profile.target_career_id = payload.target_career_id
+        update_fields["target_career_id"] = payload.target_career_id
+        update_fields["target_career_title"] = career.get("title", "")
     if payload.weekly_study_hours is not None:
-        profile.weekly_study_hours = payload.weekly_study_hours
+        update_fields["statistics.weekly_study_hours"] = payload.weekly_study_hours
 
-    db.commit()
-    db.refresh(profile)
-    return get_profile(current_user, db)
+    await db.student_profiles.update_one({"user_id": user_id}, {"$set": update_fields})
+    return await get_profile(current_user, db)
 
 
 # ==================== Skills ====================
 @router.get("/skills", response_model=List[StudentSkillResponse])
-def get_student_skills(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    profile = get_or_create_profile(current_user, db)
+async def get_student_skills(
+    current_user: dict = Depends(get_current_user),
+    db: AsyncDatabase = Depends(get_db)
+):
+    user_id = current_user["id"]
+    profile = await get_or_create_profile(user_id, db)
     results = []
-    for ss in profile.skills:
+    for ss in profile.get("skills", []):
         results.append(StudentSkillResponse(
-            id=ss.id,
-            skill_id=ss.skill_id,
-            skill_name=ss.skill.name if ss.skill else ss.skill_id,
-            category=ss.skill.category if ss.skill else "General",
-            domain=ss.skill.domain if ss.skill else "General",
-            proficiency_level=ss.proficiency_level,
-            years_experience=ss.years_experience,
-            is_verified=ss.is_verified,
-            verification_source=ss.verification_source,
-            updated_at=ss.updated_at
+            id=ss.get("skill_id", ""),
+            skill_id=ss.get("skill_id", ""),
+            skill_name=ss.get("name", ss.get("skill_id", "")),
+            category=ss.get("category", "General"),
+            domain=ss.get("domain", "General"),
+            proficiency_level=float(ss.get("level", ss.get("proficiency_level", 1.0))),
+            years_experience=float(ss.get("years_experience", 0.5)),
+            is_verified=bool(ss.get("verified", ss.get("is_verified", False))),
+            verification_source=ss.get("verification_source", "Self-Reported"),
+            updated_at=ss.get("last_assessed_at") or profile.get("updated_at")
         ))
     return results
 
 
 @router.post("/skills", response_model=StudentSkillResponse, status_code=status.HTTP_201_CREATED)
-def add_or_update_student_skill(
+async def add_or_update_student_skill(
     payload: StudentSkillCreate,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    current_user: dict = Depends(get_current_user),
+    db: AsyncDatabase = Depends(get_db)
 ):
-    profile = get_or_create_profile(current_user, db)
-    
-    # Check if skill exists in catalog
-    skill = db.query(Skill).filter(Skill.id == payload.skill_id).first()
-    if not skill:
-        raise HTTPException(status_code=404, detail=f"Skill '{payload.skill_id}' not found in catalog.")
+    user_id = current_user["id"]
+    profile = await get_or_create_profile(user_id, db)
 
-    existing_ss = db.query(StudentSkill).filter(
-        StudentSkill.profile_id == profile.id,
-        StudentSkill.skill_id == payload.skill_id
-    ).first()
+    # Validate skill against taxonomy
+    skill_doc = await db.skills.find_one({"skill_code": payload.skill_id})
+    if not skill_doc:
+        raise HTTPException(status_code=404, detail=f"Skill '{payload.skill_id}' not found in canonical taxonomy.")
 
-    if existing_ss:
-        existing_ss.proficiency_level = payload.proficiency_level
-        existing_ss.years_experience = payload.years_experience
-        db.commit()
-        db.refresh(existing_ss)
-        ss = existing_ss
+    now = get_utc_now()
+    skills_list = profile.get("skills", [])
+    existing_idx = next((i for i, s in enumerate(skills_list) if s.get("skill_id") == payload.skill_id), None)
+
+    skill_item = {
+        "skill_id": payload.skill_id,
+        "name": skill_doc.get("name", payload.skill_id),
+        "category": skill_doc.get("category", "General"),
+        "domain": skill_doc.get("domain", "General"),
+        "level": float(payload.proficiency_level),
+        "verified": False if existing_idx is None else skills_list[existing_idx].get("verified", False),
+        "verification_source": "Self-Reported" if existing_idx is None else skills_list[existing_idx].get("verification_source", "Self-Reported"),
+        "years_experience": float(payload.years_experience) if payload.years_experience is not None else 0.5,
+        "last_assessed_at": now
+    }
+
+    if existing_idx is not None:
+        skills_list[existing_idx] = skill_item
     else:
-        ss = StudentSkill(
-            profile_id=profile.id,
-            skill_id=payload.skill_id,
-            proficiency_level=payload.proficiency_level,
-            years_experience=payload.years_experience,
-            is_verified=False,
-            verification_source="Self-Reported"
-        )
-        db.add(ss)
-        db.commit()
-        db.refresh(ss)
+        skills_list.append(skill_item)
+
+    await db.student_profiles.update_one(
+        {"user_id": user_id},
+        {"$set": {"skills": skills_list, "updated_at": now}}
+    )
 
     return StudentSkillResponse(
-        id=ss.id,
-        skill_id=ss.skill_id,
-        skill_name=skill.name,
-        category=skill.category,
-        domain=skill.domain,
-        proficiency_level=ss.proficiency_level,
-        years_experience=ss.years_experience,
-        is_verified=ss.is_verified,
-        verification_source=ss.verification_source,
-        updated_at=ss.updated_at
+        id=skill_item["skill_id"],
+        skill_id=skill_item["skill_id"],
+        skill_name=skill_item["name"],
+        category=skill_item["category"],
+        domain=skill_item["domain"],
+        proficiency_level=skill_item["level"],
+        years_experience=skill_item["years_experience"],
+        is_verified=skill_item["verified"],
+        verification_source=skill_item["verification_source"],
+        updated_at=now
     )
 
 
 @router.delete("/skills/{skill_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_student_skill(
+async def delete_student_skill(
     skill_id: str,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    current_user: dict = Depends(get_current_user),
+    db: AsyncDatabase = Depends(get_db)
 ):
-    profile = get_or_create_profile(current_user, db)
-    ss = db.query(StudentSkill).filter(
-        StudentSkill.profile_id == profile.id,
-        StudentSkill.skill_id == skill_id
-    ).first()
-    if not ss:
-        raise HTTPException(status_code=404, detail="Skill not found in student inventory.")
-    db.delete(ss)
-    db.commit()
+    user_id = current_user["id"]
+    await db.student_profiles.update_one(
+        {"user_id": user_id},
+        {"$pull": {"skills": {"skill_id": skill_id}}, "$set": {"updated_at": get_utc_now()}}
+    )
 
 
 # ==================== Projects ====================
 @router.get("/projects", response_model=List[ProjectResponse])
-def get_projects(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    profile = get_or_create_profile(current_user, db)
-    return profile.projects
+async def get_projects(
+    current_user: dict = Depends(get_current_user),
+    db: AsyncDatabase = Depends(get_db)
+):
+    user_id = current_user["id"]
+    cursor = db.projects.find({"student_id": user_id}).sort("created_at", -1)
+    projects = await cursor.to_list(length=100)
+    return [
+        ProjectResponse(
+            id=str(p["_id"]),
+            profile_id=p["student_id"],
+            title=p["title"],
+            description=p["description"],
+            repo_url=p.get("repository_url"),
+            live_url=p.get("live_url"),
+            tech_stack=p.get("technologies", ""),
+            complexity_rating=float(p.get("complexity_rating", 3.0)),
+            created_at=p.get("created_at")
+        )
+        for p in projects
+    ]
 
 
 @router.post("/projects", response_model=ProjectResponse, status_code=status.HTTP_201_CREATED)
-def create_project(
+async def create_project(
     payload: ProjectCreate,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    current_user: dict = Depends(get_current_user),
+    db: AsyncDatabase = Depends(get_db)
 ):
-    profile = get_or_create_profile(current_user, db)
-    project = Project(
-        profile_id=profile.id,
+    user_id = current_user["id"]
+    now = get_utc_now()
+    doc = {
+        "student_id": user_id,
+        "title": payload.title,
+        "description": payload.description,
+        "repository_url": payload.repo_url,
+        "live_url": payload.live_url,
+        "technologies": payload.tech_stack,
+        "complexity_rating": float(payload.complexity_rating),
+        "created_at": now,
+        "updated_at": now
+    }
+    res = await db.projects.insert_one(doc)
+
+    # Update profile stats
+    await db.student_profiles.update_one(
+        {"user_id": user_id},
+        {"$inc": {"statistics.projects_count": 1}}
+    )
+
+    return ProjectResponse(
+        id=str(res.inserted_id),
+        profile_id=user_id,
         title=payload.title,
         description=payload.description,
         repo_url=payload.repo_url,
         live_url=payload.live_url,
         tech_stack=payload.tech_stack,
-        complexity_rating=payload.complexity_rating
+        complexity_rating=payload.complexity_rating,
+        created_at=now
     )
-    db.add(project)
-    db.commit()
-    db.refresh(project)
-    return project
 
 
 # ==================== Certifications ====================
 @router.get("/certifications", response_model=List[CertificationResponse])
-def get_certifications(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    profile = get_or_create_profile(current_user, db)
-    return profile.certifications
+async def get_certifications(
+    current_user: dict = Depends(get_current_user),
+    db: AsyncDatabase = Depends(get_db)
+):
+    user_id = current_user["id"]
+    cursor = db.certifications.find({"student_id": user_id}).sort("created_at", -1)
+    certs = await cursor.to_list(length=100)
+    return [
+        CertificationResponse(
+            id=str(c["_id"]),
+            profile_id=c["student_id"],
+            name=c["name"],
+            issuer=c["issuer"],
+            issue_date=c.get("issue_date"),
+            credential_url=c.get("credential_url"),
+            is_verified=bool(c.get("is_verified", True)),
+            created_at=c.get("created_at")
+        )
+        for c in certs
+    ]
 
 
 @router.post("/certifications", response_model=CertificationResponse, status_code=status.HTTP_201_CREATED)
-def create_certification(
+async def create_certification(
     payload: CertificationCreate,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    current_user: dict = Depends(get_current_user),
+    db: AsyncDatabase = Depends(get_db)
 ):
-    profile = get_or_create_profile(current_user, db)
-    cert = Certification(
-        profile_id=profile.id,
+    user_id = current_user["id"]
+    now = get_utc_now()
+    doc = {
+        "student_id": user_id,
+        "name": payload.name,
+        "issuer": payload.issuer,
+        "issue_date": payload.issue_date,
+        "credential_url": payload.credential_url,
+        "is_verified": True,
+        "created_at": now
+    }
+    res = await db.certifications.insert_one(doc)
+
+    await db.student_profiles.update_one(
+        {"user_id": user_id},
+        {"$inc": {"statistics.certifications_count": 1}}
+    )
+
+    return CertificationResponse(
+        id=str(res.inserted_id),
+        profile_id=user_id,
         name=payload.name,
         issuer=payload.issuer,
         issue_date=payload.issue_date,
         credential_url=payload.credential_url,
-        is_verified=True
+        is_verified=True,
+        created_at=now
     )
-    db.add(cert)
-    db.commit()
-    db.refresh(cert)
-    return cert
 
 
 # ==================== Activities ====================
 @router.get("/activities")
-def get_activities(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    profile = get_or_create_profile(current_user, db)
-    activities = db.query(LearningActivity).filter(
-        LearningActivity.profile_id == profile.id
-    ).order_by(LearningActivity.completed_at.desc()).limit(20).all()
-    return [
-        {
-            "id": a.id,
-            "activity_type": a.activity_type,
-            "title": a.title,
-            "description": a.description,
-            "hours_spent": a.hours_spent,
-            "completed_at": a.completed_at
-        }
-        for a in activities
-    ]
+async def get_activities(
+    current_user: dict = Depends(get_current_user),
+    db: AsyncDatabase = Depends(get_db)
+):
+    user_id = current_user["id"]
+    cursor = db.learning_activities.find({"student_id": user_id}).sort("completed_at", -1).limit(20)
+    acts = await cursor.to_list(length=20)
+    return serialize_docs(acts)

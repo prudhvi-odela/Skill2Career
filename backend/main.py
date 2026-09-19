@@ -1,5 +1,5 @@
 """
-Skill2Career - FastAPI Backend Entrypoint
+Skill2Career - FastAPI Backend Entrypoint (MongoDB Edition)
 """
 
 from contextlib import asynccontextmanager
@@ -7,7 +7,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.config import settings
-from backend.database.session import engine, Base
+from backend.database.mongodb import connect_to_mongo, close_mongo_connection, get_db
+from backend.database.indexes import ensure_indexes
 from backend.database.seed import seed_database
 from backend.routers import (
     auth_router,
@@ -22,19 +23,22 @@ from backend.routers import (
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Initialize DB tables & seed if empty
-    Base.metadata.create_all(bind=engine)
+    # Startup: connect to MongoDB, ensure indexes, seed initial data
     try:
-        seed_database()
+        db = await connect_to_mongo()
+        await ensure_indexes(db)
+        await seed_database()
     except Exception as e:
-        print(f"[Lifespan Notice] Seed check: {e}")
+        print(f"[Lifespan Startup Error]: {e}")
     yield
+    # Shutdown: close MongoDB connection
+    await close_mongo_connection()
 
 
 app = FastAPI(
     title="Skill2Career API",
-    description="Skill-Gap-to-Career-Mapping Engine and Future Job-Readiness Predictor",
-    version="1.0.0",
+    description="Skill-Gap-to-Career-Mapping Engine and Future Job-Readiness Predictor (MongoDB Powered)",
+    version="2.0.0",
     lifespan=lifespan
 )
 
@@ -58,20 +62,28 @@ app.include_router(ml_admin_router.router, prefix=settings.API_V1_STR)
 
 
 @app.get("/")
-def root():
+async def root():
     return {
         "app": "Skill2Career API",
         "status": "online",
-        "version": "1.0.0",
+        "version": "2.0.0",
+        "database": "MongoDB",
         "docs_url": "/docs"
     }
 
 
 @app.get("/api/health")
-def health_check():
+async def health_check():
+    db = await get_db()
+    try:
+        await db.command("ping")
+        db_status = "MongoDB connected (healthy)"
+    except Exception as e:
+        db_status = f"MongoDB connection error: {str(e)}"
+
     return {
         "status": "healthy",
-        "database": "connected",
+        "database": db_status,
         "ml_models": "loaded"
     }
 
