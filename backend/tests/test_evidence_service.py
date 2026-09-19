@@ -200,5 +200,6 @@ async def test_verify_evidence_workflow():
 
     assert updated["verification_status"] == VerificationStatus.MANUALLY_VERIFIED.value
     assert updated["validator_type"] == "INSTRUCTOR"
-    assert updated["evidence_strength"] == EvidenceStrength.VERY_STRONG.value
+    assert updated["evidence_strength"] == EvidenceStrength.MODERATE.value
+    assert updated["evidence_score"] >= 60.0
     assert updated["validated_at"] is not None

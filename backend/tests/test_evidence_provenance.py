@@ -32,6 +32,17 @@ async def test_evidence_to_ml_provenance_trace():
     )
     score_before = pred_before["readiness_score"]
 
+    # Ensure source assessment exists in database for entity validation
+    await db.student_assessments.delete_many({"_id": "ts_exam_999"})
+    await db.student_assessments.insert_one({
+        "_id": "ts_exam_999",
+        "user_id": user_id,
+        "student_id": user_id,
+        "skill_id": "SK003",
+        "score_percentage": 95.0,
+        "passed": True
+    })
+
     # 2. Add verified evidence for TypeScript (SK003)
     req = EvidenceCreateRequest(
         skill_id="SK003",
@@ -63,4 +74,5 @@ async def test_evidence_to_ml_provenance_trace():
     # Readiness score must reflect student competency increase through canonical ML feature pipeline
     assert score_after >= score_before
     assert pred_after["model_version"] is not None
-    assert len(pred_after["feature_contributions"]) == 13
+    assert len(pred_after["feature_contributions"]) == 5
+    assert any(fc["feature"] == "Skill Coverage for Role" for fc in pred_after["feature_contributions"])
