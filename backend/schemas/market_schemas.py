@@ -28,14 +28,15 @@ class CareerMarketSignalResponse(BaseModel):
     career_title: Optional[str] = None
     region: str = "Global"
     demand_score: float = Field(..., ge=0.0, le=100.0, description="Market demand index 0-100")
-    trend_direction: str = Field(..., description="growing, stable, or declining")
-    sample_size: int = Field(..., ge=0)
-    source_id: str
+    trend_direction: str = Field(..., description="growing, stable, declining, or unobserved")
+    sample_size: Optional[int] = Field(None, ge=0)
+    source_id: Optional[str] = None
     source_name: Optional[str] = None
-    retrieved_at: str
-    valid_until: str
+    retrieved_at: Optional[str] = None
+    valid_until: Optional[str] = None
     data_quality: str = "High"
-    freshness: str = Field(..., description="fresh, expiring_soon, or stale")
+    freshness: str = Field(..., description="fresh, expiring_soon, stale, or unavailable")
+    is_fallback: bool = False
     notes: Optional[str] = None
 
 
@@ -45,15 +46,16 @@ class SkillMarketSignalResponse(BaseModel):
     category: Optional[str] = None
     region: str = "Global"
     demand_score: float = Field(..., ge=0.0, le=100.0)
-    trend_direction: str = Field(..., description="growing, stable, or declining")
-    sample_size: int = Field(..., ge=0)
-    market_tier: str = Field(..., description="high_demand, moderate_demand, or niche")
-    source_id: str
+    trend_direction: str = Field(..., description="growing, stable, declining, or unobserved")
+    sample_size: Optional[int] = Field(None, ge=0)
+    market_tier: str = Field(..., description="high_demand, moderate_demand, niche, or unobserved")
+    source_id: Optional[str] = None
     source_name: Optional[str] = None
-    retrieved_at: str
-    valid_until: str
+    retrieved_at: Optional[str] = None
+    valid_until: Optional[str] = None
     data_quality: str = "High"
-    freshness: str = Field(..., description="fresh, expiring_soon, or stale")
+    freshness: str = Field(..., description="fresh, expiring_soon, stale, or unavailable")
+    is_fallback: bool = False
     notes: Optional[str] = None
 
 

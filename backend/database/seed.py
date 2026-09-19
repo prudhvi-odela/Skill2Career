@@ -600,9 +600,15 @@ async def seed_database():
             upsert=True
         )
 
+    # 8. Seed Initial Skill Evidence for Demo Student (Phase 09A)
+    from backend.services.evidence_service import EvidenceService
+    ev_svc = EvidenceService()
+    ev_count = await ev_svc.sync_student_artifacts_to_evidence(student_id=user_id, db=db)
+
     print(f"[OK] Seeded demo user ({demo_email}) and profile successfully.")
     print(f"[OK] Seeded {len(market_sources)} market data sources, {len(career_signals)} career signals, and {len(skill_signals)} skill signals.")
     print(f"[OK] Seeded {len(skill_dependencies_seed)} canonical skill dependencies.")
+    print(f"[OK] Seeded {ev_count} initial verified skill evidence records.")
     print("MongoDB database seeding complete.")
 
 

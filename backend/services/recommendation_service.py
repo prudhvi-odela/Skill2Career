@@ -92,7 +92,9 @@ class RecommendationService:
         band: str,
         market_demand: float,
         prereqs_met: bool,
-        downstream_count: int
+        downstream_count: int,
+        is_market_fallback: bool = False,
+        market_signal_status: str = "OBSERVED"
     ) -> str:
         """Generates explainable human-readable rationale."""
         if gap <= 0.0:
@@ -100,10 +102,20 @@ class RecommendationService:
 
         downstream_str = f"unlocks {downstream_count} downstream skill{'s' if downstream_count != 1 else ''}" if downstream_count > 0 else "direct domain application"
         prereq_str = "Prerequisites are satisfied" if prereqs_met else "Requires prerequisite progression"
+        
+        if is_market_fallback or market_signal_status == "FALLBACK_UNAVAILABLE":
+            market_str = "Market signal unavailable; prioritized using neutral baseline benchmark (75.0)."
+        elif market_signal_status == "STALE":
+            market_str = f"External market demand signal ({market_demand:.1f}/100, STALE archive benchmark) provided for context."
+        elif market_signal_status == "EXPIRING_SOON":
+            market_str = f"External market demand signal ({market_demand:.1f}/100, EXPIRING SOON) confirms current role demand."
+        else:
+            market_str = f"External market demand signal ({market_demand:.1f}/100) confirms role demand."
+
         return (
             f"{skill_name} is ranked {band} for '{career_title}' with a gap of {gap:.1f} "
             f"(current: {student_level:.1f} / target: {target_level:.1f}). "
-            f"External market demand signal ({market_demand:.1f}/100) confirms role demand. "
+            f"{market_str} "
             f"Dependency leverage: {downstream_str}. {prereq_str}."
         )
 
@@ -168,9 +180,33 @@ class RecommendationService:
 
             # 3. Market Relevance Component (0-100)
             mkt_sig = await self.market_service.get_skill_market_signal(s_id, db)
-            s_market = float(mkt_sig.get("demand_score", 75.0)) if mkt_sig else 75.0
-            mkt_trend = mkt_sig.get("trend_direction", "stable") if mkt_sig else "stable"
-            mkt_source = mkt_sig.get("source_name", "Industry Benchmark") if mkt_sig else "Industry Benchmark"
+            is_mkt_fallback = bool(mkt_sig.get("is_fallback", False)) if mkt_sig else True
+            freshness = mkt_sig.get("freshness", "unavailable") if mkt_sig else "unavailable"
+
+            if is_mkt_fallback or freshness == "unavailable":
+                mkt_status = "FALLBACK_UNAVAILABLE"
+                s_market = 75.0
+                mkt_trend = "unobserved"
+                mkt_source = "Neutral Baseline Fallback"
+                mkt_source_refs = ["O*NET Technical Competency Matrix", "Curriculum Standards", "Neutral Baseline Fallback"]
+            elif freshness == "stale":
+                mkt_status = "STALE"
+                s_market = float(mkt_sig.get("demand_score", 75.0))
+                mkt_trend = mkt_sig.get("trend_direction", "stable")
+                mkt_source = mkt_sig.get("source_name", "Industry Benchmark (Stale)")
+                mkt_source_refs = [mkt_source, "O*NET Technical Competency Matrix", "Curriculum Standards"]
+            elif freshness == "expiring_soon":
+                mkt_status = "EXPIRING_SOON"
+                s_market = float(mkt_sig.get("demand_score", 75.0))
+                mkt_trend = mkt_sig.get("trend_direction", "stable")
+                mkt_source = mkt_sig.get("source_name", "Industry Benchmark (Expiring)")
+                mkt_source_refs = [mkt_source, "O*NET Technical Competency Matrix", "Curriculum Standards"]
+            else:
+                mkt_status = "OBSERVED"
+                s_market = float(mkt_sig.get("demand_score", 75.0))
+                mkt_trend = mkt_sig.get("trend_direction", "stable")
+                mkt_source = mkt_sig.get("source_name", "Industry Benchmark")
+                mkt_source_refs = [mkt_source, "O*NET Technical Competency Matrix", "Curriculum Standards"]
 
             # 4. Dependency Importance (0-100)
             downstream = await self.dependency_service.get_downstream_dependents(s_id, db)
@@ -203,10 +239,19 @@ class RecommendationService:
             )
             downstream_str = f"unlocks {downstream_count} downstream skill{'s' if downstream_count != 1 else ''}" if downstream_count > 0 else "direct domain application"
 
+            if is_mkt_fallback or mkt_status == "FALLBACK_UNAVAILABLE":
+                market_desc = "Market demand signal unavailable (neutral baseline 75.0 applied)"
+            elif mkt_status == "STALE":
+                market_desc = f"External market demand is {s_market:.0f}/100 ({mkt_trend}, STALE archive benchmark)"
+            elif mkt_status == "EXPIRING_SOON":
+                market_desc = f"External market demand is {s_market:.0f}/100 ({mkt_trend}, EXPIRING SOON)"
+            else:
+                market_desc = f"External market demand is strong ({s_market:.0f}/100, {mkt_trend})"
+
             rationale = (
                 f"{s_name} is ranked {priority_band} ({priority_score}/100) for '{career_title}'. "
                 f"Deficit is {gap:.1f} proficiency levels (current: {cur_lvl:.1f} / target: {req_lvl:.1f}) with {imp * 100:.0f}% role criticality. "
-                f"External market demand is strong ({s_market:.0f}/100, {mkt_trend}). Structurally, {downstream_str}; {prereq_status_str}."
+                f"{market_desc}. Structurally, {downstream_str}; {prereq_status_str}."
             )
 
             rec_id = f"rec_{uuid.uuid4().hex[:10]}"
@@ -225,6 +270,8 @@ class RecommendationService:
                 "gap": round(gap, 1),
                 "career_relevance": imp,
                 "market_relevance": s_market,
+                "is_market_fallback": is_mkt_fallback,
+                "market_signal_status": mkt_status,
                 "dependency_importance": s_dep,
                 "learning_feasibility": s_feas,
                 "prerequisites": prereq_eval.get("prerequisites", []),
@@ -232,7 +279,7 @@ class RecommendationService:
                 "learning_effort_level": effort_level,
                 "estimated_planning_hours": planning_hours,
                 "rationale": rationale,
-                "source_references": [mkt_source, "O*NET Technical Competency Matrix", "Curriculum Standards"],
+                "source_references": mkt_source_refs,
                 "generated_at": now_str,
                 "engine_version": "v2.0-adaptive"
             })

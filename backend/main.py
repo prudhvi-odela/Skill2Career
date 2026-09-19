@@ -20,7 +20,8 @@ from backend.routers import (
     ml_admin_router,
     ai_router,
     market_router,
-    recommendation_router
+    recommendation_router,
+    evidence_router
 )
 
 
@@ -65,6 +66,7 @@ app.include_router(ml_admin_router.router, prefix=settings.API_V1_STR)
 app.include_router(ai_router.router, prefix=settings.API_V1_STR)
 app.include_router(market_router.router, prefix=settings.API_V1_STR)
 app.include_router(recommendation_router.router, prefix=settings.API_V1_STR)
+app.include_router(evidence_router.router, prefix=settings.API_V1_STR)
 
 
 @app.get("/")

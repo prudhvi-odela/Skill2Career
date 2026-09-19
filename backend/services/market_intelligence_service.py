@@ -22,9 +22,9 @@ class MarketIntelligenceService:
 
     @staticmethod
     def calculate_freshness(retrieved_at_str: Optional[str], valid_until_str: Optional[str]) -> str:
-        """Determines signal freshness: fresh, expiring_soon, or stale."""
+        """Determines signal freshness: fresh, expiring_soon, stale, or unavailable."""
         if not retrieved_at_str:
-            return "stale"
+            return "unavailable"
         now = datetime.now(timezone.utc)
         try:
             if valid_until_str:
@@ -44,7 +44,7 @@ class MarketIntelligenceService:
                     return "expiring_soon"
                 return "fresh"
         except Exception:
-            return "fresh"
+            return "unavailable"
 
     async def get_market_sources(self, db: AsyncDatabase) -> List[Dict[str, Any]]:
         cursor = db.market_data_sources.find({})
@@ -101,19 +101,20 @@ class MarketIntelligenceService:
             # Fallback to any region or default heuristic signal
             signal = await db.career_market_signals.find_one({"career_id": career_id})
 
+        is_fallback = False
         if not signal:
-            # Construct default benchmark fallback
+            is_fallback = True
             signal = {
                 "career_id": career_id,
                 "region": region,
-                "demand_score": 85.0,
-                "trend_direction": "stable",
-                "sample_size": 10000,
-                "source_id": "SRC_BLS_2026",
-                "retrieved_at": datetime.now(timezone.utc).isoformat(),
-                "valid_until": "2027-01-01T00:00:00+00:00",
-                "data_quality": "Benchmark Fallback",
-                "notes": "Estimated industry baseline."
+                "demand_score": 75.0,
+                "trend_direction": "unobserved",
+                "sample_size": None,
+                "source_id": None,
+                "retrieved_at": None,
+                "valid_until": None,
+                "data_quality": "Unobserved Fallback",
+                "notes": "Neutral benchmark fallback used because observed market data is unavailable."
             }
 
         # Resolve career title
@@ -121,13 +122,17 @@ class MarketIntelligenceService:
         career_title = career_doc.get("title", career_id) if career_doc else career_id
 
         # Resolve source name
-        source_doc = await db.market_data_sources.find_one({"source_id": signal.get("source_id")})
-        source_name = source_doc.get("source_name", "Industry Standard") if source_doc else "Industry Standard"
+        if is_fallback or not signal.get("source_id"):
+            source_name = "Neutral Baseline Fallback"
+        else:
+            source_doc = await db.market_data_sources.find_one({"source_id": signal.get("source_id")})
+            source_name = source_doc.get("source_name", "Industry Standard") if source_doc else "Industry Standard"
 
         serialized = serialize_doc(signal)
         serialized["career_title"] = career_title
         serialized["source_name"] = source_name
-        serialized["freshness"] = self.calculate_freshness(signal.get("retrieved_at"), signal.get("valid_until"))
+        serialized["is_fallback"] = is_fallback
+        serialized["freshness"] = "unavailable" if is_fallback else self.calculate_freshness(signal.get("retrieved_at"), signal.get("valid_until"))
         return serialized
 
     async def get_skill_market_signal(
@@ -140,36 +145,42 @@ class MarketIntelligenceService:
         if not signal:
             signal = await db.skill_market_signals.find_one({"skill_id": skill_id})
 
+        is_fallback = False
         if not signal:
+            is_fallback = True
             signal = {
                 "skill_id": skill_id,
                 "region": region,
-                "demand_score": 80.0,
-                "trend_direction": "stable",
-                "sample_size": 15000,
-                "source_id": "SRC_SO_DEV_2025",
-                "retrieved_at": datetime.now(timezone.utc).isoformat(),
-                "valid_until": "2027-01-01T00:00:00+00:00",
-                "data_quality": "Benchmark Fallback",
-                "notes": "Standard technical competency baseline."
+                "demand_score": 75.0,
+                "trend_direction": "unobserved",
+                "sample_size": None,
+                "source_id": None,
+                "retrieved_at": None,
+                "valid_until": None,
+                "data_quality": "Unobserved Fallback",
+                "notes": "Neutral benchmark fallback used because observed market data is unavailable."
             }
 
         skill_doc = await db.skills.find_one({"$or": [{"skill_code": skill_id}, {"_id": skill_id}]})
         skill_name = skill_doc.get("name", skill_id) if skill_doc else skill_id
         category = skill_doc.get("category", "General") if skill_doc else "General"
 
-        d_score = float(signal.get("demand_score", 80.0))
-        tier = "high_demand" if d_score >= 90.0 else ("moderate_demand" if d_score >= 75.0 else "niche")
-
-        source_doc = await db.market_data_sources.find_one({"source_id": signal.get("source_id")})
-        source_name = source_doc.get("source_name", "Developer Index") if source_doc else "Developer Index"
+        d_score = float(signal.get("demand_score", 75.0))
+        if is_fallback:
+            tier = "unobserved"
+            source_name = "Neutral Baseline Fallback"
+        else:
+            tier = "high_demand" if d_score >= 90.0 else ("moderate_demand" if d_score >= 75.0 else "niche")
+            source_doc = await db.market_data_sources.find_one({"source_id": signal.get("source_id")})
+            source_name = source_doc.get("source_name", "Developer Index") if source_doc else "Developer Index"
 
         serialized = serialize_doc(signal)
         serialized["skill_name"] = skill_name
         serialized["category"] = category
         serialized["market_tier"] = tier
         serialized["source_name"] = source_name
-        serialized["freshness"] = self.calculate_freshness(signal.get("retrieved_at"), signal.get("valid_until"))
+        serialized["is_fallback"] = is_fallback
+        serialized["freshness"] = "unavailable" if is_fallback else self.calculate_freshness(signal.get("retrieved_at"), signal.get("valid_until"))
         return serialized
 
     async def get_career_skills_market(
@@ -254,20 +265,26 @@ class MarketIntelligenceService:
             is_critical = gap in critical_gaps
 
             sk_signal = await self.get_skill_market_signal(sk_id, db)
-            mkt_demand = float(sk_signal.get("demand_score", 80.0)) if sk_signal else 80.0
-            mkt_trend = sk_signal.get("trend_direction", "stable") if sk_signal else "stable"
-            src_name = sk_signal.get("source_name", "Industry Standard") if sk_signal else "Industry Standard"
+            is_sk_fallback = sk_signal.get("is_fallback", False) if sk_signal else True
+            mkt_demand = float(sk_signal.get("demand_score", 75.0)) if sk_signal else 75.0
+            mkt_trend = sk_signal.get("trend_direction", "unobserved") if sk_signal else "unobserved"
+            src_name = sk_signal.get("source_name", "Neutral Baseline Fallback") if sk_signal else "Neutral Baseline Fallback"
 
             # Assign transparent priority based on market demand + gap deficit
-            if is_critical and mkt_demand >= 90.0:
+            if is_critical and mkt_demand >= 90.0 and not is_sk_fallback:
                 priority = "URGENT"
-                reason = f"Critical career bottleneck ({deficit:.1f} level deficit) combined with very high industry demand ({mkt_demand:.0f}/100, {mkt_trend})."
-            elif is_critical or mkt_demand >= 90.0:
+                reason = f"Critical career bottleneck ({deficit:.1f} level deficit) combined with verified high industry demand ({mkt_demand:.0f}/100, {mkt_trend})."
+            elif is_critical:
                 priority = "HIGH"
-                reason = f"High priority: {'Critical requirement for role' if is_critical else f'Strong industry trend ({mkt_demand:.0f}/100)'}."
+                fallback_suffix = " (Neutral market benchmark applied)" if is_sk_fallback else ""
+                reason = f"High priority: Critical requirement for role ({deficit:.1f} level deficit){fallback_suffix}."
+            elif mkt_demand >= 90.0 and not is_sk_fallback:
+                priority = "HIGH"
+                reason = f"High priority: Strong industry trend ({mkt_demand:.0f}/100)."
             elif deficit >= 1.5:
                 priority = "MODERATE"
-                reason = f"Moderate deficit ({deficit:.1f} levels) across stable market demand."
+                fallback_suffix = " (Neutral market benchmark applied)" if is_sk_fallback else ""
+                reason = f"Moderate deficit ({deficit:.1f} levels) across stable market baseline{fallback_suffix}."
             else:
                 priority = "LOW"
                 reason = "Minor proficiency enhancement."

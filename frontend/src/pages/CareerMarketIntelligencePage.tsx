@@ -132,6 +132,13 @@ export const CareerMarketIntelligencePage: React.FC = () => {
         </span>
       );
     }
+    if (freshness === 'unavailable') {
+      return (
+        <span className="badge" style={{ background: 'rgba(148, 163, 184, 0.15)', color: '#94a3b8', border: '1px solid rgba(148, 163, 184, 0.3)' }}>
+          ○ Unobserved (Fallback)
+        </span>
+      );
+    }
     return (
       <span className="badge" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#f87171', border: '1px solid rgba(239, 68, 68, 0.3)' }}>
         ■ Stale / Archive
@@ -216,14 +223,17 @@ export const CareerMarketIntelligencePage: React.FC = () => {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', marginBottom: '28px' }}>
           <div className="card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 600 }}>MARKET DEMAND INDEX</span>
+              <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 600 }}>
+                {careerSignal.is_fallback ? 'BASELINE BENCHMARK' : 'MARKET DEMAND INDEX'}
+              </span>
               <Flame size={18} color="#f97316" />
             </div>
             <div style={{ fontSize: '2rem', fontWeight: 800, color: '#ffffff' }}>
               {careerSignal.demand_score?.toFixed(1)} <span style={{ fontSize: '1rem', color: '#6b7280', fontWeight: 500 }}>/ 100</span>
             </div>
-            <div style={{ fontSize: '0.8rem', color: '#10b981', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <div style={{ fontSize: '0.8rem', color: careerSignal.is_fallback ? '#94a3b8' : '#10b981', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
               <TrendingUp size={14} /> Trend: {careerSignal.trend_direction?.toUpperCase()}
+              {careerSignal.is_fallback && <span style={{ color: '#fb923c' }}>(Fallback)</span>}
             </div>
           </div>
 
@@ -233,7 +243,7 @@ export const CareerMarketIntelligencePage: React.FC = () => {
               <Building2 size={18} color="#6366f1" />
             </div>
             <div style={{ fontSize: '2rem', fontWeight: 800, color: '#ffffff' }}>
-              {careerSignal.sample_size?.toLocaleString()}
+              {careerSignal.sample_size ? careerSignal.sample_size.toLocaleString() : 'N/A'}
             </div>
             <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '4px' }}>
               Region: {careerSignal.region || 'Global Technology Hubs'}
@@ -262,7 +272,7 @@ export const CareerMarketIntelligencePage: React.FC = () => {
               {getFreshnessBadge(careerSignal.freshness)}
             </div>
             <div style={{ fontSize: '0.75rem', color: '#94a3b8', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
-              Source: {careerSignal.source_name || careerSignal.source_id}
+              Source: {careerSignal.source_name || careerSignal.source_id || 'Neutral Baseline'}
             </div>
           </div>
         </div>

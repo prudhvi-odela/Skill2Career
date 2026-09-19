@@ -198,13 +198,15 @@ async def build_student_ai_context(
         market_svc = MarketIntelligenceService()
         career_mkt = await market_svc.get_career_market_signal(effective_target_career_id, db)
         sources = await market_svc.get_market_sources(db)
+        is_mkt_fb = bool(career_mkt.get("is_fallback", False))
         market_context = {
-            "career_demand_score": float(career_mkt.get("demand_score", 85.0)),
-            "career_trend_direction": str(career_mkt.get("trend_direction", "stable")),
-            "sample_size": int(career_mkt.get("sample_size", 10000)),
-            "source_provenance": str(career_mkt.get("source_name", "Industry Standard")),
-            "data_freshness": str(career_mkt.get("freshness", "fresh")),
-            "valid_until": str(career_mkt.get("valid_until", "")),
+            "career_demand_score": float(career_mkt.get("demand_score", 75.0)),
+            "career_trend_direction": str(career_mkt.get("trend_direction", "unobserved" if is_mkt_fb else "stable")),
+            "sample_size": career_mkt.get("sample_size"),
+            "source_provenance": str(career_mkt.get("source_name", "Neutral Baseline Fallback" if is_mkt_fb else "Industry Standard")),
+            "data_freshness": str(career_mkt.get("freshness", "unavailable" if is_mkt_fb else "fresh")),
+            "is_fallback": is_mkt_fb,
+            "valid_until": str(career_mkt.get("valid_until") or ""),
             "data_sources": [s.get("source_name") for s in sources]
         }
     except Exception:
@@ -234,6 +236,29 @@ async def build_student_ai_context(
     except Exception:
         pass
 
+    # 10. Learning Evidence Context (Phase 09A)
+    evidence_context = None
+    try:
+        from backend.services.evidence_aggregation_service import EvidenceAggregationService
+        ev_agg = EvidenceAggregationService()
+        ev_sum = await ev_agg.get_student_evidence_summary(student_id=user_id, db=db)
+        evidence_context = {
+            "total_evidence_count": ev_sum["total_evidence_count"],
+            "verified_evidence_count": ev_sum["verified_evidence_count"],
+            "skills_with_evidence_count": ev_sum["skills_with_evidence_count"],
+            "top_verified_skills": [
+                {
+                    "skill_name": s["skill_name"],
+                    "verified_count": s["verified_evidence_count"],
+                    "observed_proficiency": s["observed_proficiency"],
+                    "strongest_evidence": s["strongest_evidence_level"]
+                }
+                for s in ev_sum["skills_summary"][:5]
+            ]
+        }
+    except Exception:
+        pass
+
     # Return structured context bundle
     return {
         "student": {
@@ -259,6 +284,7 @@ async def build_student_ai_context(
             "certifications": certs_context,
             "assessments": assessments_context
         },
+        "evidence_engine": evidence_context,
         "ml_readiness": {
             "prediction_id": str(latest_prediction.get("_id", "N/A")) if latest_prediction else "N/A",
             "readiness_score": float(latest_prediction.get("readiness_score", 0.0)) if latest_prediction else 0.0,

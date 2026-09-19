@@ -337,7 +337,18 @@ export const CareerRoadmapPage: React.FC = () => {
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '8px', background: 'rgba(15, 23, 42, 0.4)', padding: '8px', borderRadius: '6px' }}>
                       <div><strong>Deficit Gap:</strong> {r.gap} levels (current: {r.student_proficiency}/5)</div>
                       <div><strong>Role Importance:</strong> {(r.career_relevance * 100).toFixed(0)}%</div>
-                      <div><strong>Market Demand:</strong> {r.market_relevance?.toFixed(0)}/100</div>
+                      <div>
+                        <strong>Market Signal:</strong> {r.market_relevance?.toFixed(0)}/100{' '}
+                        {r.is_market_fallback || r.market_signal_status === 'FALLBACK_UNAVAILABLE' ? (
+                          <span style={{ color: '#94a3b8', fontSize: '0.7rem' }}>(Neutral Fallback)</span>
+                        ) : r.market_signal_status === 'STALE' ? (
+                          <span style={{ color: '#f87171', fontSize: '0.7rem' }}>(Stale Benchmark)</span>
+                        ) : r.market_signal_status === 'EXPIRING_SOON' ? (
+                          <span style={{ color: '#facc15', fontSize: '0.7rem' }}>(Expiring Soon)</span>
+                        ) : (
+                          <span style={{ color: '#4ade80', fontSize: '0.7rem' }}>(Verified Signal)</span>
+                        )}
+                      </div>
                       <div><strong>Prerequisites Met:</strong> {r.prerequisites_met ? '✓ Yes' : '⚠️ Pending'}</div>
                     </div>
                   </div>

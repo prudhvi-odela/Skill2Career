@@ -105,4 +105,14 @@ async def ensure_indexes(db: AsyncDatabase):
     await db.recommendation_feedback.create_index([("student_id", ASCENDING), ("skill_id", ASCENDING), ("career_id", ASCENDING)])
     await db.recommendation_feedback.create_index([("student_id", ASCENDING), ("created_at", DESCENDING)])
 
+    # 22. skill_evidence (Phase 09A)
+    await db.skill_evidence.create_index([("evidence_id", ASCENDING)], unique=True)
+    await db.skill_evidence.create_index([("student_id", ASCENDING)])
+    await db.skill_evidence.create_index([("skill_id", ASCENDING)])
+    await db.skill_evidence.create_index([("student_id", ASCENDING), ("skill_id", ASCENDING)])
+    await db.skill_evidence.create_index([("student_id", ASCENDING), ("evidence_type", ASCENDING)])
+    await db.skill_evidence.create_index([("student_id", ASCENDING), ("created_at", DESCENDING)])
+    await db.skill_evidence.create_index([("source_entity", ASCENDING), ("source_entity_id", ASCENDING)])
+    await db.skill_evidence.create_index([("verification_status", ASCENDING)])
+
     print("[MongoDB] All collection indexes successfully created and verified.")

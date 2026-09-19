@@ -42,6 +42,8 @@ class SkillRecommendationResponse(BaseModel):
     learning_effort_level: str = Field(..., description="LOW, MEDIUM, HIGH")
     estimated_planning_hours: int
     rationale: str
+    is_market_fallback: bool = False
+    market_signal_status: str = Field("OBSERVED", description="OBSERVED, FALLBACK_UNAVAILABLE, STALE, or EXPIRING_SOON")
     source_references: List[str] = []
     generated_at: str
     engine_version: str = "v2.0-adaptive"
