@@ -174,6 +174,10 @@ class EvidenceService:
         else:
             source_col = None
 
+        # Authoritative properties derived directly from database record (prevents client spoofing)
+        effective_metadata = dict(request.source_metadata or {})
+        effective_prof = float(request.observed_proficiency)
+
         if source_col is not None:
             # Check ID and student ownership
             try:
@@ -202,6 +206,74 @@ class EvidenceService:
                     f"Source artifact '{source_entity_id}' not found in '{source_entity}' for authenticated student."
                 )
 
+            # Derive authoritative metadata from canonical source document
+            if source_entity in ["student_assessments", "assessments", "assessment_results"]:
+                db_score = float(source_doc.get("score_percentage", source_doc.get("score", 0.0)))
+                db_passed = bool(source_doc.get("passed", db_score >= 70.0))
+                effective_metadata["score_percentage"] = db_score
+                effective_metadata["passed"] = db_passed
+                
+                # Derive proficiency directly from authoritative score
+                if db_passed:
+                    if db_score >= 90.0:
+                        effective_prof = 4.8
+                    elif db_score >= 80.0:
+                        effective_prof = 4.0
+                    else:
+                        effective_prof = 3.5
+                    v_status = VerificationStatus.ASSESSMENT_VERIFIED.value
+                else:
+                    effective_prof = min(2.0, max(1.0, round(db_score / 40.0, 1)))
+                    v_status = VerificationStatus.UNVERIFIED.value
+
+            elif source_entity in ["projects", "project"]:
+                db_complexity = float(source_doc.get("complexity_rating", source_doc.get("complexity", 3.0)))
+                db_repo = source_doc.get("repository_url") or source_doc.get("github_url") or ""
+                db_demo = source_doc.get("live_url") or source_doc.get("demo_url") or ""
+                effective_metadata["complexity_rating"] = db_complexity
+                effective_metadata["has_repo"] = bool(db_repo)
+                effective_metadata["has_live_demo"] = bool(db_demo)
+                if db_repo:
+                    effective_metadata["repository_url"] = db_repo
+
+                # Bounded by project complexity
+                max_proj_prof = min(5.0, max(1.5, db_complexity))
+                effective_prof = min(float(request.observed_proficiency), max_proj_prof)
+                v_status = VerificationStatus.SYSTEM_VERIFIED.value
+
+            elif source_entity in ["certifications", "certification"]:
+                db_issuer = source_doc.get("issuer", "Self-Reported")
+                db_verified = bool(source_doc.get("is_verified", source_doc.get("verified", True)))
+                db_url = source_doc.get("credential_url") or source_doc.get("certificate_url") or ""
+                effective_metadata["issuer"] = db_issuer
+                effective_metadata["is_verified"] = db_verified
+                if db_url:
+                    effective_metadata["credential_url"] = db_url
+
+                # Certifications are supporting evidence (cap at 4.0 without assessment)
+                effective_prof = min(4.0, float(request.observed_proficiency))
+                v_status = VerificationStatus.SYSTEM_VERIFIED.value if (db_verified and db_url) else VerificationStatus.UNVERIFIED.value
+
+            elif source_entity in ["learning_activities", "activity"]:
+                db_hours = float(source_doc.get("hours_spent", source_doc.get("duration_hours", 2.0)))
+                db_type = str(source_doc.get("activity_type", "practice"))
+                effective_metadata["hours_spent"] = db_hours
+                effective_metadata["activity_type"] = db_type
+                
+                # Learning activities represent practice/exposure; capped at 3.0 and unverified by default
+                effective_prof = min(3.0, float(request.observed_proficiency))
+                v_status = VerificationStatus.UNVERIFIED.value
+            else:
+                effective_prof = min(5.0, max(1.0, float(request.observed_proficiency)))
+                v_status = VerificationStatus.UNVERIFIED.value
+        else:
+            # Free-standing manual verification or peer review
+            if request.evidence_type == EvidenceType.MANUAL_VERIFICATION:
+                v_status = VerificationStatus.MANUALLY_VERIFIED.value
+            else:
+                v_status = VerificationStatus.UNVERIFIED.value
+            effective_prof = min(5.0, max(1.0, float(request.observed_proficiency)))
+
         # 3. Check for Duplicate Evidence
         existing = await db.skill_evidence.find_one({
             "student_id": student_id,
@@ -212,22 +284,12 @@ class EvidenceService:
         if existing:
             return serialize_doc(existing)
 
-        # 4. Default Verification Status
-        if request.evidence_type == EvidenceType.ASSESSMENT:
-            v_status = VerificationStatus.ASSESSMENT_VERIFIED.value
-        elif request.evidence_type == EvidenceType.PROJECT:
-            v_status = VerificationStatus.SYSTEM_VERIFIED.value
-        elif request.evidence_type == EvidenceType.CERTIFICATION:
-            v_status = VerificationStatus.SYSTEM_VERIFIED.value
-        else:
-            v_status = VerificationStatus.UNVERIFIED.value
-
-        # 5. Evaluate Strength
+        # 4. Evaluate Strength with authoritative data
         strength, score, reason = self.evaluate_evidence_strength(
             evidence_type=request.evidence_type.value,
             verification_status=v_status,
-            observed_proficiency=request.observed_proficiency,
-            source_metadata=request.source_metadata
+            observed_proficiency=effective_prof,
+            source_metadata=effective_metadata
         )
 
         now = get_utc_now()
@@ -247,12 +309,12 @@ class EvidenceService:
             "evidence_strength": strength,
             "evidence_score": score,
             "verification_status": v_status,
-            "observed_proficiency": float(request.observed_proficiency),
+            "observed_proficiency": float(effective_prof),
             "created_at": now_str,
             "observed_at": now_str,
             "validated_at": now_str if v_status != VerificationStatus.UNVERIFIED.value else None,
             "validator_type": "AUTOMATED_RULE" if v_status != VerificationStatus.UNVERIFIED.value else None,
-            "source_metadata": request.source_metadata or {},
+            "source_metadata": effective_metadata,
             "confidence_reason": reason,
             "engine_version": "v1.0-evidence"
         }
@@ -538,7 +600,7 @@ class EvidenceService:
                         }
                         strength, score, reason = self.evaluate_evidence_strength(
                             evidence_type=EvidenceType.LEARNING_ACTIVITY.value,
-                            verification_status=VerificationStatus.SYSTEM_VERIFIED.value,
+                            verification_status=VerificationStatus.UNVERIFIED.value,
                             observed_proficiency=2.5,
                             source_metadata=meta
                         )
@@ -555,12 +617,12 @@ class EvidenceService:
                             "description": act.get("description", f"Completed {hours:.1f}h of practical exercise."),
                             "evidence_strength": strength,
                             "evidence_score": score,
-                            "verification_status": VerificationStatus.SYSTEM_VERIFIED.value,
+                            "verification_status": VerificationStatus.UNVERIFIED.value,
                             "observed_proficiency": 2.5,
                             "created_at": now_str,
                             "observed_at": act.get("completed_at", now_str),
-                            "validated_at": now_str,
-                            "validator_type": "AUTOMATED_RULE",
+                            "validated_at": None,
+                            "validator_type": None,
                             "source_metadata": meta,
                             "confidence_reason": reason,
                             "engine_version": "v1.0-evidence"

@@ -161,17 +161,16 @@ async def test_verify_evidence_workflow():
     user = await db.users.find_one({"email": "demo@skill2career.com"}) or await db.users.find_one({})
     user_id = str(user.get("_id") or user.get("id"))
 
-    # Ensure an activity exists for user
-    act = await db.learning_activities.find_one({"student_id": user_id})
-    if not act:
-        res = await db.learning_activities.insert_one({
-            "student_id": user_id,
-            "activity_type": "practice",
-            "title": "JavaScript Interactive Tutorial",
-            "hours_spent": 6.0
-        })
-        act = await db.learning_activities.find_one({"_id": res.inserted_id})
-    act_id = str(act["_id"])
+    # Ensure dedicated 6-hour activity exists for user
+    act_id = "test_act_verify_workflow_fresh"
+    await db.learning_activities.delete_many({"_id": act_id})
+    await db.learning_activities.insert_one({
+        "_id": act_id,
+        "student_id": user_id,
+        "activity_type": "practice",
+        "title": "JavaScript Interactive Tutorial",
+        "hours_spent": 6.0
+    })
 
     # Create unverified evidence
     req = EvidenceCreateRequest(

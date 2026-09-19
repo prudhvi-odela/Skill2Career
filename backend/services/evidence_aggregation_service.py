@@ -88,11 +88,15 @@ class EvidenceAggregationService:
                 strongest_level = st
 
         # Weighted observed proficiency calculation
+        # If verified items exist, they strictly determine the authoritative observed proficiency.
+        # Unverified items (e.g., self-reported practice) cannot dilute or inflate verified competency.
+        prof_items = verified_items if verified_items else valid_items
+
         total_weight = 0.0
         weighted_prof_sum = 0.0
         weighted_score_sum = 0.0
 
-        for item in valid_items:
+        for item in prof_items:
             st = item.get("evidence_strength", EvidenceStrength.WEAK.value)
             w = strength_weights.get(st, 0.2)
             prof = float(item.get("observed_proficiency", current_prof))
@@ -103,7 +107,11 @@ class EvidenceAggregationService:
             weighted_score_sum += w * score
 
         if total_weight > 0:
-            observed_prof = round(float(weighted_prof_sum / total_weight), 1)
+            raw_prof = float(weighted_prof_sum / total_weight)
+            # If only unverified items exist, cap observed proficiency at 3.0
+            if not verified_items:
+                raw_prof = min(3.0, raw_prof)
+            observed_prof = round(float(np.clip(raw_prof, 1.0, 5.0)), 1)
             base_score = float(weighted_score_sum / total_weight)
         else:
             observed_prof = current_prof
@@ -298,7 +306,7 @@ class EvidenceAggregationService:
 
         # Safe update policy:
         # If observed proficiency from verified evidence is higher than current profile level, upgrade it
-        new_level = max(history["current_proficiency_level"], summary["observed_proficiency"])
+        new_level = round(float(np.clip(max(history["current_proficiency_level"], summary["observed_proficiency"]), 1.0, 5.0)), 1)
         new_source = f"Evidence Engine: {summary['verified_evidence_count']} verified artifact(s) (Score: {summary['aggregated_evidence_score']})"
 
         now = get_utc_now()
