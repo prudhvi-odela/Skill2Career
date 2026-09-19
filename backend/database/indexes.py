@@ -66,8 +66,9 @@ async def ensure_indexes(db: AsyncDatabase):
     await db.readiness_predictions.create_index([("student_id", ASCENDING), ("prediction_type", ASCENDING)])
 
     # 14. roadmaps
-    await db.roadmaps.create_index([("student_id", ASCENDING)])
     await db.roadmaps.create_index([("student_id", ASCENDING), ("career_id", ASCENDING)])
+    await db.roadmaps.create_index([("student_id", ASCENDING), ("career_id", ASCENDING), ("is_current", ASCENDING)])
+    await db.roadmaps.create_index([("student_id", ASCENDING), ("career_id", ASCENDING), ("version", DESCENDING)])
 
     # 15. model_versions
     await db.model_versions.create_index([("model_name", ASCENDING), ("version_tag", ASCENDING)], unique=True)
@@ -93,5 +94,15 @@ async def ensure_indexes(db: AsyncDatabase):
     await db.market_data_sources.create_index([("source_id", ASCENDING)], unique=True)
     await db.market_data_sources.create_index([("source_name", ASCENDING)])
     await db.market_data_sources.create_index([("provider", ASCENDING)])
+
+    # 20. skill_dependencies
+    await db.skill_dependencies.create_index([("skill_id", ASCENDING), ("prerequisite_skill_id", ASCENDING)], unique=True)
+    await db.skill_dependencies.create_index([("skill_id", ASCENDING)])
+    await db.skill_dependencies.create_index([("prerequisite_skill_id", ASCENDING)])
+    await db.skill_dependencies.create_index([("dependency_type", ASCENDING)])
+
+    # 21. recommendation_feedback
+    await db.recommendation_feedback.create_index([("student_id", ASCENDING), ("skill_id", ASCENDING), ("career_id", ASCENDING)])
+    await db.recommendation_feedback.create_index([("student_id", ASCENDING), ("created_at", DESCENDING)])
 
     print("[MongoDB] All collection indexes successfully created and verified.")

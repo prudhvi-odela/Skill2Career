@@ -145,6 +145,50 @@ class CareerAIService:
             db=db
         )
 
+    async def explain_recommendations(
+        self,
+        user_id: str,
+        career_id: Optional[str],
+        db: AsyncDatabase
+    ) -> AIStructuredResponse:
+        """Explains why specific skills are ranked in the recommendation engine."""
+        context = await build_student_ai_context(user_id=user_id, db=db, target_career_id=career_id)
+        prompt = (
+            f"Context:\n{json.dumps(context, indent=2)}\n\n"
+            "Task: Explain my top prioritized skill recommendations. "
+            "Detail why each skill was ranked in its priority band (URGENT/HIGH/MODERATE/LOW), "
+            "how prerequisite dependencies influence the sequence, and how external market demand supports the priority."
+        )
+        return await self._generate_response(
+            user_id=user_id,
+            prompt=prompt,
+            context=context,
+            context_type="recommendation_explanation",
+            db=db
+        )
+
+    async def explain_roadmap(
+        self,
+        user_id: str,
+        career_id: Optional[str],
+        db: AsyncDatabase
+    ) -> AIStructuredResponse:
+        """Explains the multi-phase adaptive roadmap structure and milestones."""
+        context = await build_student_ai_context(user_id=user_id, db=db, target_career_id=career_id)
+        prompt = (
+            f"Context:\n{json.dumps(context, indent=2)}\n\n"
+            "Task: Explain the progression of my multi-phase adaptive learning roadmap. "
+            "Detail how Phase 1 (Foundations), Phase 2 (Core Systems), and Phase 3 (Capstone Validation) "
+            "guide me toward career readiness."
+        )
+        return await self._generate_response(
+            user_id=user_id,
+            prompt=prompt,
+            context=context,
+            context_type="roadmap_explanation",
+            db=db
+        )
+
     async def explain_career_match(
         self,
         user_id: str,

@@ -210,6 +210,30 @@ async def build_student_ai_context(
     except Exception:
         pass
 
+    # 9. Deterministic Recommendations & Adaptive Phases (Phase 08)
+    recommendations_context = []
+    try:
+        from backend.services.recommendation_service import RecommendationService
+        rec_svc = RecommendationService()
+        recs = await rec_svc.generate_recommendations_for_student(
+            student_id=user_id,
+            career_id=effective_target_career_id,
+            db=db
+        )
+        recommendations_context = [
+            {
+                "skill_name": r["skill_name"],
+                "priority_band": r["priority_band"],
+                "priority_score": r["priority_score"],
+                "gap": r["gap"],
+                "learning_effort": r["learning_effort_level"],
+                "rationale": r["rationale"]
+            }
+            for r in recs[:5]
+        ]
+    except Exception:
+        pass
+
     # Return structured context bundle
     return {
         "student": {
@@ -246,6 +270,7 @@ async def build_student_ai_context(
             "top_gaps": latest_prediction.get("top_gaps", []) if latest_prediction else []
         } if latest_prediction else None,
         "market_intelligence": market_context,
+        "recommendations": recommendations_context,
         "skill_gaps": skill_gap_context,
         "career_matches": matches_context,
         "roadmap": roadmap_context

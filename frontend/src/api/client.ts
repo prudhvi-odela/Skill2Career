@@ -82,6 +82,25 @@ export const roadmapApi = {
     apiClient.post('/roadmap/regenerate', null, { params: { target_career_id: targetCareerId } }),
   toggleRoadmapItem: (itemId: string, isCompleted: boolean) =>
     apiClient.put(`/roadmap/items/${itemId}`, { is_completed: isCompleted }),
+  getAdaptiveCurrent: (careerId?: string) =>
+    apiClient.get('/roadmap/current', { params: { career_id: careerId } }),
+  recalculateAdaptive: (careerId?: string) =>
+    apiClient.post('/roadmap/recalculate', null, { params: { career_id: careerId } }),
+  getHistory: (careerId?: string) =>
+    apiClient.get('/roadmap/history', { params: { career_id: careerId } }),
+  updateProgress: (milestoneId: string, isCompleted: boolean) =>
+    apiClient.post('/roadmap/progress', { milestone_id: milestoneId, is_completed: isCompleted }),
+};
+
+export const recommendationsApi = {
+  getCurrent: (careerId?: string) =>
+    apiClient.get('/recommendations', { params: { career_id: careerId } }),
+  getForCareer: (careerId: string) =>
+    apiClient.get(`/recommendations/${careerId}`),
+  generate: (careerId?: string) =>
+    apiClient.post('/recommendations/generate', null, { params: { career_id: careerId } }),
+  submitFeedback: (data: { skill_id: string; career_id: string; feedback_type: string; notes?: string }) =>
+    apiClient.post('/recommendations/feedback', data),
 };
 
 export const assessmentsApi = {

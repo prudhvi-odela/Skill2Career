@@ -554,8 +554,55 @@ async def seed_database():
             upsert=True
         )
 
+    # 7. Seed Canonical Skill Dependencies (Acyclic Graph)
+    skill_dependencies_seed = [
+        ("DEP_001", "SK015", "SK001", "PREREQUISITE", 1.0, "Core Python required for FastAPI microservices"),
+        ("DEP_002", "SK017", "SK001", "PREREQUISITE", 1.0, "Core Python required for Django web framework"),
+        ("DEP_003", "SK026", "SK001", "PREREQUISITE", 1.0, "Core Python required for Pandas & NumPy data structures"),
+        ("DEP_004", "SK027", "SK026", "PREREQUISITE", 0.9, "Pandas & NumPy required for Scikit-Learn data modeling"),
+        ("DEP_005", "SK028", "SK001", "PREREQUISITE", 0.9, "Python fundamentals required for PyTorch neural architectures"),
+        ("DEP_006", "SK033", "SK027", "PREREQUISITE", 0.8, "Scikit-Learn modeling pipelines required for MLOps deployment"),
+        ("DEP_007", "SK032", "SK028", "PREREQUISITE", 0.9, "PyTorch & vector ops required for LLMs & RAG architectures"),
+        ("DEP_008", "SK030", "SK028", "SUPPORTING", 0.8, "PyTorch supports Natural Language Processing specializations"),
+        ("DEP_009", "SK031", "SK028", "SUPPORTING", 0.8, "PyTorch supports Computer Vision image pipelines"),
+        ("DEP_010", "SK003", "SK002", "PREREQUISITE", 0.9, "JavaScript required for TypeScript type safety"),
+        ("DEP_011", "SK016", "SK002", "PREREQUISITE", 1.0, "JavaScript runtime required for Node.js & Express"),
+        ("DEP_012", "SK009", "SK012", "PREREQUISITE", 0.9, "HTML5/CSS3 required for React declarative component UI"),
+        ("DEP_013", "SK009", "SK002", "PREREQUISITE", 1.0, "JavaScript syntax required for React state hooks"),
+        ("DEP_014", "SK011", "SK009", "PREREQUISITE", 1.0, "React component mastery required for Next.js fullstack SSR"),
+        ("DEP_015", "SK014", "SK009", "SUPPORTING", 0.8, "React context/props knowledge required for Redux state store"),
+        ("DEP_016", "SK021", "SK008", "PREREQUISITE", 1.0, "ANSI SQL syntax required for advanced PostgreSQL queries"),
+        ("DEP_017", "SK022", "SK008", "PREREQUISITE", 1.0, "SQL fundamentals required for MySQL database operations"),
+        ("DEP_018", "SK034", "SK039", "SUPPORTING", 0.8, "Linux shell scripting supports Docker container virtualization"),
+        ("DEP_019", "SK035", "SK034", "PREREQUISITE", 1.0, "Docker containerization required for Kubernetes orchestration"),
+        ("DEP_020", "SK038", "SK034", "SUPPORTING", 0.8, "Docker container builds support CI/CD pipeline automation"),
+        ("DEP_021", "SK035", "SK036", "SUPPORTING", 0.7, "AWS Cloud IAM/VPC knowledge supports cloud Kubernetes deployment"),
+        ("DEP_022", "SK041", "SK040", "PREREQUISITE", 0.9, "Data Structures & Algorithms required for System Design & Architecture"),
+        ("DEP_023", "SK041", "SK042", "PREREQUISITE", 0.9, "Object-Oriented Design patterns required for System Architecture"),
+        ("DEP_024", "SK045", "SK019", "SUPPORTING", 0.8, "RESTful API design principles support Web Security & OWASP audits")
+    ]
+
+    for dep_id, sk_id, prereq_id, dep_type, strength, src_desc in skill_dependencies_seed:
+        await db.skill_dependencies.update_one(
+            {"skill_id": sk_id, "prerequisite_skill_id": prereq_id},
+            {
+                "$set": {
+                    "dependency_id": dep_id,
+                    "skill_id": sk_id,
+                    "prerequisite_skill_id": prereq_id,
+                    "dependency_type": dep_type,
+                    "strength": strength,
+                    "source": src_desc,
+                    "updated_at": now
+                },
+                "$setOnInsert": {"created_at": now}
+            },
+            upsert=True
+        )
+
     print(f"[OK] Seeded demo user ({demo_email}) and profile successfully.")
     print(f"[OK] Seeded {len(market_sources)} market data sources, {len(career_signals)} career signals, and {len(skill_signals)} skill signals.")
+    print(f"[OK] Seeded {len(skill_dependencies_seed)} canonical skill dependencies.")
     print("MongoDB database seeding complete.")
 
 

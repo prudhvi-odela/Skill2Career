@@ -8,7 +8,8 @@ from backend.routers import (
     assessment_router,
     ml_admin_router,
     ai_router,
-    market_router
+    market_router,
+    recommendation_router
 )
 
 __all__ = [
@@ -20,5 +21,6 @@ __all__ = [
     "assessment_router",
     "ml_admin_router",
     "ai_router",
-    "market_router"
+    "market_router",
+    "recommendation_router"
 ]
