@@ -70,6 +70,7 @@ async def get_skills_catalog(category: Optional[str] = None, db: AsyncDatabase =
     ]
 
 
+@router.get("/match", response_model=List[CareerMatchItem])
 @router.get("/matching/recommendations", response_model=List[CareerMatchItem])
 async def get_career_recommendations(
     current_user: dict = Depends(get_current_user),

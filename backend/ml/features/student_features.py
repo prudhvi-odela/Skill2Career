@@ -1,7 +1,7 @@
 """
 Skill2Career - Student Feature Engineering Module
-Transforms student profile entities, embedded skills, projects, and assessments into
-structured, validated feature vectors for model training and real-time inference.
+Transforms student profile entities, embedded skills, projects, certifications,
+and assessments into structured, validated feature vectors for model training and real-time inference.
 """
 
 from typing import Dict, Any, List, Optional
@@ -36,7 +36,8 @@ CORE_CS_SKILL_IDS = {"SK040", "SK041", "SK042"}  # DSA, OOP, System Design
 
 class StudentFeatureExtractor:
     """
-    Extracts, validates, and formats structured student features for inference and ML training.
+    Extracts, validates, and formats structured student features from raw inputs
+    or live MongoDB document graphs for ML training and real-time inference.
     """
 
     @staticmethod
@@ -123,4 +124,50 @@ class StudentFeatureExtractor:
             "institution_tier": [tier_val]
         }
 
-        return pd.DataFrame(feature_dict)
+        df_features = pd.DataFrame(feature_dict)
+        # Ensure exact column ordering as trained
+        return df_features[ALL_STUDENT_FEATURES]
+
+    @classmethod
+    def build_features_from_student_profile(
+        cls,
+        profile_doc: Dict[str, Any],
+        career_skill_match_pct: float,
+        projects: Optional[List[Dict[str, Any]]] = None,
+        certifications: Optional[List[Dict[str, Any]]] = None,
+        assessment_results: Optional[List[Dict[str, Any]]] = None,
+        weekly_study_hours: Optional[float] = None,
+        learning_velocity: Optional[float] = None
+    ) -> pd.DataFrame:
+        """
+        Builds feature vector directly from MongoDB student domain objects with strict schema validation.
+        """
+        if not profile_doc:
+            raise ValueError("Student profile document cannot be null or empty.")
+
+        # Validate required academic fields
+        gpa = profile_doc.get("gpa")
+        if gpa is None:
+            raise ValueError("Missing required academic feature 'gpa' in student profile.")
+
+        degree = profile_doc.get("degree") or "B.Tech Computer Science"
+        tier = profile_doc.get("institution_tier") or 2
+
+        stats = profile_doc.get("statistics", {})
+        study_hours = weekly_study_hours if weekly_study_hours is not None else float(stats.get("weekly_study_hours", 12.0))
+        velocity = learning_velocity if learning_velocity is not None else float(stats.get("learning_velocity_index", 1.0))
+
+        student_skills = profile_doc.get("skills", [])
+
+        return cls.extract_features(
+            student_skills=student_skills,
+            career_skill_match_pct=career_skill_match_pct,
+            degree=str(degree),
+            institution_tier=int(tier),
+            gpa=float(gpa),
+            projects=projects or [],
+            certifications=certifications or [],
+            assessment_results=assessment_results or [],
+            weekly_study_hours=float(study_hours),
+            learning_velocity_index=float(velocity)
+        )

@@ -162,15 +162,23 @@ class ReadinessPredictRequest(BaseModel):
 
 
 class ReadinessPredictResponse(BaseModel):
+    prediction_id: Optional[str] = None
     target_career_id: str
     career_title: str
+    career: Optional[Dict[str, Any]] = None
     readiness_score: float
     is_job_ready: bool
     readiness_tier: str
-    feature_contributions: List[Dict[str, Any]]
+    feature_contributions: List[Dict[str, Any]] = []
+    feature_breakdown: List[Dict[str, Any]] = []
+    top_strengths: List[Dict[str, Any]] = []
+    top_gaps: List[Dict[str, Any]] = []
+    confidence_margin: Optional[float] = None
     model_version: str
     model_algorithm: str
     ai_explanation: Optional[str] = None
+    generated_at: Optional[datetime] = None
+
 
 
 class TrajectorySimulateRequest(BaseModel):
