@@ -10,36 +10,67 @@ import {
   ArrowLeft,
   GitPullRequest,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Award,
+  Layers
 } from 'lucide-react';
+import { SkeletonLoader, ErrorState } from '../components/StateFeedback';
 
 export const CareerDetailPage: React.FC = () => {
   const { careerId } = useParams<{ careerId: string }>();
   const { profile, refreshProfile } = useAuth();
   const [career, setCareer] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [settingTarget, setSettingTarget] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     if (careerId) {
-      careersApi.getCareerDetail(careerId)
-        .then((res) => setCareer(res.data))
-        .catch((err) => console.error(err))
-        .finally(() => setLoading(false));
+      loadCareer(careerId);
     }
   }, [careerId]);
 
-  const handleSetTarget = async () => {
-    if (!careerId) return;
-    await studentApi.updateProfile({ target_career_id: careerId });
-    await refreshProfile();
-    navigate('/app/skill-gap');
+  const loadCareer = async (id: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await careersApi.getCareerDetail(id);
+      setCareer(res.data);
+    } catch (err: any) {
+      console.error('Failed to load career details:', err);
+      setError(err.response?.data?.detail || 'Failed to load career role details.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  if (loading || !career) {
+  const handleSetTarget = async () => {
+    if (!careerId) return;
+    setSettingTarget(true);
+    try {
+      await studentApi.updateProfile({ target_career_id: careerId });
+      await refreshProfile();
+      navigate('/app/skill-gap');
+    } catch (err: any) {
+      console.error('Failed to set target career:', err);
+    } finally {
+      setSettingTarget(false);
+    }
+  };
+
+  if (loading) {
     return (
-      <div style={{ padding: '40px', textAlign: 'center', color: '#9ca3af' }}>
-        Loading career role details...
+      <div style={{ padding: '28px', maxWidth: '1000px', margin: '0 auto' }}>
+        <SkeletonLoader rows={5} type="cards" />
+      </div>
+    );
+  }
+
+  if (error || !career) {
+    return (
+      <div style={{ padding: '28px', maxWidth: '1000px', margin: '0 auto' }}>
+        <ErrorState message={error || 'Career role not found'} onRetry={() => careerId && loadCareer(careerId)} />
       </div>
     );
   }
@@ -64,6 +95,7 @@ export const CareerDetailPage: React.FC = () => {
           <div style={{ display: 'flex', gap: '12px' }}>
             <button
               onClick={handleSetTarget}
+              disabled={settingTarget}
               className={isCurrentTarget ? 'btn-secondary' : 'btn-primary'}
               style={{ padding: '10px 20px' }}
             >
@@ -105,7 +137,7 @@ export const CareerDetailPage: React.FC = () => {
               Core Competencies
             </span>
             <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#818cf8' }}>
-              {career.required_skills.length} Required Skills
+              {career.required_skills?.length || 0} Required Skills
             </div>
           </div>
         </div>
@@ -116,7 +148,7 @@ export const CareerDetailPage: React.FC = () => {
         <h2 style={{ fontSize: '1.35rem', marginBottom: '20px' }}>Required Technical & Soft Skills</h2>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {career.required_skills.map((rs: any) => (
+          {career.required_skills?.map((rs: any) => (
             <div
               key={rs.skill_id}
               style={{
@@ -127,6 +159,8 @@ export const CareerDetailPage: React.FC = () => {
                 background: 'rgba(255, 255, 255, 0.02)',
                 borderRadius: '8px',
                 border: '1px solid rgba(255, 255, 255, 0.05)',
+                flexWrap: 'wrap',
+                gap: '12px',
               }}
             >
               <div>
@@ -136,14 +170,14 @@ export const CareerDetailPage: React.FC = () => {
                 </span>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: '0.825rem', color: '#9ca3af' }}>Required Proficiency</div>
+                  <div style={{ fontSize: '0.8rem', color: '#9ca3af' }}>Required Proficiency</div>
                   <strong style={{ color: '#818cf8' }}>Level {rs.required_level} / 5.0</strong>
                 </div>
 
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: '0.825rem', color: '#9ca3af' }}>Importance Weight</div>
+                  <div style={{ fontSize: '0.8rem', color: '#9ca3af' }}>Feature Importance</div>
                   <strong style={{ color: '#34d399' }}>{(rs.importance_weight * 100).toFixed(0)}%</strong>
                 </div>
               </div>

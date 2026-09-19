@@ -10,15 +10,20 @@ import {
   CheckCircle2,
   Code,
   Layers,
-  Sparkles
+  Sparkles,
+  X
 } from 'lucide-react';
+import { SkeletonLoader, EmptyState, ErrorState } from '../components/StateFeedback';
 
 export const PortfolioPage: React.FC = () => {
   const { profile, refreshProfile } = useAuth();
   const [projects, setProjects] = useState<any[]>([]);
   const [certifications, setCertifications] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState<'projects' | 'certifications'>('projects');
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [isCertModalOpen, setIsCertModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Project form state
   const [projTitle, setProjTitle] = useState('');
@@ -34,13 +39,15 @@ export const PortfolioPage: React.FC = () => {
   const [certDate, setCertDate] = useState('');
   const [certUrl, setCertUrl] = useState('');
 
-  const [loading, setLoading] = useState(false);
+  const [modalLoading, setModalLoading] = useState(false);
 
   useEffect(() => {
     loadPortfolio();
   }, []);
 
   const loadPortfolio = async () => {
+    setLoading(true);
+    setError(null);
     try {
       const [pRes, cRes] = await Promise.all([
         studentApi.getProjects(),
@@ -48,14 +55,17 @@ export const PortfolioPage: React.FC = () => {
       ]);
       setProjects(pRes.data);
       setCertifications(cRes.data);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to load portfolio:', err);
+      setError(err.response?.data?.detail || 'Failed to load portfolio items.');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleCreateProject = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setModalLoading(true);
     try {
       await studentApi.createProject({
         title: projTitle,
@@ -73,16 +83,17 @@ export const PortfolioPage: React.FC = () => {
       setProjTech('');
       setProjRepo('');
       setProjLive('');
-    } catch (err) {
+    } catch (err: any) {
       console.error('Project creation failed:', err);
+      alert(err.response?.data?.detail || 'Failed to create project');
     } finally {
-      setLoading(false);
+      setModalLoading(false);
     }
   };
 
   const handleCreateCert = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setModalLoading(true);
     try {
       await studentApi.createCertification({
         name: certName,
@@ -97,178 +108,232 @@ export const PortfolioPage: React.FC = () => {
       setCertIssuer('');
       setCertDate('');
       setCertUrl('');
-    } catch (err) {
+    } catch (err: any) {
       console.error('Certification creation failed:', err);
+      alert(err.response?.data?.detail || 'Failed to add certification');
     } finally {
-      setLoading(false);
+      setModalLoading(false);
     }
   };
 
   return (
     <div style={{ padding: '28px', maxWidth: '1400px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '28px' }}>
-      <div>
-        <h1 style={{ fontSize: '1.85rem', marginBottom: '6px' }}>Projects & Verified Credentials</h1>
-        <p style={{ color: '#9ca3af', fontSize: '0.95rem' }}>
-          Portfolio depth and verified certifications directly elevate your ML Job-Readiness evaluation.
-        </p>
-      </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+        <div>
+          <h1 style={{ fontSize: '1.85rem', marginBottom: '6px' }}>Projects & Verified Credentials</h1>
+          <p style={{ color: '#9ca3af', fontSize: '0.95rem' }}>
+            Portfolio project complexity and verified industry certifications directly elevate your ML Job-Readiness evaluation.
+          </p>
+        </div>
 
-      {/* Projects Section */}
-      <div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <FolderGit2 size={20} color="#818cf8" />
-            <h2 style={{ fontSize: '1.35rem' }}>Portfolio Projects ({projects.length})</h2>
-          </div>
-
-          <button onClick={() => setIsProjectModalOpen(true)} className="btn-primary" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button
+            onClick={() => setIsProjectModalOpen(true)}
+            className="btn-primary"
+            style={{ padding: '10px 18px', fontSize: '0.85rem' }}
+          >
             <Plus size={16} />
             <span>Add Project</span>
           </button>
-        </div>
-
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))',
-            gap: '20px',
-          }}
-        >
-          {projects.map((p) => (
-            <div
-              key={p.id}
-              className="glass-card glass-card-interactive"
-              style={{
-                padding: '24px',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                gap: '16px',
-              }}
-            >
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
-                  <h3 style={{ fontSize: '1.15rem', color: '#ffffff' }}>{p.title}</h3>
-                  <span className="badge badge-indigo">
-                    Complexity: {p.complexity_rating}/5.0
-                  </span>
-                </div>
-
-                <p style={{ color: '#9ca3af', fontSize: '0.875rem', lineHeight: 1.5, marginBottom: '16px' }}>
-                  {p.description}
-                </p>
-
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '16px' }}>
-                  {p.tech_stack.split(',').map((tech: string, tIdx: number) => (
-                    <span
-                      key={tIdx}
-                      style={{
-                        fontSize: '0.75rem',
-                        background: 'rgba(255, 255, 255, 0.05)',
-                        border: '1px solid rgba(255, 255, 255, 0.08)',
-                        padding: '2px 8px',
-                        borderRadius: '4px',
-                        color: '#d1d5db',
-                      }}
-                    >
-                      {tech.trim()}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', gap: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255, 255, 255, 0.06)' }}>
-                {p.repo_url && (
-                  <a
-                    href={p.repo_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="btn-secondary"
-                    style={{ padding: '6px 12px', fontSize: '0.8rem' }}
-                  >
-                    <GitBranch size={14} />
-                    <span>Source Code</span>
-                  </a>
-                )}
-                {p.live_url && (
-                  <a
-                    href={p.live_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="btn-secondary"
-                    style={{ padding: '6px 12px', fontSize: '0.8rem' }}
-                  >
-                    <ExternalLink size={14} />
-                    <span>Live Demo</span>
-                  </a>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Certifications Section */}
-      <div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Award size={20} color="#34d399" />
-            <h2 style={{ fontSize: '1.35rem' }}>Verified Certifications ({certifications.length})</h2>
-          </div>
-
-          <button onClick={() => setIsCertModalOpen(true)} className="btn-primary" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
+          <button
+            onClick={() => setIsCertModalOpen(true)}
+            className="btn-secondary"
+            style={{ padding: '10px 18px', fontSize: '0.85rem' }}
+          >
             <Plus size={16} />
             <span>Add Certification</span>
           </button>
         </div>
+      </div>
 
-        <div
+      {/* Tabs */}
+      <div style={{ display: 'flex', gap: '12px', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', paddingBottom: '12px' }}>
+        <button
+          onClick={() => setActiveTab('projects')}
           style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
-            gap: '20px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            background: activeTab === 'projects' ? 'rgba(99, 102, 241, 0.15)' : 'transparent',
+            color: activeTab === 'projects' ? '#818cf8' : '#9ca3af',
+            border: activeTab === 'projects' ? '1px solid rgba(99, 102, 241, 0.3)' : '1px solid transparent',
+            padding: '8px 18px',
+            borderRadius: '8px',
+            fontSize: '0.9rem',
+            fontWeight: 600,
+            cursor: 'pointer',
           }}
         >
-          {certifications.map((c) => (
-            <div
-              key={c.id}
-              className="glass-card"
-              style={{
-                padding: '22px',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}
-            >
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                  <h3 style={{ fontSize: '1.05rem', color: '#ffffff' }}>{c.name}</h3>
-                  <CheckCircle2 size={16} color="#34d399" />
+          <FolderGit2 size={16} />
+          <span>Projects ({projects.length})</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('certifications')}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            background: activeTab === 'certifications' ? 'rgba(99, 102, 241, 0.15)' : 'transparent',
+            color: activeTab === 'certifications' ? '#818cf8' : '#9ca3af',
+            border: activeTab === 'certifications' ? '1px solid rgba(99, 102, 241, 0.3)' : '1px solid transparent',
+            padding: '8px 18px',
+            borderRadius: '8px',
+            fontSize: '0.9rem',
+            fontWeight: 600,
+            cursor: 'pointer',
+          }}
+        >
+          <Award size={16} />
+          <span>Certifications ({certifications.length})</span>
+        </button>
+      </div>
+
+      {loading ? (
+        <SkeletonLoader count={4} type="cards" />
+      ) : error ? (
+        <ErrorState message={error} onRetry={loadPortfolio} />
+      ) : activeTab === 'projects' ? (
+        /* Projects Grid */
+        projects.length === 0 ? (
+          <EmptyState
+            title="No Projects Recorded"
+            description="Add real-world coding projects with repository links and complexity ratings to boost your ML Job-Readiness score."
+            actionText="Add First Project"
+            onAction={() => setIsProjectModalOpen(true)}
+          />
+        ) : (
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))',
+              gap: '24px',
+            }}
+          >
+            {projects.map((p) => (
+              <div
+                key={p.id}
+                className="glass-card glass-card-interactive"
+                style={{
+                  padding: '24px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  gap: '16px',
+                }}
+              >
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                    <span className="badge badge-indigo">Complexity: {p.complexity_rating} / 5.0</span>
+                    <span className="badge badge-cyan">{p.profile_id ? 'Active' : ''}</span>
+                  </div>
+
+                  <h3 style={{ fontSize: '1.25rem', color: '#ffffff', marginBottom: '8px' }}>{p.title}</h3>
+                  <p style={{ color: '#9ca3af', fontSize: '0.875rem', lineHeight: 1.5, marginBottom: '14px' }}>
+                    {p.description}
+                  </p>
+
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                    {p.tech_stack?.split(',').map((tech: string, i: number) => (
+                      <span key={i} className="badge badge-indigo" style={{ fontSize: '0.7rem' }}>
+                        {tech.trim()}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-                <div style={{ fontSize: '0.85rem', color: '#9ca3af' }}>
-                  Issued by <strong style={{ color: '#d1d5db' }}>{c.issuer}</strong>
+
+                <div style={{ display: 'flex', gap: '12px', borderTop: '1px solid rgba(255, 255, 255, 0.06)', paddingTop: '14px' }}>
+                  {p.repo_url && (
+                    <a
+                      href={p.repo_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-secondary"
+                      style={{ flex: 1, padding: '8px 12px', fontSize: '0.8rem', justifyContent: 'center' }}
+                    >
+                      <GitBranch size={14} />
+                      <span>Repository</span>
+                    </a>
+                  )}
+                  {p.live_url && (
+                    <a
+                      href={p.live_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-primary"
+                      style={{ flex: 1, padding: '8px 12px', fontSize: '0.8rem', justifyContent: 'center' }}
+                    >
+                      <ExternalLink size={14} />
+                      <span>Live Demo</span>
+                    </a>
+                  )}
                 </div>
-                {c.issue_date && (
-                  <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>Issued: {c.issue_date}</span>
+              </div>
+            ))}
+          </div>
+        )
+      ) : (
+        /* Certifications Grid */
+        certifications.length === 0 ? (
+          <EmptyState
+            title="No Certifications Added"
+            description="Add recognized certificates from AWS, Google Cloud, Coursera, or Microsoft to substantiate your technical skills."
+            actionText="Add Certification"
+            onAction={() => setIsCertModalOpen(true)}
+          />
+        ) : (
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
+              gap: '20px',
+            }}
+          >
+            {certifications.map((c) => (
+              <div
+                key={c.id}
+                className="glass-card glass-card-interactive"
+                style={{
+                  padding: '24px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  gap: '16px',
+                }}
+              >
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                    <span className="badge badge-emerald">Verified Credential</span>
+                  </div>
+
+                  <h3 style={{ fontSize: '1.2rem', color: '#ffffff', marginBottom: '4px' }}>{c.name}</h3>
+                  <div style={{ color: '#818cf8', fontSize: '0.9rem', fontWeight: 600, marginBottom: '6px' }}>
+                    {c.issuer}
+                  </div>
+                  {c.issue_date && (
+                    <span style={{ fontSize: '0.8rem', color: '#9ca3af' }}>
+                      Issued: {c.issue_date}
+                    </span>
+                  )}
+                </div>
+
+                {c.credential_url && (
+                  <a
+                    href={c.credential_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-secondary"
+                    style={{ padding: '8px 12px', fontSize: '0.8rem', justifyContent: 'center', width: '100%' }}
+                  >
+                    <ExternalLink size={14} />
+                    <span>View Credential URL</span>
+                  </a>
                 )}
               </div>
-
-              {c.credential_url && (
-                <a
-                  href={c.credential_url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="btn-secondary"
-                  style={{ padding: '6px 12px', fontSize: '0.75rem' }}
-                >
-                  <ExternalLink size={12} />
-                  <span>Verify</span>
-                </a>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
+            ))}
+          </div>
+        )
+      )}
 
       {/* Add Project Modal */}
       {isProjectModalOpen && (
@@ -276,37 +341,56 @@ export const PortfolioPage: React.FC = () => {
           style={{
             position: 'fixed',
             inset: 0,
-            zIndex: 100,
-            background: 'rgba(0, 0, 0, 0.75)',
-            backdropFilter: 'blur(8px)',
+            background: 'rgba(0, 0, 0, 0.8)',
+            backdropFilter: 'blur(6px)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            zIndex: 1000,
             padding: '20px',
           }}
         >
-          <div className="glass-card" style={{ width: '100%', maxWidth: '520px', padding: '32px' }}>
-            <h2 style={{ fontSize: '1.4rem', marginBottom: '18px' }}>Add Portfolio Project</h2>
-            <form onSubmit={handleCreateProject} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div
+            className="glass-card"
+            style={{
+              maxWidth: '520px',
+              width: '100%',
+              padding: '30px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '20px',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h2 style={{ fontSize: '1.35rem' }}>Add Portfolio Project</h2>
+              <button
+                onClick={() => setIsProjectModalOpen(false)}
+                style={{ background: 'transparent', border: 'none', color: '#9ca3af', cursor: 'pointer' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateProject} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div>
                 <label className="input-label">Project Title</label>
                 <input
                   type="text"
                   required
+                  placeholder="e.g. Distributed Cache Engine"
                   className="input-field"
-                  placeholder="e.g. Distributed Task Queue"
                   value={projTitle}
                   onChange={(e) => setProjTitle(e.target.value)}
                 />
               </div>
 
               <div>
-                <label className="input-label">Description & Architecture</label>
+                <label className="input-label">Short Description</label>
                 <textarea
-                  rows={3}
                   required
+                  rows={3}
+                  placeholder="Architected an in-memory key-value store using Raft consensus..."
                   className="input-field"
-                  placeholder="Explain the problem solved, architecture choices, and key technical achievements..."
                   value={projDesc}
                   onChange={(e) => setProjDesc(e.target.value)}
                 />
@@ -317,8 +401,8 @@ export const PortfolioPage: React.FC = () => {
                 <input
                   type="text"
                   required
+                  placeholder="Python, FastAPI, Redis, Docker"
                   className="input-field"
-                  placeholder="e.g. Python, FastAPI, Redis, Docker, React"
                   value={projTech}
                   onChange={(e) => setProjTech(e.target.value)}
                 />
@@ -326,21 +410,21 @@ export const PortfolioPage: React.FC = () => {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
-                  <label className="input-label">Repository URL</label>
+                  <label className="input-label">GitHub Repo URL</label>
                   <input
                     type="url"
-                    className="input-field"
                     placeholder="https://github.com/..."
+                    className="input-field"
                     value={projRepo}
                     onChange={(e) => setProjRepo(e.target.value)}
                   />
                 </div>
                 <div>
-                  <label className="input-label">Live Demo URL</label>
+                  <label className="input-label">Live Deployment URL</label>
                   <input
                     type="url"
+                    placeholder="https://myproject.app"
                     className="input-field"
-                    placeholder="https://..."
                     value={projLive}
                     onChange={(e) => setProjLive(e.target.value)}
                   />
@@ -348,9 +432,9 @@ export const PortfolioPage: React.FC = () => {
               </div>
 
               <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
                   <label className="input-label" style={{ marginBottom: 0 }}>Complexity Rating</label>
-                  <strong style={{ color: '#818cf8' }}>{projComplexity}/5.0</strong>
+                  <strong style={{ color: '#818cf8' }}>{projComplexity} / 5.0</strong>
                 </div>
                 <input
                   type="range"
@@ -358,17 +442,27 @@ export const PortfolioPage: React.FC = () => {
                   max="5.0"
                   step="0.5"
                   value={projComplexity}
-                  onChange={(e) => setProjComplexity(Number(e.target.value))}
+                  onChange={(e) => setProjComplexity(parseFloat(e.target.value))}
                   style={{ width: '100%', accentColor: '#6366f1' }}
                 />
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '8px' }}>
-                <button type="button" onClick={() => setIsProjectModalOpen(false)} className="btn-secondary">
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '10px' }}>
+                <button
+                  type="button"
+                  onClick={() => setIsProjectModalOpen(false)}
+                  className="btn-secondary"
+                  style={{ padding: '8px 16px' }}
+                >
                   Cancel
                 </button>
-                <button type="submit" disabled={loading} className="btn-primary">
-                  {loading ? 'Adding...' : 'Save Project'}
+                <button
+                  type="submit"
+                  disabled={modalLoading}
+                  className="btn-primary"
+                  style={{ padding: '8px 20px' }}
+                >
+                  {modalLoading ? 'Saving...' : 'Save Project'}
                 </button>
               </div>
             </form>
@@ -382,70 +476,99 @@ export const PortfolioPage: React.FC = () => {
           style={{
             position: 'fixed',
             inset: 0,
-            zIndex: 100,
-            background: 'rgba(0, 0, 0, 0.75)',
-            backdropFilter: 'blur(8px)',
+            background: 'rgba(0, 0, 0, 0.8)',
+            backdropFilter: 'blur(6px)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            zIndex: 1000,
             padding: '20px',
           }}
         >
-          <div className="glass-card" style={{ width: '100%', maxWidth: '480px', padding: '32px' }}>
-            <h2 style={{ fontSize: '1.4rem', marginBottom: '18px' }}>Add Certification</h2>
-            <form onSubmit={handleCreateCert} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div
+            className="glass-card"
+            style={{
+              maxWidth: '480px',
+              width: '100%',
+              padding: '30px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '20px',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h2 style={{ fontSize: '1.35rem' }}>Add Industry Certification</h2>
+              <button
+                onClick={() => setIsCertModalOpen(false)}
+                style={{ background: 'transparent', border: 'none', color: '#9ca3af', cursor: 'pointer' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateCert} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div>
                 <label className="input-label">Certification Name</label>
                 <input
                   type="text"
                   required
-                  className="input-field"
                   placeholder="e.g. AWS Certified Solutions Architect"
+                  className="input-field"
                   value={certName}
                   onChange={(e) => setCertName(e.target.value)}
                 />
               </div>
 
               <div>
-                <label className="input-label">Issuing Organization</label>
+                <label className="input-label">Issuing Body</label>
                 <input
                   type="text"
                   required
+                  placeholder="e.g. Amazon Web Services, Google, Coursera"
                   className="input-field"
-                  placeholder="e.g. Amazon Web Services"
                   value={certIssuer}
                   onChange={(e) => setCertIssuer(e.target.value)}
                 />
               </div>
 
-              <div>
-                <label className="input-label">Issue Date</label>
-                <input
-                  type="text"
-                  className="input-field"
-                  placeholder="e.g. Nov 2025"
-                  value={certDate}
-                  onChange={(e) => setCertDate(e.target.value)}
-                />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label className="input-label">Issue Date</label>
+                  <input
+                    type="date"
+                    className="input-field"
+                    value={certDate}
+                    onChange={(e) => setCertDate(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="input-label">Credential Verification URL</label>
+                  <input
+                    type="url"
+                    placeholder="https://credly.com/..."
+                    className="input-field"
+                    value={certUrl}
+                    onChange={(e) => setCertUrl(e.target.value)}
+                  />
+                </div>
               </div>
 
-              <div>
-                <label className="input-label">Credential Verification URL</label>
-                <input
-                  type="url"
-                  className="input-field"
-                  placeholder="https://..."
-                  value={certUrl}
-                  onChange={(e) => setCertUrl(e.target.value)}
-                />
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '8px' }}>
-                <button type="button" onClick={() => setIsCertModalOpen(false)} className="btn-secondary">
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '10px' }}>
+                <button
+                  type="button"
+                  onClick={() => setIsCertModalOpen(false)}
+                  className="btn-secondary"
+                  style={{ padding: '8px 16px' }}
+                >
                   Cancel
                 </button>
-                <button type="submit" disabled={loading} className="btn-primary">
-                  {loading ? 'Adding...' : 'Save Certification'}
+                <button
+                  type="submit"
+                  disabled={modalLoading}
+                  className="btn-primary"
+                  style={{ padding: '8px 20px' }}
+                >
+                  {modalLoading ? 'Saving...' : 'Save Certification'}
                 </button>
               </div>
             </form>

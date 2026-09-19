@@ -11,8 +11,10 @@ import {
   HelpCircle,
   Play,
   Check,
-  X
+  X,
+  ShieldCheck
 } from 'lucide-react';
+import { SkeletonLoader, EmptyState, ErrorState } from '../components/StateFeedback';
 
 export const AssessmentsPage: React.FC = () => {
   const { refreshProfile } = useAuth();
@@ -22,17 +24,21 @@ export const AssessmentsPage: React.FC = () => {
   const [quizResult, setQuizResult] = useState<any>(null);
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadAssessments();
   }, []);
 
   const loadAssessments = async () => {
+    setLoading(true);
+    setError(null);
     try {
       const res = await assessmentsApi.getAssessments();
       setAssessments(res.data);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to load assessments:', err);
+      setError(err.response?.data?.detail || 'Failed to load assessments catalog.');
     } finally {
       setLoading(false);
     }
@@ -44,8 +50,9 @@ export const AssessmentsPage: React.FC = () => {
       setActiveQuiz(res.data);
       setSelectedAnswers({});
       setQuizResult(null);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to start quiz:', err);
+      alert(err.response?.data?.detail || 'Failed to load assessment questions.');
     }
   };
 
@@ -67,8 +74,9 @@ export const AssessmentsPage: React.FC = () => {
         });
       }
       await refreshProfile();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Assessment submission failed:', err);
+      alert(err.response?.data?.detail || 'Submission failed.');
     } finally {
       setSubmitting(false);
     }
@@ -79,12 +87,19 @@ export const AssessmentsPage: React.FC = () => {
       <div>
         <h1 style={{ fontSize: '1.85rem', marginBottom: '6px' }}>Interactive Skill Assessments</h1>
         <p style={{ color: '#9ca3af', fontSize: '0.95rem' }}>
-          Verify your self-reported skill ratings through timed quizzes to elevate your profile credibility.
+          Verify your self-reported skill ratings through timed diagnostic quizzes to elevate your profile credibility and ML readiness score.
         </p>
       </div>
 
       {loading ? (
-        <div style={{ padding: '60px', textAlign: 'center', color: '#9ca3af' }}>Loading assessment catalog...</div>
+        <SkeletonLoader rows={6} type="cards" />
+      ) : error ? (
+        <ErrorState message={error} onRetry={loadAssessments} />
+      ) : assessments.length === 0 ? (
+        <EmptyState
+          title="No Assessments Available"
+          message="Assessment modules will appear here once registered in the catalog."
+        />
       ) : (
         <div
           style={{
@@ -113,7 +128,7 @@ export const AssessmentsPage: React.FC = () => {
 
                 <h3 style={{ fontSize: '1.2rem', color: '#ffffff', marginBottom: '8px' }}>{asm.title}</h3>
                 <p style={{ color: '#9ca3af', fontSize: '0.85rem' }}>
-                  Validates core competency in {asm.skill_name}. Passing automatically awards verified status.
+                  Validates core competency in {asm.skill_name}. Passing automatically awards verified status in your skill inventory.
                 </p>
 
                 <div style={{ display: 'flex', gap: '16px', marginTop: '16px', fontSize: '0.8rem', color: '#d1d5db' }}>
@@ -123,7 +138,7 @@ export const AssessmentsPage: React.FC = () => {
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <Award size={14} color="#34d399" />
-                    <span>Pass Score: {asm.pass_score}%</span>
+                    <span>Pass: {asm.pass_score}%</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <HelpCircle size={14} color="#818cf8" />
@@ -151,21 +166,20 @@ export const AssessmentsPage: React.FC = () => {
           style={{
             position: 'fixed',
             inset: 0,
-            zIndex: 100,
-            background: 'rgba(0, 0, 0, 0.8)',
-            backdropFilter: 'blur(10px)',
+            background: 'rgba(0, 0, 0, 0.85)',
+            backdropFilter: 'blur(8px)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            zIndex: 1000,
             padding: '20px',
-            overflowY: 'auto',
           }}
         >
           <div
             className="glass-card"
             style={{
+              maxWidth: '720px',
               width: '100%',
-              maxWidth: '680px',
               maxHeight: '90vh',
               overflowY: 'auto',
               padding: '32px',
@@ -175,14 +189,11 @@ export const AssessmentsPage: React.FC = () => {
             }}
           >
             {/* Modal Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', paddingBottom: '16px' }}>
               <div>
-                <span className="badge badge-indigo" style={{ marginBottom: '6px' }}>
-                  {activeQuiz.skill_name}
-                </span>
+                <span className="badge badge-indigo" style={{ marginBottom: '4px' }}>{activeQuiz.category}</span>
                 <h2 style={{ fontSize: '1.4rem' }}>{activeQuiz.title}</h2>
               </div>
-
               <button
                 onClick={() => setActiveQuiz(null)}
                 style={{ background: 'transparent', border: 'none', color: '#9ca3af', cursor: 'pointer' }}
@@ -192,123 +203,111 @@ export const AssessmentsPage: React.FC = () => {
             </div>
 
             {quizResult ? (
-              /* Quiz Result Display */
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', textAlign: 'center', padding: '20px 0' }}>
+              /* Quiz Result Outcome */
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '16px', padding: '20px 0' }}>
                 <div
                   style={{
-                    width: '64px',
-                    height: '64px',
+                    width: '80px',
+                    height: '80px',
                     borderRadius: '50%',
-                    background: quizResult.passed ? 'rgba(16, 185, 129, 0.2)' : 'rgba(244, 63, 94, 0.2)',
-                    display: 'inline-flex',
+                    background: quizResult.passed ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                    display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    margin: '0 auto',
-                    color: quizResult.passed ? '#34d399' : '#fb7185',
                   }}
                 >
-                  {quizResult.passed ? <Check size={36} /> : <X size={36} />}
+                  {quizResult.passed ? (
+                    <CheckCircle2 size={48} color="#34d399" />
+                  ) : (
+                    <AlertCircle size={48} color="#f87171" />
+                  )}
                 </div>
 
                 <div>
-                  <h3 style={{ fontSize: '1.6rem', color: '#ffffff', marginBottom: '6px' }}>
-                    {quizResult.passed ? 'Assessment Passed!' : 'Assessment Incomplete'}
+                  <h3 style={{ fontSize: '1.5rem', marginBottom: '6px' }}>
+                    {quizResult.passed ? 'Assessment Passed! Verified Skill Awarded.' : 'Assessment Incomplete'}
                   </h3>
-                  <div style={{ fontSize: '2rem', fontWeight: 800, color: quizResult.passed ? '#34d399' : '#fb7185' }}>
-                    {quizResult.score_pct}% Score
-                  </div>
-                  <p style={{ color: '#9ca3af', fontSize: '0.9rem', marginTop: '6px' }}>
-                    Answered {quizResult.correct_count} of {quizResult.total_questions} questions correctly.
+                  <p style={{ color: '#9ca3af', fontSize: '0.95rem' }}>
+                    You scored <strong style={{ color: quizResult.passed ? '#34d399' : '#f87171' }}>{quizResult.score_percentage}%</strong> ({quizResult.correct_count}/{quizResult.total_questions} correct).
+                    Passing threshold was {quizResult.pass_score}%.
                   </p>
                 </div>
 
-                <div
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.03)',
-                    border: '1px solid rgba(255, 255, 255, 0.08)',
-                    padding: '16px',
-                    borderRadius: '10px',
-                    fontSize: '0.9rem',
-                    color: '#d1d5db',
-                    lineHeight: 1.5,
-                  }}
-                >
-                  {quizResult.explanation}
+                <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
+                  <button
+                    onClick={() => setActiveQuiz(null)}
+                    className="btn-primary"
+                    style={{ padding: '10px 24px' }}
+                  >
+                    Return to Assessments
+                  </button>
                 </div>
-
-                <button
-                  onClick={() => {
-                    setActiveQuiz(null);
-                    loadAssessments();
-                  }}
-                  className="btn-primary"
-                  style={{ margin: '0 auto', padding: '10px 24px' }}
-                >
-                  Back to Assessments
-                </button>
               </div>
             ) : (
-              /* Quiz Questions Form */
+              /* Questions Flow */
               <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                {activeQuiz.questions.map((q: any, qIdx: number) => (
+                {activeQuiz.questions.map((q: any, idx: number) => (
                   <div
                     key={q.id}
                     style={{
                       background: 'rgba(255, 255, 255, 0.02)',
-                      border: '1px solid rgba(255, 255, 255, 0.06)',
-                      padding: '20px',
+                      border: '1px solid rgba(255, 255, 255, 0.05)',
                       borderRadius: '10px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '12px',
+                      padding: '20px',
                     }}
                   >
-                    <div style={{ fontWeight: 600, fontSize: '0.95rem', color: '#f3f4f6' }}>
-                      {qIdx + 1}. {q.question_text}
+                    <div style={{ fontSize: '0.85rem', color: '#818cf8', fontWeight: 600, marginBottom: '6px' }}>
+                      Question {idx + 1} of {activeQuiz.questions.length}
+                    </div>
+                    <div style={{ fontSize: '1rem', fontWeight: 600, color: '#ffffff', marginBottom: '14px' }}>
+                      {q.question_text}
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      {q.options.map((opt: string, optIdx: number) => (
-                        <label
-                          key={optIdx}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '10px',
-                            padding: '10px 14px',
-                            borderRadius: '8px',
-                            background: selectedAnswers[q.id] === optIdx ? 'rgba(99, 102, 241, 0.15)' : 'rgba(255, 255, 255, 0.02)',
-                            border: selectedAnswers[q.id] === optIdx ? '1px solid #6366f1' : '1px solid rgba(255, 255, 255, 0.06)',
-                            cursor: 'pointer',
-                            fontSize: '0.875rem',
-                            color: selectedAnswers[q.id] === optIdx ? '#ffffff' : '#d1d5db',
-                          }}
-                        >
-                          <input
-                            type="radio"
-                            name={`q_${q.id}`}
-                            checked={selectedAnswers[q.id] === optIdx}
-                            onChange={() => handleSelectOption(q.id, optIdx)}
-                            style={{ accentColor: '#6366f1' }}
-                          />
-                          <span>{opt}</span>
-                        </label>
-                      ))}
+                      {q.options.map((opt: string, optIdx: number) => {
+                        const isSelected = selectedAnswers[q.id] === optIdx;
+                        return (
+                          <button
+                            key={optIdx}
+                            type="button"
+                            onClick={() => handleSelectOption(q.id, optIdx)}
+                            style={{
+                              textAlign: 'left',
+                              padding: '12px 16px',
+                              borderRadius: '8px',
+                              fontSize: '0.9rem',
+                              cursor: 'pointer',
+                              background: isSelected ? 'rgba(99, 102, 241, 0.2)' : 'rgba(255, 255, 255, 0.03)',
+                              border: isSelected ? '1px solid #6366f1' : '1px solid rgba(255, 255, 255, 0.08)',
+                              color: isSelected ? '#ffffff' : '#d1d5db',
+                              transition: 'all 0.15s ease',
+                            }}
+                          >
+                            {opt}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 ))}
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '10px' }}>
-                  <button onClick={() => setActiveQuiz(null)} className="btn-secondary">
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', borderTop: '1px solid rgba(255, 255, 255, 0.08)', paddingTop: '16px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setActiveQuiz(null)}
+                    className="btn-secondary"
+                    style={{ padding: '10px 20px' }}
+                  >
                     Cancel
                   </button>
                   <button
+                    type="button"
                     onClick={handleSubmitQuiz}
-                    disabled={submitting || Object.keys(selectedAnswers).length < activeQuiz.questions.length}
+                    disabled={submitting || Object.keys(selectedAnswers).length === 0}
                     className="btn-primary"
                     style={{ padding: '10px 24px' }}
                   >
-                    {submitting ? 'Grading Answers...' : 'Submit Assessment'}
+                    {submitting ? 'Evaluating...' : 'Submit Answers for Scoring'}
                   </button>
                 </div>
               </div>

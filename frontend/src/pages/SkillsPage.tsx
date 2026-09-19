@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { studentApi, careersApi } from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { Link } from 'react-router-dom';
 import {
   Sliders,
   Plus,
@@ -9,8 +10,12 @@ import {
   Search,
   Award,
   Layers,
-  Sparkles
+  Sparkles,
+  ShieldCheck,
+  ArrowRight,
+  X
 } from 'lucide-react';
+import { SkeletonLoader, EmptyState, ErrorState } from '../components/StateFeedback';
 
 export const SkillsPage: React.FC = () => {
   const { profile, refreshProfile } = useAuth();
@@ -19,18 +24,22 @@ export const SkillsPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // New skill form
   const [newSkillId, setNewSkillId] = useState('');
   const [newLevel, setNewLevel] = useState(3.0);
   const [newExp, setNewExp] = useState(1.0);
-  const [loading, setLoading] = useState(false);
+  const [modalLoading, setModalLoading] = useState(false);
 
   useEffect(() => {
     loadSkills();
   }, []);
 
   const loadSkills = async () => {
+    setLoading(true);
+    setError(null);
     try {
       const [skillsRes, catRes] = await Promise.all([
         studentApi.getSkills(),
@@ -41,14 +50,17 @@ export const SkillsPage: React.FC = () => {
       if (catRes.data.length > 0) {
         setNewSkillId(catRes.data[0].id);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to load skills:', err);
+      setError(err.response?.data?.detail || 'Failed to load skills.');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleAddSkill = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setModalLoading(true);
     try {
       await studentApi.addSkill({
         skill_id: newSkillId,
@@ -58,10 +70,11 @@ export const SkillsPage: React.FC = () => {
       await loadSkills();
       await refreshProfile();
       setIsModalOpen(false);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to add skill:', err);
+      alert(err.response?.data?.detail || 'Failed to add skill');
     } finally {
-      setLoading(false);
+      setModalLoading(false);
     }
   };
 
@@ -70,7 +83,7 @@ export const SkillsPage: React.FC = () => {
       await studentApi.deleteSkill(skillId);
       await loadSkills();
       await refreshProfile();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to delete skill:', err);
     }
   };
@@ -81,9 +94,11 @@ export const SkillsPage: React.FC = () => {
         skill_id: skillId,
         proficiency_level: level,
       });
-      await loadSkills();
+      setStudentSkills((prev) =>
+        prev.map((s) => (s.skill_id === skillId ? { ...s, proficiency_level: level } : s))
+      );
       await refreshProfile();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to update skill:', err);
     }
   };
@@ -103,14 +118,20 @@ export const SkillsPage: React.FC = () => {
         <div>
           <h1 style={{ fontSize: '1.85rem', marginBottom: '6px' }}>Skills & Competency Inventory</h1>
           <p style={{ color: '#9ca3af', fontSize: '0.95rem' }}>
-            Manage your rated skills. Ratings directly feed into the ML Job-Readiness engine.
+            Manage your rated skills. Ratings directly feed into the real-time ML Job-Readiness evaluation.
           </p>
         </div>
 
-        <button onClick={() => setIsModalOpen(true)} className="btn-primary" style={{ padding: '10px 20px' }}>
-          <Plus size={18} />
-          <span>Add New Skill</span>
-        </button>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <Link to="/app/assessments" className="btn-secondary" style={{ padding: '10px 16px', fontSize: '0.85rem' }}>
+            <ShieldCheck size={16} color="#34d399" />
+            <span>Verify with Quizzes</span>
+          </Link>
+          <button onClick={() => setIsModalOpen(true)} className="btn-primary" style={{ padding: '10px 20px' }}>
+            <Plus size={18} />
+            <span>Add Skill</span>
+          </button>
+        </div>
       </div>
 
       {/* Filter & Search Bar */}
@@ -142,6 +163,7 @@ export const SkillsPage: React.FC = () => {
                 fontWeight: 600,
                 cursor: 'pointer',
                 whiteSpace: 'nowrap',
+                transition: 'all 0.15s ease',
               }}
             >
               {cat}
@@ -150,80 +172,108 @@ export const SkillsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Skills Grid */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-          gap: '20px',
-        }}
-      >
-        {filteredStudentSkills.map((s) => (
-          <div key={s.id} className="glass-card glass-card-interactive" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      {loading ? (
+        <SkeletonLoader rows={6} type="cards" />
+      ) : error ? (
+        <ErrorState message={error} onRetry={loadSkills} />
+      ) : filteredStudentSkills.length === 0 ? (
+        <EmptyState
+          title="No Skills in Inventory"
+          message={searchQuery ? `No skills matching "${searchQuery}".` : 'Add your first skill to begin calculating your ML job readiness score.'}
+          actionText="Add New Skill"
+          actionLink="#"
+          onAction={() => setIsModalOpen(true)}
+        />
+      ) : (
+        /* Skills Grid */
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
+            gap: '20px',
+          }}
+        >
+          {filteredStudentSkills.map((s) => (
+            <div
+              key={s.skill_id}
+              className="glass-card glass-card-interactive"
+              style={{
+                padding: '22px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                gap: '16px',
+              }}
+            >
               <div>
-                <h3 style={{ fontSize: '1.1rem', marginBottom: '4px' }}>{s.skill_name}</h3>
-                <span className="badge badge-indigo">{s.category}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                  <div>
+                    <span className="badge badge-indigo" style={{ marginBottom: '6px' }}>{s.category}</span>
+                    <h3 style={{ fontSize: '1.15rem', color: '#ffffff' }}>{s.skill_name}</h3>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    {s.is_verified ? (
+                      <span className="badge badge-emerald" title="Verified via Skill Assessment Quiz">
+                        <CheckCircle size={12} />
+                        <span>Verified</span>
+                      </span>
+                    ) : (
+                      <Link to="/app/assessments" className="badge badge-amber" title="Take a quiz to verify this skill">
+                        <span>Unverified</span>
+                      </Link>
+                    )}
+                    <button
+                      onClick={() => handleDeleteSkill(s.skill_id)}
+                      style={{
+                        background: 'transparent',
+                        border: 'none',
+                        color: '#6b7280',
+                        cursor: 'pointer',
+                        padding: '4px',
+                        display: 'flex',
+                        alignItems: 'center',
+                      }}
+                      title="Remove Skill"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Proficiency Slider */}
+                <div style={{ marginTop: '12px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '6px' }}>
+                    <span style={{ color: '#9ca3af' }}>Proficiency Level</span>
+                    <strong style={{ color: '#818cf8' }}>Level {s.proficiency_level.toFixed(1)} / 5.0</strong>
+                  </div>
+                  <input
+                    type="range"
+                    min="1.0"
+                    max="5.0"
+                    step="0.5"
+                    value={s.proficiency_level}
+                    onChange={(e) => handleUpdateLevel(s.skill_id, parseFloat(e.target.value))}
+                    style={{ width: '100%', accentColor: '#6366f1' }}
+                  />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: '#6b7280', marginTop: '2px' }}>
+                    <span>Novice (1.0)</span>
+                    <span>Intermediate (3.0)</span>
+                    <span>Expert (5.0)</span>
+                  </div>
+                </div>
               </div>
 
-              <button
-                onClick={() => handleDeleteSkill(s.skill_id)}
-                title="Remove Skill"
-                style={{ background: 'transparent', border: 'none', color: '#9ca3af', cursor: 'pointer' }}
-              >
-                <Trash2 size={16} />
-              </button>
-            </div>
-
-            {/* Proficiency Slider */}
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.825rem', marginBottom: '6px' }}>
-                <span style={{ color: '#9ca3af' }}>Proficiency:</span>
-                <strong style={{ color: '#818cf8' }}>Level {s.proficiency_level} / 5.0</strong>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255, 255, 255, 0.05)', paddingTop: '12px', fontSize: '0.8rem', color: '#9ca3af' }}>
+                <span>{s.years_experience} yrs experience</span>
+                {s.assessment_score ? (
+                  <span style={{ color: '#34d399', fontWeight: 600 }}>Quiz: {s.assessment_score}%</span>
+                ) : (
+                  <Link to="/app/assessments" style={{ color: '#818cf8', fontWeight: 600 }}>Verify Quiz →</Link>
+                )}
               </div>
-              <input
-                type="range"
-                min="1.0"
-                max="5.0"
-                step="0.5"
-                value={s.proficiency_level}
-                onChange={(e) => handleUpdateLevel(s.skill_id, Number(e.target.value))}
-                style={{ width: '100%', accentColor: '#6366f1' }}
-              />
             </div>
-
-            {/* Verification Status */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', borderTop: '1px solid rgba(255, 255, 255, 0.06)' }}>
-              {s.is_verified ? (
-                <span className="badge badge-emerald">
-                  <CheckCircle size={12} />
-                  <span>Verified</span>
-                </span>
-              ) : (
-                <span className="badge" style={{ background: 'rgba(255, 255, 255, 0.05)', color: '#9ca3af' }}>
-                  Self-Reported
-                </span>
-              )}
-
-              <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>
-                {s.years_experience} yrs exp
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {filteredStudentSkills.length === 0 && (
-        <div className="glass-card" style={{ textAlign: 'center', padding: '60px 20px', color: '#9ca3af' }}>
-          <Sliders size={36} color="#6366f1" style={{ marginBottom: '12px' }} />
-          <h3 style={{ fontSize: '1.2rem', marginBottom: '6px', color: '#ffffff' }}>No Skills Found</h3>
-          <p style={{ fontSize: '0.9rem', marginBottom: '16px' }}>
-            {searchQuery ? 'Try adjusting your search criteria.' : 'Add your first skill to begin tracking readiness.'}
-          </p>
-          <button onClick={() => setIsModalOpen(true)} className="btn-primary">
-            <Plus size={16} />
-            <span>Add Skill</span>
-          </button>
+          ))}
         </div>
       )}
 
@@ -233,29 +283,48 @@ export const SkillsPage: React.FC = () => {
           style={{
             position: 'fixed',
             inset: 0,
-            zIndex: 100,
             background: 'rgba(0, 0, 0, 0.75)',
-            backdropFilter: 'blur(8px)',
+            backdropFilter: 'blur(6px)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            zIndex: 1000,
             padding: '20px',
           }}
         >
-          <div className="glass-card" style={{ width: '100%', maxWidth: '480px', padding: '32px' }}>
-            <h2 style={{ fontSize: '1.4rem', marginBottom: '18px' }}>Add Skill to Inventory</h2>
+          <div
+            className="glass-card"
+            style={{
+              maxWidth: '480px',
+              width: '100%',
+              padding: '30px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '20px',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h2 style={{ fontSize: '1.35rem' }}>Add New Skill</h2>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                style={{ background: 'transparent', border: 'none', color: '#9ca3af', cursor: 'pointer' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
 
-            <form onSubmit={handleAddSkill} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+            <form onSubmit={handleAddSkill} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
-                <label className="input-label">Select Skill</label>
+                <label className="input-label">Select Skill from Catalog</label>
                 <select
                   className="input-field"
                   value={newSkillId}
                   onChange={(e) => setNewSkillId(e.target.value)}
+                  required
                 >
-                  {catalog.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name} ({s.category})
+                  {catalog.map((catSkill) => (
+                    <option key={catSkill.id} value={catSkill.id}>
+                      {catSkill.name} ({catSkill.category})
                     </option>
                   ))}
                 </select>
@@ -263,8 +332,8 @@ export const SkillsPage: React.FC = () => {
 
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                  <label className="input-label" style={{ marginBottom: 0 }}>Self-Rated Proficiency</label>
-                  <strong style={{ color: '#818cf8' }}>Level {newLevel} / 5.0</strong>
+                  <label className="input-label" style={{ marginBottom: 0 }}>Initial Proficiency Level</label>
+                  <strong style={{ color: '#818cf8' }}>Level {newLevel.toFixed(1)} / 5.0</strong>
                 </div>
                 <input
                   type="range"
@@ -272,7 +341,7 @@ export const SkillsPage: React.FC = () => {
                   max="5.0"
                   step="0.5"
                   value={newLevel}
-                  onChange={(e) => setNewLevel(Number(e.target.value))}
+                  onChange={(e) => setNewLevel(parseFloat(e.target.value))}
                   style={{ width: '100%', accentColor: '#6366f1' }}
                 />
               </div>
@@ -286,7 +355,8 @@ export const SkillsPage: React.FC = () => {
                   max="20"
                   className="input-field"
                   value={newExp}
-                  onChange={(e) => setNewExp(Number(e.target.value))}
+                  onChange={(e) => setNewExp(parseFloat(e.target.value) || 0)}
+                  required
                 />
               </div>
 
@@ -295,11 +365,17 @@ export const SkillsPage: React.FC = () => {
                   type="button"
                   onClick={() => setIsModalOpen(false)}
                   className="btn-secondary"
+                  style={{ padding: '8px 16px' }}
                 >
                   Cancel
                 </button>
-                <button type="submit" disabled={loading} className="btn-primary">
-                  {loading ? 'Adding...' : 'Add Skill'}
+                <button
+                  type="submit"
+                  disabled={modalLoading}
+                  className="btn-primary"
+                  style={{ padding: '8px 20px' }}
+                >
+                  {modalLoading ? 'Adding...' : 'Add Skill'}
                 </button>
               </div>
             </form>
