@@ -25,7 +25,9 @@ class RecommendationService:
     @staticmethod
     def classify_priority_band(score: float, gap: float = 1.0) -> str:
         """Classifies priority band using strictly documented thresholds."""
-        if score >= 75.0 and gap >= 0.5:
+        if gap <= 0.0:
+            return "MASTERED"
+        elif score >= 75.0 and gap >= 0.5:
             return "URGENT"
         elif score >= 55.0:
             return "HIGH"
@@ -37,7 +39,9 @@ class RecommendationService:
     @staticmethod
     def estimate_learning_effort(gap: float, has_unmet_prereqs: bool = False) -> tuple[str, int]:
         """Estimates approximate planning effort level and hours."""
-        if gap >= 3.0 or (gap >= 2.0 and has_unmet_prereqs):
+        if gap <= 0.0:
+            return "LOW", 0
+        elif gap >= 3.0 or (gap >= 2.0 and has_unmet_prereqs):
             effort = "HIGH"
             hours = int(round(min(90.0, gap * 24.0 + 15.0)))
         elif gap >= 1.5:
@@ -58,6 +62,9 @@ class RecommendationService:
         learning_velocity: float = 1.0
     ) -> tuple[float, str]:
         """Computes deterministic priority score (0-100) and priority band."""
+        if gap <= 0.0:
+            return 0.0, "MASTERED"
+
         s_gap = min(100.0, (gap / 5.0) * 100.0)
         s_career = career_importance * 100.0
         s_market = market_demand
@@ -88,6 +95,9 @@ class RecommendationService:
         downstream_count: int
     ) -> str:
         """Generates explainable human-readable rationale."""
+        if gap <= 0.0:
+            return f"{skill_name} is mastered for '{career_title}' (proficiency {student_level:.1f} meets target {target_level:.1f})."
+
         downstream_str = f"unlocks {downstream_count} downstream skill{'s' if downstream_count != 1 else ''}" if downstream_count > 0 else "direct domain application"
         prereq_str = "Prerequisites are satisfied" if prereqs_met else "Requires prerequisite progression"
         return (
@@ -145,6 +155,10 @@ class RecommendationService:
             cur_lvl = float(item["current_level"])
             gap = max(0.0, req_lvl - cur_lvl)
             imp = float(item["importance"])
+
+            if gap <= 0.0:
+                # Student already meets or exceeds required proficiency level
+                continue
 
             # 1. Skill Gap Component (Normalized 0-100)
             s_gap = min(100.0, (gap / 5.0) * 100.0)

@@ -77,8 +77,8 @@ class AdaptiveRoadmapResponse(BaseModel):
     id: Optional[str] = None
     student_id: str
     career_id: str
-    career_title: str
-    title: str
+    career_title: str = ""
+    title: str = ""
     version: int = 1
     is_current: bool = True
     target_completion_weeks: int = 16
@@ -88,9 +88,9 @@ class AdaptiveRoadmapResponse(BaseModel):
     recommendations_summary: List[Dict[str, Any]] = []
     ml_readiness_benchmark: Optional[float] = None
     market_demand_index: Optional[float] = None
-    generated_at: str
+    generated_at: str = ""
     engine_version: str = "v2.0-adaptive"
-    provenance_note: str
+    provenance_note: str = ""
 
 
 class RoadmapProgressUpdate(BaseModel):

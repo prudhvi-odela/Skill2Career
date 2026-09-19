@@ -152,9 +152,37 @@ class AdaptiveRoadmapService:
             return milestones
 
         # Build 3 Phases
-        phase1_milestones = build_phase_milestones(phase1_skills, 1)
-        phase2_milestones = build_phase_milestones(phase2_skills, 2)
-        phase3_milestones = build_phase_milestones(phase3_skills, 3)
+        if recommendations:
+            phase1_milestones = build_phase_milestones(phase1_skills, 1)
+            phase2_milestones = build_phase_milestones(phase2_skills, 2)
+            phase3_milestones = build_phase_milestones(phase3_skills, 3)
+        else:
+            # Mastery roadmap when student already meets all baseline skill proficiencies
+            phase1_milestones = [{
+                "id": f"ms_mastery_1_{uuid.uuid4().hex[:8]}",
+                "title": f"Review Advanced Architectures in {career_title}",
+                "description": f"All baseline skill proficiencies are met. Conduct comprehensive deep-dive into advanced system trade-offs and performance tuning.",
+                "skill_id": None,
+                "skill_name": "Advanced Architecture",
+                "milestone_type": "concept",
+                "estimated_hours": 10.0,
+                "resources": [{"title": f"{career_title} Advanced System Engineering", "url": "https://github.com/"}],
+                "is_completed": False,
+                "completed_at": None
+            }]
+            phase2_milestones = [{
+                "id": f"ms_mastery_2_{uuid.uuid4().hex[:8]}",
+                "title": f"Build High-Scale Distributed System Component",
+                "description": f"Design and implement a production-scale module showcasing senior-level engineering standards.",
+                "skill_id": None,
+                "skill_name": "Applied Systems",
+                "milestone_type": "practical_project",
+                "estimated_hours": 16.0,
+                "resources": [{"title": "System Design & Distributed Patterns", "url": "https://github.com/"}],
+                "is_completed": False,
+                "completed_at": None
+            }]
+            phase3_milestones = []
 
         # Capstone milestone for Phase 3
         phase3_milestones.append({
@@ -176,30 +204,30 @@ class AdaptiveRoadmapService:
                 "phase_order": 1,
                 "title": "Phase 1: Essential Foundations & Prerequisite Resolution",
                 "description": "Resolve critical prerequisite dependencies and strengthen high-leverage foundational skills.",
-                "focus_skills": [r["skill_name"] for r in phase1_skills],
+                "focus_skills": [r["skill_name"] for r in phase1_skills] if phase1_skills else ["Advanced System Architecture"],
                 "status": "IN_PROGRESS",
                 "milestones": phase1_milestones,
                 "project_suggestion": {
                     "title": f"Foundational {career_title} Component Architecture",
-                    "tech_stack": ", ".join(r["skill_name"] for r in phase1_skills[:3])
+                    "tech_stack": ", ".join(r["skill_name"] for r in phase1_skills[:3]) if phase1_skills else "Full Stack Architecture"
                 },
                 "assessment_checkpoint": {
                     "title": "Phase 1 Fundamentals Diagnostic Quiz",
                     "recommended_score_pct": 75.0
                 },
-                "rationale": "High-priority bottlenecks must be addressed first to unlock downstream competencies."
+                "rationale": "High-priority bottlenecks must be addressed first to unlock downstream competencies." if phase1_skills else "Baseline competencies verified; focus on architecture mastery."
             },
             {
                 "phase_id": "phase_2_core_systems",
                 "phase_order": 2,
                 "title": "Phase 2: Core Engineering & Practical Systems",
                 "description": "Develop hands-on proficiency in central frameworks, database backends, and system architectures.",
-                "focus_skills": [r["skill_name"] for r in phase2_skills],
+                "focus_skills": [r["skill_name"] for r in phase2_skills] if phase2_skills else ["Applied Systems Engineering"],
                 "status": "NOT_STARTED",
                 "milestones": phase2_milestones,
                 "project_suggestion": {
                     "title": f"Scalable Microservices Architecture for {career_title}",
-                    "tech_stack": ", ".join(r["skill_name"] for r in phase2_skills[:3])
+                    "tech_stack": ", ".join(r["skill_name"] for r in phase2_skills[:3]) if phase2_skills else "Distributed Services"
                 },
                 "assessment_checkpoint": {
                     "title": "Phase 2 Applied Architecture Assessment",
@@ -212,7 +240,7 @@ class AdaptiveRoadmapService:
                 "phase_order": 3,
                 "title": "Phase 3: Advanced Specialization & Capstone Validation",
                 "description": "Master high-demand specialized tools, complete an end-to-end capstone, and prepare for interviews.",
-                "focus_skills": [r["skill_name"] for r in phase3_skills],
+                "focus_skills": [r["skill_name"] for r in phase3_skills] if phase3_skills else ["Comprehensive Portfolio Capstone"],
                 "status": "NOT_STARTED",
                 "milestones": phase3_milestones,
                 "project_suggestion": {
