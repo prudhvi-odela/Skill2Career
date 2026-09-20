@@ -27,6 +27,9 @@ import { LearningIntelligencePage } from './pages/LearningIntelligencePage';
 import { CareerReadinessPage } from './pages/CareerReadinessPage';
 import { CareerForecastPage } from './pages/CareerForecastPage';
 import { CareerTransitionPage } from './pages/CareerTransitionPage';
+import { OnboardingPage } from './pages/OnboardingPage';
+import { SubjectsPage } from './pages/SubjectsPage';
+import { PracticeLabPage } from './pages/PracticeLabPage';
 
 const ProtectedLayout: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -69,6 +72,9 @@ export const App: React.FC = () => {
             <Route path="/app" element={<ProtectedLayout />}>
               <Route index element={<Navigate to="/app/dashboard" replace />} />
               <Route path="dashboard" element={<DashboardPage />} />
+              <Route path="onboarding" element={<OnboardingPage />} />
+              <Route path="subjects" element={<SubjectsPage />} />
+              <Route path="practice" element={<PracticeLabPage />} />
               <Route path="ai-advisor" element={<CareerAIPage />} />
               <Route path="profile" element={<ProfilePage />} />
               <Route path="skills" element={<SkillsPage />} />

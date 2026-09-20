@@ -140,17 +140,78 @@ async def career_chat(
     db: AsyncDatabase = Depends(get_db)
 ):
     """
-    Natural-language career coaching query strictly grounded in the student's profile and ML results.
+    Natural-language career & learning assistant query strictly grounded in student profile and curriculum.
     """
-    user_id = current_user["id"]
+    user_id = str(current_user.get("_id") or current_user.get("id"))
     ai_service = get_ai_service()
     return await ai_service.chat(
         user_id=user_id,
         message=payload.message,
         conversation_id=payload.conversation_id,
         target_career_id=payload.target_career_id,
+        action_type=payload.action_type,
+        code_snippet=payload.code_snippet,
         db=db
     )
+
+
+@router.get("/conversations")
+async def list_ai_conversations(
+    current_user: dict = Depends(get_current_user),
+    db: AsyncDatabase = Depends(get_db)
+):
+    """Retrieves all conversation sessions for the authenticated student."""
+    user_id = str(current_user.get("_id") or current_user.get("id"))
+    ai_service = get_ai_service()
+    return await ai_service.list_conversations(student_id=user_id, db=db)
+
+
+@router.post("/conversations", status_code=status.HTTP_201_CREATED)
+async def create_ai_conversation(
+    title: Optional[str] = None,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncDatabase = Depends(get_db)
+):
+    """Initializes a new persistent conversation session."""
+    user_id = str(current_user.get("_id") or current_user.get("id"))
+    ai_service = get_ai_service()
+    return await ai_service.create_conversation(student_id=user_id, title=title, db=db)
+
+
+@router.get("/conversations/{conversation_id}/messages")
+async def get_ai_conversation_messages(
+    conversation_id: str,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncDatabase = Depends(get_db)
+):
+    """Retrieves chronological messages for a conversation thread."""
+    user_id = str(current_user.get("_id") or current_user.get("id"))
+    ai_service = get_ai_service()
+    return await ai_service.get_conversation_messages(student_id=user_id, conversation_id=conversation_id, db=db)
+
+
+@router.delete("/conversations/{conversation_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_ai_conversation(
+    conversation_id: str,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncDatabase = Depends(get_db)
+):
+    """Deletes a conversation session and all its associated messages."""
+    user_id = str(current_user.get("_id") or current_user.get("id"))
+    ai_service = get_ai_service()
+    await ai_service.delete_conversation(student_id=user_id, conversation_id=conversation_id, db=db)
+
+
+@router.get("/resources")
+async def search_learning_resources(
+    query: Optional[str] = None,
+    skill_id: Optional[str] = None,
+    topic: Optional[str] = None,
+    db: AsyncDatabase = Depends(get_db)
+):
+    """Searches verified learning resources database (official documentation, tutorials, courses) with zero fabricated URLs."""
+    ai_service = get_ai_service()
+    return await ai_service.search_learning_resources(query=query, skill_id=skill_id, topic=topic, db=db)
 
 
 @router.get("/history", response_model=List[AIInteractionResponse])
@@ -162,7 +223,7 @@ async def get_chat_history(
     """
     Retrieves past AI career coaching interactions for the authenticated student.
     """
-    user_id = current_user["id"]
+    user_id = str(current_user.get("_id") or current_user.get("id"))
     cursor = db.ai_interactions.find({"student_id": user_id}).sort("created_at", -1).limit(limit)
     docs = await cursor.to_list(length=limit)
 

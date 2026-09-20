@@ -920,6 +920,14 @@ async def seed_database():
     except Exception as e:
         print(f"[Warn] Transition plan seed skip: {e}")
 
+    # 14. Seed Skill2Career 2.0 Curriculum, Subjects, Coding Challenges, & Verified Resources
+    try:
+        from backend.database.seed_curriculum import seed_curriculum_catalog
+        await seed_curriculum_catalog(db)
+        print("[OK] Seeded Skill2Career 2.0 academic programs, branches, subjects, challenges, and resources.")
+    except Exception as e:
+        print(f"[Warn] Curriculum seed skip: {e}")
+
     print(f"[OK] Seeded demo user ({demo_email}) and profile successfully.")
     print(f"[OK] Seeded {len(market_sources)} market data sources, {len(career_signals)} career signals, and {len(skill_signals)} skill signals.")
     print(f"[OK] Seeded {len(skill_dependencies_seed)} canonical skill dependencies.")

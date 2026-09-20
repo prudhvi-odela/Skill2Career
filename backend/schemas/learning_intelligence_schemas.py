@@ -126,6 +126,55 @@ class SkillLevelHistoryItem(BaseModel):
     engine_version: str = "v1.0-intelligence"
 
 
+class DailyLearningLogRequest(BaseModel):
+    topic: str = Field(min_length=1)
+    duration_minutes: int = Field(ge=5, le=600)
+    activity_type: str = "SELF_STUDY"  # SELF_STUDY, VIDEO_LECTURE, CODING_PRACTICE, PROJECT_WORK, READING
+    confidence_level: int = Field(default=3, ge=1, le=5)
+    notes: Optional[str] = None
+    skills: List[str] = []
+    take_quick_check: bool = False
+
+
+class QuickCheckQuestion(BaseModel):
+    id: str
+    question_text: str
+    options: List[str]
+    skill_id: str
+    explanation: Optional[str] = None
+
+
+class DailyLearningLogResponse(BaseModel):
+    session_id: str
+    topic: str
+    duration_minutes: int
+    activity_type: str
+    confidence_level: int
+    logged_at: str
+    quick_check_offered: bool
+    quick_check_questions: List[QuickCheckQuestion] = []
+
+
+class QuickCheckSubmitRequest(BaseModel):
+    session_id: str
+    topic: str
+    skills: List[str] = []
+    answers: Dict[str, int]  # question_id -> chosen option index
+
+
+class QuickCheckResultResponse(BaseModel):
+    session_id: str
+    score_percentage: float
+    passed: bool
+    total_questions: int
+    correct_count: int
+    strong_topics: List[str] = []
+    weak_topics: List[str] = []
+    recommendation: str
+    evidence_recorded: bool
+    evidence_id: Optional[str] = None
+
+
 class LearningTrajectoryOverviewResponse(BaseModel):
     student_id: str
     generated_at: str
@@ -141,3 +190,5 @@ class LearningTrajectoryOverviewResponse(BaseModel):
     trajectory_timeline: List[TrajectoryPoint]
     executive_insights: List[str]
     engine_version: str = "v1.0-intelligence"
+
+

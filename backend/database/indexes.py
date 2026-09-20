@@ -133,11 +133,46 @@ async def ensure_indexes(db: AsyncDatabase):
     await db.work_experiences.create_index([("student_id", ASCENDING)])
     await db.work_experiences.create_index([("student_id", ASCENDING), ("created_at", DESCENDING)])
 
-    # 27. peer_reviews
-    await db.peer_reviews.create_index([("student_id", ASCENDING)])
-    await db.peer_reviews.create_index([("reviewer_id", ASCENDING)])
-    await db.peer_reviews.create_index([("project_id", ASCENDING)])
-    await db.peer_reviews.create_index([("status", ASCENDING)])
+    # 28. academic_programs (Skill2Career 2.0)
+    await db.academic_programs.create_index([("program_code", ASCENDING)], unique=True)
+
+    # 29. branches
+    await db.branches.create_index([("branch_code", ASCENDING)], unique=True)
+    await db.branches.create_index([("program_id", ASCENDING)])
+
+    # 30. subjects
+    await db.subjects.create_index([("subject_code", ASCENDING)], unique=True)
+    await db.subjects.create_index([("branch_id", ASCENDING)])
+    await db.subjects.create_index([("program_id", ASCENDING)])
+    await db.subjects.create_index([("canonical_skills", ASCENDING)])
+
+    # 31. subject_baselines
+    await db.subject_baselines.create_index([("student_id", ASCENDING), ("subject_id", ASCENDING)], unique=True)
+    await db.subject_baselines.create_index([("student_id", ASCENDING)])
+
+    # 32. practice_problems
+    await db.practice_problems.create_index([("problem_code", ASCENDING)], unique=True)
+    await db.practice_problems.create_index([("difficulty", ASCENDING)])
+    await db.practice_problems.create_index([("canonical_skills", ASCENDING)])
+
+    # 33. practice_attempts
+    await db.practice_attempts.create_index([("student_id", ASCENDING), ("problem_id", ASCENDING)])
+    await db.practice_attempts.create_index([("student_id", ASCENDING), ("created_at", DESCENDING)])
+
+    # 34. learning_sessions
+    await db.learning_sessions.create_index([("student_id", ASCENDING), ("created_at", DESCENDING)])
+
+    # 35. ai_conversations
+    await db.ai_conversations.create_index([("student_id", ASCENDING), ("updated_at", DESCENDING)])
+
+    # 36. ai_messages
+    await db.ai_messages.create_index([("conversation_id", ASCENDING), ("created_at", ASCENDING)])
+    await db.ai_messages.create_index([("student_id", ASCENDING)])
+
+    # 37. learning_resources
+    await db.learning_resources.create_index([("resource_id", ASCENDING)], unique=True)
+    await db.learning_resources.create_index([("skills", ASCENDING)])
+    await db.learning_resources.create_index([("topics", ASCENDING)])
 
     print("[MongoDB] All collection indexes successfully created and verified.")
     return True

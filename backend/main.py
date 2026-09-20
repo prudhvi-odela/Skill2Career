@@ -23,7 +23,9 @@ from backend.routers import (
     learning_intelligence_router,
     career_readiness_router,
     career_forecast_router,
-    career_transition_router
+    career_transition_router,
+    curriculum_router,
+    practice_router
 )
 
 
@@ -58,6 +60,8 @@ app.add_middleware(
 # Mount Routers
 app.include_router(auth_router.router, prefix=settings.API_V1_STR)
 app.include_router(student_router.router, prefix=settings.API_V1_STR)
+app.include_router(curriculum_router.router, prefix=settings.API_V1_STR)
+app.include_router(practice_router.router, prefix=settings.API_V1_STR)
 app.include_router(careers_router.router, prefix=settings.API_V1_STR)
 app.include_router(analysis_router.router, prefix=settings.API_V1_STR)
 app.include_router(roadmap_router.router, prefix=settings.API_V1_STR)

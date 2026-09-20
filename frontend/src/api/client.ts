@@ -147,8 +147,20 @@ export const aiApi = {
     apiClient.post('/ai/explain-transition', { target_career_id: targetCareerId, source_career_id: sourceCareerId }),
   explainTrajectory: (weeklyHours?: number, consistency?: number) =>
     apiClient.post('/ai/explain-trajectory', { weekly_hours: weeklyHours, consistency }),
-  chat: (message: string, conversationId?: string, targetCareerId?: string) =>
-    apiClient.post('/ai/chat', { message, conversation_id: conversationId, target_career_id: targetCareerId }),
+  chat: (message: string, conversationId?: string, targetCareerId?: string, actionType?: string, codeSnippet?: string) =>
+    apiClient.post('/ai/chat', {
+      message,
+      conversation_id: conversationId,
+      target_career_id: targetCareerId,
+      action_type: actionType,
+      code_snippet: codeSnippet
+    }),
+  getConversations: () => apiClient.get('/ai/conversations'),
+  createConversation: (title?: string) => apiClient.post('/ai/conversations', null, { params: { title } }),
+  getConversationMessages: (conversationId: string) => apiClient.get(`/ai/conversations/${conversationId}/messages`),
+  deleteConversation: (conversationId: string) => apiClient.delete(`/ai/conversations/${conversationId}`),
+  searchResources: (params?: { query?: string; skill_id?: string; topic?: string }) =>
+    apiClient.get('/ai/resources', { params }),
   getHistory: (limit?: number) => apiClient.get('/ai/history', { params: { limit } }),
 };
 
@@ -198,6 +210,38 @@ export const evidenceApi = {
     apiClient.post(`/evidence/peer-reviews/${reviewId}/submit`, data),
 };
 
+export const curriculumApi = {
+  getPrograms: () => apiClient.get('/curriculum/programs'),
+  getBranches: (programId: string) => apiClient.get(`/curriculum/programs/${programId}/branches`),
+  getSubjects: (branchId: string) => apiClient.get(`/curriculum/branches/${branchId}/subjects`),
+  getOnboardingStatus: () => apiClient.get('/curriculum/student/onboarding-status'),
+  completeOnboarding: (data: {
+    program_id: string;
+    branch_id: string;
+    academic_year: number;
+    interests?: string[];
+    target_career_id?: string;
+    institution?: string;
+    weekly_study_hours?: number;
+  }) => apiClient.post('/curriculum/onboarding/complete', data),
+  recordSubjectBaseline: (subjectId: string, data: { rating_type: string; proficiency_level: number }) =>
+    apiClient.post(`/curriculum/subjects/${subjectId}/baseline`, data),
+  getDiagnosticQuiz: (subjectId: string) => apiClient.get(`/curriculum/subjects/${subjectId}/diagnostic-quiz`),
+  submitDiagnostic: (subjectId: string, answers: Record<string, number>) =>
+    apiClient.post(`/curriculum/subjects/${subjectId}/submit-diagnostic`, { answers }),
+  getLearningProfile: () => apiClient.get('/curriculum/student/learning-profile'),
+  getPersonalizedLearningPath: () => apiClient.get('/curriculum/student/personalized-learning-path'),
+};
+
+export const practiceApi = {
+  getProblems: (params?: { difficulty?: string; category?: string; skill_id?: string }) =>
+    apiClient.get('/practice/problems', { params }),
+  getProblemDetail: (problemId: string) => apiClient.get(`/practice/problems/${problemId}`),
+  submitCode: (problemId: string, data: { language: string; code: string }) =>
+    apiClient.post(`/practice/problems/${problemId}/submit`, data),
+  getMyAttempts: (limit?: number) => apiClient.get('/practice/attempts', { params: { limit } }),
+};
+
 export const learningIntelligenceApi = {
   getOverview: () => apiClient.get('/learning-intelligence/overview'),
   getTrajectory: () => apiClient.get('/learning-intelligence/trajectory'),
@@ -207,6 +251,21 @@ export const learningIntelligenceApi = {
   getSkillHistory: (skillId: string) => apiClient.get(`/learning-intelligence/skills/${skillId}`),
   recordSnapshot: (targetCareerId?: string) =>
     apiClient.post('/learning-intelligence/snapshot', null, { params: { target_career_id: targetCareerId } }),
+  logSession: (data: {
+    topic: string;
+    duration_minutes: number;
+    activity_type: string;
+    confidence_level: number;
+    notes?: string;
+    skills?: string[];
+    take_quick_check?: boolean;
+  }) => apiClient.post('/learning-intelligence/log-session', data),
+  submitQuickCheck: (data: {
+    session_id: string;
+    topic: string;
+    skills?: string[];
+    answers: Record<string, number>;
+  }) => apiClient.post('/learning-intelligence/quick-check/submit', data),
 };
 
 export const careerReadinessApi = {

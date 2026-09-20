@@ -25,10 +25,13 @@ const NAV_ITEMS = [
   { section: 'CORE PLATFORM' },
   { path: '/app/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/app/profile', label: 'Student Profile', icon: User },
+  { path: '/app/subjects', label: 'Subjects & Curriculum', icon: BookOpenCheck },
+  { path: '/app/practice', label: 'Practice Lab', icon: Cpu },
   { path: '/app/skills', label: 'Skills Inventory', icon: Sliders },
 
-  { section: 'AI & INTELLIGENCE' },
-  { path: '/app/ai-advisor', label: 'AI Career Advisor', icon: Sparkles },
+  { section: 'AI & LEARNING' },
+  { path: '/app/ai-advisor', label: 'AI Learning Tutor', icon: Sparkles },
+  { path: '/app/onboarding', label: 'Academic Setup', icon: Compass },
 
   { section: 'CAREER & GAP ANALYSIS' },
   { path: '/app/careers', label: 'Career Explorer', icon: Compass },

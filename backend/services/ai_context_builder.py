@@ -57,6 +57,20 @@ async def build_student_ai_context(
         for s in student_skills
     ]
 
+    # 3b. Subject Baselines (Skill2Career 2.0)
+    baselines_cursor = db.subject_baselines.find({"student_id": user_id})
+    baselines_docs = await baselines_cursor.to_list(length=30)
+    subject_baselines_context = [
+        {
+            "subject_id": b.get("subject_id"),
+            "subject_name": b.get("subject_name", b.get("subject_id")),
+            "rating_type": b.get("rating_type", "SELF_RATING"),
+            "proficiency_level": float(b.get("proficiency_level", 1.0)),
+            "assessment_score": b.get("assessment_score")
+        }
+        for b in baselines_docs
+    ]
+
     # 4. Evidence (Projects, Certifications, Assessments)
     projects_cursor = db.projects.find({"student_id": user_id}).sort("created_at", -1)
     projects = await projects_cursor.to_list(length=20)
@@ -418,7 +432,8 @@ async def build_student_ai_context(
             "weekly_study_hours": profile.get("weekly_study_hours", 15.0) if profile else 15.0,
             "interests": profile.get("interests", []) if profile else [],
             "skills_count": len(skills_context),
-            "verified_skills_count": sum(1 for s in skills_context if s["is_verified"])
+            "verified_skills_count": sum(1 for s in skills_context if s["is_verified"]),
+            "subject_baselines": subject_baselines_context
         },
         "target_career": {
             "career_id": effective_target_career_id,
