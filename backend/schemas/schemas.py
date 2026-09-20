@@ -67,7 +67,7 @@ class ProfileUpdate(BaseModel):
     graduation_year: Optional[int] = None
     gpa: Optional[float] = Field(default=None, ge=0.0, le=10.0)
     target_career_id: Optional[str] = None
-    weekly_study_hours: Optional[float] = Field(default=None, ge=1.0, le=80.0)
+    weekly_study_hours: Optional[float] = Field(default=None, ge=0.0, le=80.0)
 
 
 class ProfileResponse(BaseModel):
@@ -77,15 +77,15 @@ class ProfileResponse(BaseModel):
     email: str
     headline: Optional[str] = None
     bio: Optional[str] = None
-    degree: str
-    institution: str
-    institution_tier: int
-    graduation_year: int
-    gpa: float
+    degree: Optional[str] = None
+    institution: Optional[str] = None
+    institution_tier: Optional[int] = None
+    graduation_year: Optional[int] = None
+    gpa: Optional[float] = None
     target_career_id: Optional[str] = None
     target_career_title: Optional[str] = None
-    weekly_study_hours: float
-    learning_velocity_index: float
+    weekly_study_hours: Optional[float] = 0.0
+    learning_velocity_index: Optional[float] = 0.0
     skills: List[StudentSkillResponse] = []
     projects_count: int = 0
     certifications_count: int = 0

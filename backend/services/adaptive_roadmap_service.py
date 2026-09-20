@@ -32,10 +32,9 @@ class AdaptiveRoadmapService:
         Retrieves current active roadmap for student, or generates a new versioned adaptive roadmap.
         """
         profile = await db.student_profiles.find_one({"user_id": student_id})
-        if not profile:
-            raise ValueError(f"Student profile for user '{student_id}' not found.")
-
-        effective_career_id = target_career_id or profile.get("target_career_id") or "CR001"
+        effective_career_id = target_career_id or profile.get("target_career_id")
+        if not effective_career_id:
+            raise ValueError("No target career specified. Please select a target career to generate your learning roadmap.")
 
         if not force_regenerate:
             existing = await db.roadmaps.find_one({

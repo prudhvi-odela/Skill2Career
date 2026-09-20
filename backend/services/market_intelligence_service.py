@@ -217,10 +217,9 @@ class MarketIntelligenceService:
         db: AsyncDatabase
     ) -> Dict[str, Any]:
         profile = await db.student_profiles.find_one({"user_id": student_id})
-        if not profile:
-            raise ValueError("Student profile not found.")
-
-        effective_career_id = target_career_id or profile.get("target_career_id") or "CR001"
+        effective_career_id = target_career_id or profile.get("target_career_id")
+        if not effective_career_id:
+            raise ValueError("No target career specified. Please choose a target career for market analysis.")
         career_doc = await db.career_roles.find_one({"$or": [{"career_code": effective_career_id}, {"_id": effective_career_id}]})
         if not career_doc:
             raise ValueError(f"Career role '{effective_career_id}' not found.")

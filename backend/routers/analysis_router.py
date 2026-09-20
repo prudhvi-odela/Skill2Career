@@ -94,7 +94,7 @@ async def predict_job_readiness(
 
     target_career_id = payload.target_career_id or profile.get("target_career_id")
     if not target_career_id:
-        target_career_id = "CR001"
+        raise HTTPException(status_code=400, detail="No target career specified. Please choose a target career to evaluate job readiness.")
 
     career = await db.career_roles.find_one({
         "$or": [{"career_code": target_career_id}, {"_id": target_career_id}]
@@ -121,8 +121,8 @@ async def predict_job_readiness(
     asms_list = await asms_cursor.to_list(length=100)
 
     stats = profile.get("statistics", {})
-    weekly_hours = float(stats.get("weekly_study_hours", 12.0))
-    learning_velocity = float(stats.get("learning_velocity_index", 1.0))
+    weekly_hours = float(stats.get("weekly_study_hours", 0.0))
+    learning_velocity = float(stats.get("learning_velocity_index", 0.0))
 
     # Check for missing required profile fields
     if profile.get("gpa") is None:
@@ -133,9 +133,9 @@ async def predict_job_readiness(
         prediction = ml_service.predict_readiness(
             student_skills_list=student_skills_list,
             target_career_id=target_career_id,
-            degree=profile.get("degree", "B.Tech Computer Science"),
-            institution_tier=int(profile.get("institution_tier", 2)),
-            gpa=float(profile.get("gpa", 8.0)),
+            degree=profile.get("degree") or "B.Tech Computer Science",
+            institution_tier=int(profile.get("institution_tier") or 2),
+            gpa=float(profile["gpa"]),
             projects=projects_list,
             certifications=certs_list,
             assessment_results=asms_list,
@@ -260,21 +260,23 @@ async def forecast_trajectory(
     if not profile:
         raise HTTPException(status_code=404, detail="Student profile not found.")
 
-    target_career_id = payload.target_career_id or profile.get("target_career_id") or "CR001"
+    target_career_id = payload.target_career_id or profile.get("target_career_id")
+    if not target_career_id:
+        raise HTTPException(status_code=400, detail="No target career specified. Please choose a target career to forecast trajectory.")
     student_skills_list = [
         {"skill_id": ss.get("skill_id"), "level": float(ss.get("level", ss.get("proficiency_level", 1.0)))}
         for ss in profile.get("skills", [])
     ]
 
     stats = profile.get("statistics", {})
-    weekly_hours = payload.weekly_study_hours or float(stats.get("weekly_study_hours", 12.0))
+    weekly_hours = payload.weekly_study_hours or float(stats.get("weekly_study_hours", 0.0))
 
     readiness_res = ml_service.predict_readiness(
         student_skills_list=student_skills_list,
         target_career_id=target_career_id,
-        degree=profile.get("degree", "B.Tech Computer Science"),
-        institution_tier=int(profile.get("institution_tier", 2)),
-        gpa=float(profile.get("gpa", 8.0)),
+        degree=profile.get("degree") or "B.Tech Computer Science",
+        institution_tier=int(profile.get("institution_tier") or 2),
+        gpa=float(profile.get("gpa") or 7.0),
         weekly_study_hours=weekly_hours
     )
     initial_score = readiness_res["readiness_score"]

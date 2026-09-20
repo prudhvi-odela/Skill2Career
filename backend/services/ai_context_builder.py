@@ -23,15 +23,25 @@ async def build_student_ai_context(
 
     # 1. Student Profile
     profile = await db.student_profiles.find_one({"user_id": user_id})
-    user_doc = await db.users.find_one({"_id": user_id}) or await db.users.find_one({"id": user_id})
+    user_doc = None
+    try:
+        from bson import ObjectId
+        if ObjectId.is_valid(user_id):
+            user_doc = await db.users.find_one({"_id": ObjectId(user_id)})
+    except Exception:
+        pass
+    if not user_doc:
+        user_doc = await db.users.find_one({"$or": [{"_id": user_id}, {"id": user_id}]})
 
     student_name = user_doc.get("full_name", "Student") if user_doc else "Student"
-    effective_target_career_id = target_career_id or (profile.get("target_career_id") if profile else None) or "CR001"
+    effective_target_career_id = target_career_id or (profile.get("target_career_id") if profile else None)
 
     # 2. Target Career Details
-    career_doc = await db.career_roles.find_one({
-        "$or": [{"career_code": effective_target_career_id}, {"_id": effective_target_career_id}]
-    })
+    career_doc = None
+    if effective_target_career_id:
+        career_doc = await db.career_roles.find_one({
+            "$or": [{"career_code": effective_target_career_id}, {"_id": effective_target_career_id}]
+        })
 
     # 3. Student Skills
     student_skills: List[Dict[str, Any]] = profile.get("skills", []) if profile else []

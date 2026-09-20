@@ -42,20 +42,30 @@ export const DashboardPage: React.FC = () => {
     setLoading(true);
     setErrorMsg(null);
     try {
-      const [recRes, readyRes, gapRes, actRes] = await Promise.allSettled([
+      const promises: Promise<any>[] = [
         careersApi.getRecommendations(),
-        analysisApi.predictReadiness(),
-        analysisApi.getSkillGap(),
         studentApi.getActivities(),
-      ]);
+      ];
 
-      if (recRes.status === 'fulfilled') setRecommendations(recRes.value.data);
-      if (readyRes.status === 'fulfilled') setReadinessData(readyRes.value.data);
-      if (gapRes.status === 'fulfilled') setGapData(gapRes.value.data);
-      if (actRes.status === 'fulfilled') setActivities(actRes.value.data);
+      if (profile?.target_career_id) {
+        promises.push(analysisApi.predictReadiness(profile.target_career_id));
+        promises.push(analysisApi.getSkillGap(profile.target_career_id));
+      }
 
-      if (readyRes.status === 'rejected' && readyRes.reason?.response?.data?.detail) {
-        setErrorMsg(readyRes.reason.response.data.detail);
+      const results = await Promise.allSettled(promises);
+      const recRes = results[0];
+      const actRes = results[1];
+      const readyRes = profile?.target_career_id ? results[2] : null;
+      const gapRes = profile?.target_career_id ? results[3] : null;
+
+      if (recRes && recRes.status === 'fulfilled') setRecommendations(recRes.value.data);
+      if (actRes && actRes.status === 'fulfilled') setActivities(actRes.value.data);
+      if (readyRes && readyRes.status === 'fulfilled') setReadinessData(readyRes.value.data);
+      if (gapRes && gapRes.status === 'fulfilled') setGapData(gapRes.value.data);
+
+      if (readyRes && readyRes.status === 'rejected' && readyRes.reason?.response?.data?.detail) {
+        // Do not fail entire dashboard if readiness has an explanatory validation message
+        console.warn('Readiness notice:', readyRes.reason.response.data.detail);
       }
     } catch (err: any) {
       console.error('Error fetching dashboard:', err);
@@ -80,6 +90,11 @@ export const DashboardPage: React.FC = () => {
   const nextActions = gapData?.gaps
     ?.filter((g: any) => g.priority === 'Critical' || g.priority === 'High')
     ?.slice(0, 3) || [];
+
+  const hasSkills = (profile?.skills?.length || 0) > 0;
+  const hasCareer = Boolean(profile?.target_career_id);
+  const hasStudyPace = (profile?.weekly_study_hours || 0) > 0;
+  const hasVelocity = (profile?.learning_velocity_index || 0) > 0;
 
   return (
     <div style={{ padding: '28px', maxWidth: '1440px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '28px' }}>
@@ -108,22 +123,40 @@ export const DashboardPage: React.FC = () => {
             Welcome back, <span className="gradient-text">{user?.full_name || 'Student'}</span>
           </h1>
           <p style={{ color: '#9ca3af', fontSize: '0.95rem' }}>
-            Real-time readiness and gap analysis for{' '}
-            <strong style={{ color: '#e0e7ff' }}>
-              {readinessData?.career_title || profile?.target_career_title || 'Software Engineering'}
-            </strong>
+            {hasCareer ? (
+              <>
+                Real-time readiness and gap analysis for{' '}
+                <strong style={{ color: '#e0e7ff' }}>
+                  {readinessData?.career_title || profile?.target_career_title || 'Target Career'}
+                </strong>
+              </>
+            ) : (
+              <span style={{ color: '#fbbf24' }}>
+                No target career selected yet. Choose a career goal to begin personalized readiness analysis.
+              </span>
+            )}
           </p>
         </div>
 
         <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-          <Link to="/app/skill-gap" className="btn-secondary" style={{ padding: '10px 18px' }}>
-            <GitPullRequest size={16} />
-            <span>Skill Gaps ({criticalGapsCount})</span>
-          </Link>
-          <Link to="/app/roadmap" className="btn-primary" style={{ padding: '10px 20px' }}>
-            <span>Open Roadmap</span>
-            <ArrowRight size={16} />
-          </Link>
+          {hasCareer ? (
+            <>
+              <Link to="/app/skill-gap" className="btn-secondary" style={{ padding: '10px 18px' }}>
+                <GitPullRequest size={16} />
+                <span>Skill Gaps ({criticalGapsCount})</span>
+              </Link>
+              <Link to="/app/roadmap" className="btn-primary" style={{ padding: '10px 20px' }}>
+                <span>Open Roadmap</span>
+                <ArrowRight size={16} />
+              </Link>
+            </>
+          ) : (
+            <Link to="/app/careers" className="btn-primary" style={{ padding: '10px 20px' }}>
+              <Compass size={16} />
+              <span>Choose Target Career</span>
+              <ArrowRight size={16} />
+            </Link>
+          )}
         </div>
       </div>
 
@@ -161,42 +194,59 @@ export const DashboardPage: React.FC = () => {
             <KPICard
               icon={<CheckCircle2 size={20} color="#34d399" />}
               label="Job Readiness"
-              value={readinessData?.readiness_score ? `${readinessData.readiness_score}%` : '0%'}
-              badge={readinessData?.readiness_tier || 'Evaluating'}
-              badgeColor={readinessData?.is_job_ready ? 'emerald' : 'amber'}
+              value={
+                hasCareer
+                  ? (readinessData?.readiness_score != null ? `${readinessData.readiness_score}%` : (hasSkills ? '0%' : 'Not enough data'))
+                  : 'Choose Career'
+              }
+              badge={
+                !hasCareer
+                  ? 'No Target'
+                  : (!hasSkills ? 'Insufficient Data' : (readinessData?.readiness_tier || 'Evaluating'))
+              }
+              badgeColor={
+                !hasCareer
+                  ? 'amber'
+                  : (!hasSkills ? 'amber' : (readinessData?.is_job_ready ? 'emerald' : 'indigo'))
+              }
             />
 
             <KPICard
               icon={<Target size={20} color="#60a5fa" />}
               label="Skill Coverage"
               value={`${coveragePercentage}%`}
-              badge={coveragePercentage >= 70 ? 'High' : 'Developing'}
-              badgeColor={coveragePercentage >= 70 ? 'emerald' : 'indigo'}
+              subValue={!hasSkills ? 'Add skills to begin' : undefined}
+              badge={!hasCareer ? 'No Target' : (coveragePercentage >= 70 ? 'High' : 'Developing')}
+              badgeColor={!hasCareer ? 'amber' : (coveragePercentage >= 70 ? 'emerald' : 'indigo')}
             />
 
             <KPICard
               icon={<AlertTriangle size={20} color="#fb7185" />}
               label="Critical Gaps"
-              value={criticalGapsCount}
-              subValue="remediable"
-              badge={criticalGapsCount === 0 ? 'Clear' : 'Needs Action'}
-              badgeColor={criticalGapsCount === 0 ? 'emerald' : 'rose'}
+              value={hasCareer ? criticalGapsCount : '—'}
+              subValue={hasCareer ? 'remediable' : 'Select career'}
+              badge={!hasCareer ? 'No Target' : (criticalGapsCount === 0 ? 'Clear' : 'Needs Action')}
+              badgeColor={!hasCareer ? 'amber' : (criticalGapsCount === 0 ? 'emerald' : 'rose')}
             />
 
             <KPICard
               icon={<Layers size={20} color="#22d3ee" />}
               label="Skills Tracked"
               value={profile?.skills?.length || 0}
-              subValue={`(${verifiedSkillsCount} verified)`}
-              badge="Inventory"
-              badgeColor="cyan"
+              subValue={hasSkills ? `(${verifiedSkillsCount} verified)` : 'Add your first skill'}
+              badge={hasSkills ? 'Inventory' : 'Empty'}
+              badgeColor={hasSkills ? 'cyan' : 'amber'}
             />
 
             <KPICard
               icon={<Award size={20} color="#a78bfa" />}
               label="Projects & Certs"
               value={(profile?.projects_count || 0) + (profile?.certifications_count || 0)}
-              subValue={`${profile?.projects_count || 0} proj, ${profile?.certifications_count || 0} cert`}
+              subValue={
+                (profile?.projects_count || 0) + (profile?.certifications_count || 0) > 0
+                  ? `${profile?.projects_count || 0} proj, ${profile?.certifications_count || 0} cert`
+                  : 'Add proof of skill'
+              }
               badge="Portfolio"
               badgeColor="indigo"
             />
@@ -204,10 +254,10 @@ export const DashboardPage: React.FC = () => {
             <KPICard
               icon={<Clock size={20} color="#f59e0b" />}
               label="Study Pace"
-              value={`${profile?.weekly_study_hours || 12} hrs`}
-              subValue={`vel: ${profile?.learning_velocity_index || 1.0}x`}
-              badge="Pace"
-              badgeColor="amber"
+              value={hasStudyPace ? `${profile?.weekly_study_hours} hrs/wk` : 'Not set'}
+              subValue={hasVelocity ? `vel: ${profile?.learning_velocity_index}x` : 'Insufficient history'}
+              badge={hasStudyPace ? 'Pace' : 'Not Set'}
+              badgeColor={hasStudyPace ? 'amber' : 'indigo'}
             />
           </div>
 
@@ -227,44 +277,60 @@ export const DashboardPage: React.FC = () => {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h3 style={{ fontSize: '1.25rem' }}>Machine Learning Readiness</h3>
                 <span className="badge badge-indigo">
-                  Model {readinessData?.model_version || 'v1.0.0'}
+                  {readinessData?.model_version ? `Model ${readinessData.model_version}` : 'Phase 06 ML'}
                 </span>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
-                <ScoreGauge
-                  score={readinessData?.readiness_score || 0}
-                  size={190}
-                  label="Job Readiness"
-                  sublabel={readinessData?.readiness_tier}
+              {!hasCareer ? (
+                <EmptyState
+                  icon={<Compass size={36} color="#818cf8" />}
+                  title="No Target Career Selected"
+                  description="Choose a target career goal to evaluate your supervised ML job readiness and competency gaps."
+                  actionText="Select Target Career"
+                  actionHref="/app/careers"
                 />
-              </div>
-
-              {readinessData?.confidence_margin && (
-                <div style={{ textAlign: 'center', fontSize: '0.8rem', color: '#9ca3af' }}>
-                  Empirical Margin: ±{readinessData.confidence_margin}% • Evaluated on 13 features
-                </div>
-              )}
-
-              {/* AI Coaching Narrative */}
-              {readinessData?.ai_explanation && (
-                <div
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.03)',
-                    border: '1px solid rgba(255, 255, 255, 0.08)',
-                    padding: '16px',
-                    borderRadius: '12px',
-                    fontSize: '0.875rem',
-                    lineHeight: 1.6,
-                    color: '#d1d5db',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', color: '#818cf8', fontWeight: 600 }}>
-                    <Sparkles size={16} />
-                    <span>AI Career Coaching Insight</span>
+              ) : (
+                <>
+                  <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
+                    <ScoreGauge
+                      score={readinessData?.readiness_score || 0}
+                      size={190}
+                      label="Job Readiness"
+                      sublabel={!hasSkills ? 'Insufficient Evidence' : (readinessData?.readiness_tier || 'Evaluating')}
+                    />
                   </div>
-                  <p style={{ whiteSpace: 'pre-line' }}>{readinessData.ai_explanation}</p>
-                </div>
+
+                  {!hasSkills ? (
+                    <div style={{ textAlign: 'center', fontSize: '0.85rem', color: '#9ca3af', background: 'rgba(255, 255, 255, 0.02)', padding: '12px', borderRadius: '8px' }}>
+                      ⚡ <strong>Model baseline score.</strong> Add your verified skills, projects, and assessments to generate evidence-grounded personalized readiness.
+                    </div>
+                  ) : readinessData?.confidence_margin ? (
+                    <div style={{ textAlign: 'center', fontSize: '0.8rem', color: '#9ca3af' }}>
+                      Empirical Margin: ±{readinessData.confidence_margin}% • Evaluated on 13 features
+                    </div>
+                  ) : null}
+
+                  {/* AI Coaching Narrative */}
+                  {readinessData?.ai_explanation && (
+                    <div
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.03)',
+                        border: '1px solid rgba(255, 255, 255, 0.08)',
+                        padding: '16px',
+                        borderRadius: '12px',
+                        fontSize: '0.875rem',
+                        lineHeight: 1.6,
+                        color: '#d1d5db',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', color: '#818cf8', fontWeight: 600 }}>
+                        <Sparkles size={16} />
+                        <span>AI Career Coaching Insight</span>
+                      </div>
+                      <p style={{ whiteSpace: 'pre-line' }}>{readinessData.ai_explanation}</p>
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
@@ -275,15 +341,19 @@ export const DashboardPage: React.FC = () => {
                 <span style={{ fontSize: '0.85rem', color: '#9ca3af' }}>1-5 Proficiency Scale</span>
               </div>
 
-              {radarLabels.length > 0 ? (
+              {radarLabels.length > 0 && hasSkills ? (
                 <RadarChart labels={radarLabels} studentLevels={radarStudent} requiredLevels={radarRequired} />
               ) : (
                 <EmptyState
                   icon={<Layers size={36} color="#818cf8" />}
-                  title="No Skills Logged"
-                  description="Add skills to your profile to render your competency radar comparison."
-                  actionText="Add Skills"
-                  actionHref="/app/skills"
+                  title={!hasCareer ? "No Target Career Selected" : "No Skills Logged"}
+                  description={
+                    !hasCareer
+                      ? "Choose a target career to compare your competencies against industry requirements."
+                      : "Add skills to your profile to render your competency radar comparison."
+                  }
+                  actionText={!hasCareer ? "Choose Career" : "Add Skills"}
+                  actionHref={!hasCareer ? "/app/careers" : "/app/skills"}
                 />
               )}
             </div>
@@ -355,13 +425,23 @@ export const DashboardPage: React.FC = () => {
             <div className="glass-card" style={{ padding: '28px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
                 <h3 style={{ fontSize: '1.2rem' }}>Priority Growth Actions</h3>
-                <Link to="/app/skill-gap" style={{ fontSize: '0.85rem', color: '#818cf8', fontWeight: 600 }}>
-                  All Gaps ({gapData?.gaps?.length || 0}) &rarr;
-                </Link>
+                {hasCareer && (
+                  <Link to="/app/skill-gap" style={{ fontSize: '0.85rem', color: '#818cf8', fontWeight: 600 }}>
+                    All Gaps ({gapData?.gaps?.length || 0}) &rarr;
+                  </Link>
+                )}
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {nextActions.length > 0 ? (
+                {!hasCareer ? (
+                  <EmptyState
+                    icon={<Compass size={32} color="#818cf8" />}
+                    title="No Target Career Selected"
+                    description="Select a career goal to identify required competencies and priority action steps."
+                    actionText="Choose Career"
+                    actionHref="/app/careers"
+                  />
+                ) : nextActions.length > 0 ? (
                   nextActions.map((g: any, idx: number) => (
                     <div
                       key={idx}

@@ -35,22 +35,22 @@ async def register(payload: UserRegister, db: AsyncDatabase = Depends(get_db)):
     user_res = await db.users.insert_one(user_doc)
     user_id = str(user_res.inserted_id)
 
-    # Create associated student profile in MongoDB
+    # Create associated clean empty student profile in MongoDB
     profile_doc = {
         "user_id": user_id,
-        "headline": "Aspiring Software Engineer",
+        "headline": "",
         "bio": "",
-        "degree": "B.Tech Computer Science",
-        "institution": "University Institute of Technology",
-        "institution_tier": 2,
-        "graduation_year": 2027,
-        "gpa": 8.0,
-        "target_career_id": "CR001",
-        "target_career_title": "Full-Stack Software Engineer",
+        "degree": None,
+        "institution": None,
+        "institution_tier": None,
+        "graduation_year": None,
+        "gpa": None,
+        "target_career_id": None,
+        "target_career_title": None,
         "skills": [],
         "statistics": {
-            "weekly_study_hours": 12.0,
-            "learning_velocity_index": 1.0,
+            "weekly_study_hours": 0.0,
+            "learning_velocity_index": 0.0,
             "assessments_passed": 0,
             "projects_count": 0,
             "certifications_count": 0

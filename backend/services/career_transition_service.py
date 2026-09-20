@@ -87,10 +87,9 @@ class CareerTransitionService:
         """
         # 1. Fetch Profile & Resolve Careers
         profile = await db.student_profiles.find_one({"user_id": student_id})
-        if not profile:
-            raise ValueError(f"Student profile for user '{student_id}' not found.")
-
-        eff_source_id = source_career_id or profile.get("target_career_id") or "CR001"
+        eff_source_id = source_career_id or profile.get("target_career_id")
+        if not eff_source_id:
+            raise ValueError("No baseline/source career specified. Please provide a source career ID or set a target career in your profile.")
         source_doc = await self._resolve_career_doc(eff_source_id, db)
         target_doc = await self._resolve_career_doc(target_career_id, db)
 

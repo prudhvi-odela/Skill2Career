@@ -58,8 +58,7 @@ class LearningIntelligenceService:
         skills = profile.get("skills", []) if profile else []
         skill_count = len(skills)
         verified_skills = [s for s in skills if bool(s.get("verified", s.get("is_verified", False)))]
-        avg_prof = float(np.mean([float(s.get("level", 1.0)) for s in skills])) if skills else 1.0
-        target_cid = target_career_id or (profile.get("target_career_id") if profile else "CR001")
+        target_cid = target_career_id or (profile.get("target_career_id") if profile else None)
 
         # 2. Count Artifacts
         projects_count = await db.projects.count_documents({"student_id": student_id})

@@ -10,10 +10,10 @@ export const ProfilePage: React.FC = () => {
   const [bio, setBio] = useState('');
   const [degree, setDegree] = useState('');
   const [institution, setInstitution] = useState('');
-  const [graduationYear, setGraduationYear] = useState(2027);
-  const [gpa, setGpa] = useState(8.0);
+  const [graduationYear, setGraduationYear] = useState<number | string>('');
+  const [gpa, setGpa] = useState<number | string>('');
   const [targetCareerId, setTargetCareerId] = useState('');
-  const [weeklyStudyHours, setWeeklyStudyHours] = useState(12.0);
+  const [weeklyStudyHours, setWeeklyStudyHours] = useState<number | string>('');
 
   const [saving, setSaving] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -27,12 +27,12 @@ export const ProfilePage: React.FC = () => {
     if (profile) {
       setHeadline(profile.headline || '');
       setBio(profile.bio || '');
-      setDegree(profile.degree || 'B.Tech Computer Science');
+      setDegree(profile.degree || '');
       setInstitution(profile.institution || '');
-      setGraduationYear(profile.graduation_year || 2027);
-      setGpa(profile.gpa || 8.0);
+      setGraduationYear(profile.graduation_year ?? '');
+      setGpa(profile.gpa ?? '');
       setTargetCareerId(profile.target_career_id || '');
-      setWeeklyStudyHours(profile.weekly_study_hours || 12.0);
+      setWeeklyStudyHours(profile.weekly_study_hours ?? '');
     }
   }, [profile]);
 
@@ -44,14 +44,14 @@ export const ProfilePage: React.FC = () => {
 
     try {
       await studentApi.updateProfile({
-        headline,
-        bio,
-        degree,
-        institution,
-        graduation_year: Number(graduationYear),
-        gpa: Number(gpa),
+        headline: headline || null,
+        bio: bio || null,
+        degree: degree || null,
+        institution: institution || null,
+        graduation_year: graduationYear !== '' ? Number(graduationYear) : null,
+        gpa: gpa !== '' ? Number(gpa) : null,
         target_career_id: targetCareerId || null,
-        weekly_study_hours: Number(weeklyStudyHours),
+        weekly_study_hours: weeklyStudyHours !== '' ? Number(weeklyStudyHours) : 0,
       });
       await refreshProfile();
       setSuccessMsg('Profile updated and saved to database successfully.');
