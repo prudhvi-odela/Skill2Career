@@ -97,10 +97,19 @@ async def health_check():
     except Exception as e:
         db_status = f"MongoDB connection error: {str(e)}"
 
+    ai_provider = "deterministic-grounded-fallback"
+    if settings.GEMINI_API_KEY and settings.AI_PROVIDER in ("gemini", "auto"):
+        ai_provider = f"google-gemini ({settings.AI_MODEL_NAME})"
+    elif settings.OPENAI_API_KEY and settings.AI_PROVIDER in ("openai", "auto"):
+        ai_provider = "openai (gpt-4o-mini)"
+
     return {
         "status": "healthy",
+        "version": "2.0.0",
         "database": db_status,
-        "ml_models": "loaded"
+        "ml_models": "loaded (readiness_pipeline.joblib & trajectory_forecaster.joblib)",
+        "ai_engine": ai_provider,
+        "environment": "configured"
     }
 
 

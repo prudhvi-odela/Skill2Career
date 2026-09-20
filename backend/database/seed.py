@@ -687,6 +687,57 @@ async def seed_database():
     await db.learning_snapshots.delete_many({"student_id": user_id})
     await db.learning_snapshots.insert_many(demo_snapshots)
 
+    # 10. Seed Demo Assessment Results
+    await db.assessment_results.delete_many({"student_id": user_id})
+    await db.assessment_results.insert_many([
+        {
+            "student_id": user_id,
+            "assessment_id": "SK001",
+            "skill_id": "SK001",
+            "score": 100.0,
+            "passed": True,
+            "answers": {"Q_PY_01": 0, "Q_PY_02": 1, "Q_PY_03": 1, "Q_PY_04": 1},
+            "completed_at": now - timedelta(days=12)
+        },
+        {
+            "student_id": user_id,
+            "assessment_id": "SK027",
+            "skill_id": "SK027",
+            "score": 100.0,
+            "passed": True,
+            "answers": {"Q_ML_01": 1, "Q_ML_02": 1, "Q_ML_03": 1},
+            "completed_at": now - timedelta(days=3)
+        }
+    ])
+
+    # 11. Seed Initial Adaptive Roadmaps (Phase 08)
+    try:
+        from backend.services.adaptive_roadmap_service import AdaptiveRoadmapService
+        roadmap_svc = AdaptiveRoadmapService()
+        await roadmap_svc.generate_or_get_adaptive_roadmap(student_id=user_id, target_career_id="CR004", db=db, force_regenerate=True)
+        await roadmap_svc.generate_or_get_adaptive_roadmap(student_id=user_id, target_career_id="CR001", db=db, force_regenerate=True)
+        print("[OK] Generated initial active adaptive roadmaps for CR004 and CR001.")
+    except Exception as e:
+        print(f"[Warn] Roadmap seed skip: {e}")
+
+    # 12. Seed Initial Career Forecast (Phase 10)
+    try:
+        from backend.services.career_forecast_service import CareerForecastService
+        forecast_svc = CareerForecastService()
+        await forecast_svc.generate_career_forecast(student_id=user_id, career_id="CR004", horizon_days=90, db=db)
+        print("[OK] Seeded initial career forecast calculation for CR004 (90-day horizon).")
+    except Exception as e:
+        print(f"[Warn] Forecast seed skip: {e}")
+
+    # 13. Seed Initial Career Transition Plan (Phase 11)
+    try:
+        from backend.services.career_transition_service import CareerTransitionService
+        trans_svc = CareerTransitionService()
+        await trans_svc.analyze_transition(student_id=user_id, target_career_id="CR004", source_career_id="CR001", db=db, persist=True)
+        print("[OK] Seeded initial career transition plan (CR001 -> CR004).")
+    except Exception as e:
+        print(f"[Warn] Transition plan seed skip: {e}")
+
     print(f"[OK] Seeded demo user ({demo_email}) and profile successfully.")
     print(f"[OK] Seeded {len(market_sources)} market data sources, {len(career_signals)} career signals, and {len(skill_signals)} skill signals.")
     print(f"[OK] Seeded {len(skill_dependencies_seed)} canonical skill dependencies.")
