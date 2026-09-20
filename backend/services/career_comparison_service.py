@@ -63,10 +63,10 @@ class CareerComparisonService:
                     student_skills_list=student_skills,
                     target_career_id=cid,
                     degree=profile.get("degree", "B.Tech Computer Science"),
-                    institution_tier=int(profile.get("institution_tier", 2)),
-                    gpa=float(profile.get("gpa", 8.0)),
-                    weekly_study_hours=float(profile.get("statistics", {}).get("weekly_study_hours", 12.0)),
-                    learning_velocity_index=float(profile.get("statistics", {}).get("learning_velocity_index", 1.0))
+                    institution_tier=int(profile.get("institution_tier") or 2),
+                    gpa=float(profile.get("gpa") or 8.0),
+                    weekly_study_hours=float((profile.get("statistics") or {}).get("weekly_study_hours") or 12.0),
+                    learning_velocity_index=float((profile.get("statistics") or {}).get("learning_velocity_index") or 1.0)
                 )
                 readiness_score = float(pred_out.get("readiness_score", 0.0))
 

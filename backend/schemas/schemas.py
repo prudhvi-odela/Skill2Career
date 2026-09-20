@@ -3,7 +3,7 @@ Skill2Career Pydantic Request & Response Schemas
 Type-safe API contracts with OpenAPI validation.
 """
 
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Union
 from pydantic import BaseModel, EmailStr, Field, ConfigDict
 from datetime import datetime
 
@@ -63,7 +63,7 @@ class ProfileUpdate(BaseModel):
     bio: Optional[str] = None
     degree: Optional[str] = None
     major_or_branch: Optional[str] = None
-    academic_year: Optional[str] = None
+    academic_year: Optional[Union[str, int]] = None
     institution: Optional[str] = None
     institution_tier: Optional[int] = Field(default=None, ge=1, le=3)
     graduation_year: Optional[int] = None
@@ -82,7 +82,7 @@ class ProfileResponse(BaseModel):
     bio: Optional[str] = None
     degree: Optional[str] = None
     major_or_branch: Optional[str] = None
-    academic_year: Optional[str] = None
+    academic_year: Optional[Union[str, int]] = None
     institution: Optional[str] = None
     institution_tier: Optional[int] = None
     graduation_year: Optional[int] = None

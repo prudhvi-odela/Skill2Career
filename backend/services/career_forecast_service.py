@@ -102,7 +102,7 @@ class CareerForecastService:
         # 3. Simulate Active Scenario (Defaults to CURRENT_TRAJECTORY)
         req = scenario_params or ScenarioSimulationRequest(
             scenario_type=ScenarioType.CURRENT_TRAJECTORY,
-            weekly_study_hours=float(profile.get("weekly_study_hours", 12.0)),
+            weekly_study_hours=float(profile.get("weekly_study_hours") or (profile.get("statistics") or {}).get("weekly_study_hours") or 12.0),
             learning_days_per_week=4,
             forecast_horizon_days=horizon_days
         )
@@ -229,7 +229,7 @@ class CareerForecastService:
         if stype == ScenarioType.CURRENT_TRAJECTORY:
             sname = "Continue Current Trajectory"
             sdesc = "Projects forward using observed study pace and consistency without behavioral change."
-            weekly_hrs = float(scenario_req.weekly_study_hours or profile.get("weekly_study_hours", 12.0))
+            weekly_hrs = float(scenario_req.weekly_study_hours or profile.get("weekly_study_hours") or (profile.get("statistics") or {}).get("weekly_study_hours") or 12.0)
             velocity_mult = 1.0
             assumptions.append(f"Maintains baseline commitment of {weekly_hrs:.1f} study hours/week.")
             assumptions.append("Preserves observed historical learning velocity and retention pace.")
@@ -468,8 +468,8 @@ class CareerForecastService:
                 student_skills_list=simulated_skills_list,
                 target_career_id=career_code,
                 degree=profile.get("degree", "B.Tech Computer Science"),
-                institution_tier=int(profile.get("institution_tier", 2)),
-                gpa=float(profile.get("gpa", 8.0)),
+                institution_tier=int(profile.get("institution_tier") or 2),
+                gpa=float(profile.get("gpa") or 8.0),
                 weekly_study_hours=weekly_hrs,
                 learning_velocity_index=min(2.5, proj_velocity)
             )

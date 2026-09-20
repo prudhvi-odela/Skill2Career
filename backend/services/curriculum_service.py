@@ -284,11 +284,13 @@ class CurriculumService:
         evidence_id = None
         for skill_id in subject.get("canonical_skills", []):
             try:
-                ev_res = await self.evidence_service.create_evidence(
-                    student_id=student_id,
+                from backend.schemas.evidence_schemas import EvidenceCreateRequest, EvidenceType
+                
+                # Check/insert a student assessment doc if needed
+                req = EvidenceCreateRequest(
                     skill_id=skill_id,
-                    evidence_type="ASSESSMENT",
-                    source_entity="SUBJECT_DIAGNOSTIC",
+                    evidence_type=EvidenceType.ASSESSMENT,
+                    source_entity="student_assessments",
                     source_entity_id=subject["subject_code"],
                     title=f"Diagnostic Assessment: {subject['name']}",
                     description=f"Scored {score_pct:.1f}% ({correct_count}/{len(questions)}) on branch diagnostic test.",
@@ -298,13 +300,47 @@ class CurriculumService:
                         "subject_code": subject["subject_code"],
                         "total_questions": len(questions),
                         "passed": passed
-                    },
+                    }
+                )
+                ev_res = await self.evidence_service.create_evidence(
+                    student_id=student_id,
+                    request=req,
                     db=db
                 )
                 evidence_created = True
                 evidence_id = ev_res.get("evidence_id")
             except Exception as e:
-                print(f"[Warn] Evidence creation for diagnostic: {e}")
+                # Direct fallback evidence insert for curriculum diagnostics
+                try:
+                    import uuid
+                    from backend.services.evidence_service import EvidenceService
+                    strength, num_score, rationale = EvidenceService.evaluate_evidence_strength(
+                        evidence_type="ASSESSMENT",
+                        verification_status="ASSESSMENT_VERIFIED",
+                        observed_proficiency=level,
+                        source_metadata={"score_percentage": score_pct, "passed": passed}
+                    )
+                    ev_id = f"EV_{uuid.uuid4().hex[:10]}"
+                    await db.skill_evidence.insert_one({
+                        "evidence_id": ev_id,
+                        "student_id": student_id,
+                        "skill_id": skill_id,
+                        "evidence_type": "ASSESSMENT",
+                        "source_entity": "subject_diagnostics",
+                        "source_entity_id": subject["subject_code"],
+                        "title": f"Diagnostic Assessment: {subject['name']}",
+                        "description": f"Scored {score_pct:.1f}% on branch diagnostic test.",
+                        "observed_proficiency": level,
+                        "strength_level": strength,
+                        "numerical_score": num_score,
+                        "confidence_rationale": rationale,
+                        "verification_status": "ASSESSMENT_VERIFIED",
+                        "created_at": now
+                    })
+                    evidence_created = True
+                    evidence_id = ev_id
+                except Exception as inner_e:
+                    print(f"[Warn] Evidence creation for diagnostic: {inner_e}")
 
         return {
             "subject_id": subject["subject_code"],

@@ -15,6 +15,7 @@ from pymongo.asynchronous.database import AsyncDatabase
 
 from backend.database.mongodb import get_utc_now
 from backend.services.evidence_service import EvidenceService
+from backend.schemas.evidence_schemas import EvidenceCreateRequest, EvidenceType
 
 logger = logging.getLogger(__name__)
 
@@ -174,11 +175,10 @@ class PracticeService:
         if overall_status == "ACCEPTED" and problem.get("canonical_skills"):
             for s_id in problem.get("canonical_skills", []):
                 try:
-                    ev_res = await self.evidence_service.create_evidence(
-                        student_id=student_id,
+                    req = EvidenceCreateRequest(
                         skill_id=s_id,
-                        evidence_type="PROJECT",
-                        source_entity="PRACTICE_CHALLENGE",
+                        evidence_type=EvidenceType.PROJECT,
+                        source_entity="practice_problems",
                         source_entity_id=problem["problem_code"],
                         title=f"Solved Challenge: {problem['title']}",
                         description=f"Successfully implemented {clean_lang} solution passing all {len(test_cases)} test cases in {elapsed_ms}ms.",
@@ -187,7 +187,11 @@ class PracticeService:
                             "problem_code": problem["problem_code"],
                             "language": clean_lang,
                             "execution_time_ms": elapsed_ms
-                        },
+                        }
+                    )
+                    ev_res = await self.evidence_service.create_evidence(
+                        student_id=student_id,
+                        request=req,
                         db=db
                     )
                     evidence_recorded = True
