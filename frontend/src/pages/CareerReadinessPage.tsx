@@ -182,7 +182,9 @@ export const CareerReadinessPage: React.FC = () => {
             <span className="text-3xl font-extrabold text-white">
               {ml?.readiness_score ? ml.readiness_score.toFixed(1) : '0.0'}%
             </span>
-            <span className="text-xs text-slate-500">±{ml?.confidence_margin || 2.2}%</span>
+            <span className="text-xs text-slate-400 font-medium" title="Approx. model test MAE residual error">
+              ±{ml?.confidence_margin ? ml.confidence_margin.toFixed(1) : '2.2'} pts error
+            </span>
           </div>
           <div className="mt-3 flex items-center justify-between text-xs">
             <span className="text-indigo-400 font-medium">{ml?.readiness_tier}</span>

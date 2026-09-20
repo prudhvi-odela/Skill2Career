@@ -30,7 +30,7 @@ class MLReadinessBenchmark(BaseModel):
     readiness_tier: str = Field(..., description="Classification tier (e.g. Job Ready, Strong Candidate, Developing)")
     is_job_ready: bool = Field(..., description="Whether score meets the >= 75.0 benchmark")
     model_version: str = Field(..., description="Registered ML model version tag")
-    confidence_margin: float = Field(..., description="Measured test MAE confidence margin (e.g. +/- 2.2)")
+    confidence_margin: float = Field(..., description="Approximate model test MAE residual error margin in score points (e.g. +/- 2.2 points); not a 95% statistical confidence interval")
     model_algorithm: str = Field(default="LinearRegression", description="Algorithm name used for prediction")
     interpretation_note: str = Field(
         default="Synthetic competency benchmark evaluated by trained ML inference pipeline; does not constitute an employment guarantee.",
