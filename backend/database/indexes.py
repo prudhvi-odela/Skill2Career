@@ -130,3 +130,16 @@ async def ensure_indexes(db: AsyncDatabase):
     await db.career_transitions.create_index([("student_id", ASCENDING), ("created_at", DESCENDING)])
 
     print("[MongoDB] All collection indexes successfully created and verified.")
+    return True
+
+
+if __name__ == "__main__":
+    import asyncio
+    from backend.database.mongodb import connect_to_mongo, close_mongo_connection
+    async def _run_indexes():
+        print("--- Ensuring Skill2Career MongoDB Indexes ---")
+        db = await connect_to_mongo()
+        await ensure_indexes(db)
+        await close_mongo_connection()
+        print("Done.")
+    asyncio.run(_run_indexes())

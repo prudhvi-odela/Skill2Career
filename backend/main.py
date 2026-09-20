@@ -8,8 +8,6 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from backend.config import settings
 from backend.database.mongodb import connect_to_mongo, close_mongo_connection, get_db
-from backend.database.indexes import ensure_indexes
-from backend.database.seed import seed_database
 from backend.routers import (
     auth_router,
     student_router,
@@ -31,15 +29,13 @@ from backend.routers import (
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: connect to MongoDB, ensure indexes, seed initial data
+    # Startup: initialize MongoDB connection pool
     try:
-        db = await connect_to_mongo()
-        await ensure_indexes(db)
-        await seed_database()
+        await connect_to_mongo()
     except Exception as e:
         print(f"[Lifespan Startup Error]: {e}")
     yield
-    # Shutdown: close MongoDB connection
+    # Shutdown: close MongoDB connection pool
     await close_mongo_connection()
 
 

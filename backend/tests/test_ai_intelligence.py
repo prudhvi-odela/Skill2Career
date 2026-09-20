@@ -5,17 +5,15 @@ conversational chat, and interaction persistence in MongoDB via FastAPI TestClie
 """
 
 import pytest
-from fastapi.testclient import TestClient
+from httpx import AsyncClient, ASGITransport
 from backend.main import app
 
-client = TestClient(app)
 
-
-def get_auth_token():
+async def get_auth_token(client: AsyncClient):
     """Logs in or registers a test student and returns auth headers."""
     email = "ai_test_student@skill2career.com"
     password = "SecurePassword123!"
-    reg_res = client.post("/api/v1/auth/register", json={
+    reg_res = await client.post("/api/v1/auth/register", json={
         "email": email,
         "password": password,
         "full_name": "AI Intelligence Student",
@@ -24,12 +22,13 @@ def get_auth_token():
     if reg_res.status_code == 201:
         token = reg_res.json()["access_token"]
     else:
-        login_res = client.post("/api/v1/auth/login", json={"email": email, "password": password})
+        login_res = await client.post("/api/v1/auth/login", json={"email": email, "password": password})
         token = login_res.json()["access_token"]
     return {"Authorization": f"Bearer {token}"}
 
 
-def test_ai_career_intelligence_full_suite():
+@pytest.mark.anyio
+async def test_ai_career_intelligence_full_suite(monkeypatch):
     """
     End-to-end test validating:
     1. Student profile & skills setup
@@ -41,96 +40,112 @@ def test_ai_career_intelligence_full_suite():
     7. POST /api/v1/ai/chat (natural language grounding)
     8. GET /api/v1/ai/history (MongoDB interaction persistence)
     """
-    headers = get_auth_token()
+    from backend.services.ai_service import get_ai_service
+    from backend.config import settings
+    monkeypatch.setattr(settings, "GEMINI_API_KEY", "")
+    monkeypatch.setattr(get_ai_service(), "gemini_key", "")
+    monkeypatch.setattr(get_ai_service(), "openai_key", "")
 
-    # 1. Ensure student profile and skills are configured
-    client.put("/api/v1/student/profile", headers=headers, json={
-        "degree": "B.Tech Computer Science",
-        "institution": "Tech University",
-        "institution_tier": 1,
-        "graduation_year": 2026,
-        "gpa": 8.5,
-        "target_career_id": "CR001",
-        "weekly_study_hours": 16.0
-    })
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        print("\n[Step 0] Getting auth token...")
+        headers = await get_auth_token(client)
+        print("[Step 0 OK] Token acquired.")
 
-    client.post("/api/v1/student/skills", headers=headers, json={
-        "skill_id": "SK001",
-        "proficiency_level": 4.5,
-        "years_experience": 2.0
-    })
-    client.post("/api/v1/student/skills", headers=headers, json={
-        "skill_id": "SK009",
-        "proficiency_level": 4.0,
-        "years_experience": 1.5
-    })
+        # 1. Ensure student profile and skills are configured
+        print("[Step 1] Updating profile...")
+        await client.put("/api/v1/student/profile", headers=headers, json={
+            "degree": "B.Tech Computer Science",
+            "institution": "Tech University",
+            "institution_tier": 1,
+            "graduation_year": 2026,
+            "gpa": 8.5,
+            "target_career_id": "CR001",
+            "weekly_study_hours": 16.0
+        })
+        print("[Step 1 OK] Profile updated.")
 
-    # Trigger ML readiness prediction first so authoritative result is cached
-    readiness_res = client.post("/api/v1/analysis/readiness", headers=headers, json={"target_career_id": "CR001"})
-    assert readiness_res.status_code == 200, f"Readiness prediction failed: {readiness_res.text}"
-    readiness_data = readiness_res.json()
-    assert "readiness_score" in readiness_data
+        await client.post("/api/v1/student/skills", headers=headers, json={
+            "skill_id": "SK001",
+            "proficiency_level": 4.5,
+            "years_experience": 2.0
+        })
+        await client.post("/api/v1/student/skills", headers=headers, json={
+            "skill_id": "SK009",
+            "proficiency_level": 4.0,
+            "years_experience": 1.5
+        })
+        print("[Step 1 OK] Skills updated.")
 
-    # 2. Test Explain Readiness
-    explain_res = client.post("/api/v1/ai/explain-readiness", headers=headers)
-    assert explain_res.status_code == 200, f"Explain readiness failed: {explain_res.text}"
-    exp_body = explain_res.json()
-    assert "message" in exp_body
-    assert len(exp_body["message"]) > 15
-    assert len(exp_body["key_points"]) > 0
-    assert len(exp_body["recommended_actions"]) > 0
-    assert exp_body["context_type"] == "readiness_explanation"
+        # Trigger ML readiness prediction first so authoritative result is cached
+        print("[Step 1.5] Calling readiness prediction...")
+        readiness_res = await client.post("/api/v1/analysis/readiness", headers=headers, json={"target_career_id": "CR001"})
+        assert readiness_res.status_code == 200, f"Readiness prediction failed: {readiness_res.text}"
+        readiness_data = readiness_res.json()
+        assert "readiness_score" in readiness_data
+        print("[Step 1.5 OK] Readiness prediction complete.")
 
-    # 3. Test Explain Skill Gap
-    gap_res = client.post("/api/v1/ai/explain-gap", headers=headers, json={"career_id": "CR001"})
-    assert gap_res.status_code == 200, f"Explain gap failed: {gap_res.text}"
-    gap_body = gap_res.json()
-    assert "message" in gap_body
-    assert gap_body["context_type"] == "skill_gap_explanation"
-    assert len(gap_body["referenced_careers"]) > 0
+        # 2. Test Explain Readiness
+        print("[Step 2] Explaining readiness...")
+        explain_res = await client.post("/api/v1/ai/explain-readiness", headers=headers)
+        assert explain_res.status_code == 200, f"Explain readiness failed: {explain_res.text}"
+        exp_body = explain_res.json()
+        assert "message" in exp_body
+        assert len(exp_body["message"]) > 15
+        assert len(exp_body["key_points"]) > 0
+        assert len(exp_body["recommended_actions"]) > 0
+        assert exp_body["context_type"] == "readiness_explanation"
 
-    # 4. Test Next Best Action
-    action_res = client.post("/api/v1/ai/next-action", headers=headers, json={"career_id": "CR001"})
-    assert action_res.status_code == 200, f"Next action failed: {action_res.text}"
-    act_body = action_res.json()
-    assert len(act_body["recommended_actions"]) > 0
-    assert act_body["context_type"] == "next_action"
+        # 3. Test Explain Skill Gap
+        gap_res = await client.post("/api/v1/ai/explain-gap", headers=headers, json={"career_id": "CR001"})
+        assert gap_res.status_code == 200, f"Explain gap failed: {gap_res.text}"
+        gap_body = gap_res.json()
+        assert "message" in gap_body
+        assert gap_body["context_type"] == "skill_gap_explanation"
+        assert len(gap_body["referenced_careers"]) > 0
 
-    # 5. Test Explain Career Match
-    career_res = client.post("/api/v1/ai/explain-career", headers=headers, json={"career_id": "CR001"})
-    assert career_res.status_code == 200, f"Explain career failed: {career_res.text}"
-    car_body = career_res.json()
-    assert "message" in car_body
-    assert car_body["context_type"] == "career_explanation"
+        # 4. Test Next Best Action
+        action_res = await client.post("/api/v1/ai/next-action", headers=headers, json={"career_id": "CR001"})
+        assert action_res.status_code == 200, f"Next action failed: {action_res.text}"
+        act_body = action_res.json()
+        assert len(act_body["recommended_actions"]) > 0
+        assert act_body["context_type"] == "next_action"
 
-    # 6. Test Explain Trajectory
-    traj_res = client.post("/api/v1/ai/explain-trajectory", headers=headers, json={
-        "weekly_hours": 20.0,
-        "consistency": 1.2
-    })
-    assert traj_res.status_code == 200, f"Explain trajectory failed: {traj_res.text}"
-    traj_body = traj_res.json()
-    assert "message" in traj_body
-    assert traj_body["context_type"] == "trajectory_explanation"
+        # 5. Test Explain Career Match
+        career_res = await client.post("/api/v1/ai/explain-career", headers=headers, json={"career_id": "CR001"})
+        assert career_res.status_code == 200, f"Explain career failed: {career_res.text}"
+        car_body = career_res.json()
+        assert "message" in car_body
+        assert car_body["context_type"] == "career_explanation"
 
-    # 7. Test Career Chat (Natural language grounded queries)
-    chat_res = client.post("/api/v1/ai/chat", headers=headers, json={
-        "message": "Why am I not ready for this role and what projects should I build?",
-        "target_career_id": "CR001"
-    })
-    assert chat_res.status_code == 200, f"Chat failed: {chat_res.text}"
-    chat_body = chat_res.json()
-    assert "message" in chat_body
-    assert len(chat_body["key_points"]) > 0
-    assert len(chat_body["recommended_actions"]) > 0
-    assert len(chat_body["warnings"]) > 0
-    assert chat_body["context_type"] == "career_chat"
+        # 6. Test Explain Trajectory
+        traj_res = await client.post("/api/v1/ai/explain-trajectory", headers=headers, json={
+            "weekly_hours": 20.0,
+            "consistency": 1.2
+        })
+        assert traj_res.status_code == 200, f"Explain trajectory failed: {traj_res.text}"
+        traj_body = traj_res.json()
+        assert "message" in traj_body
+        assert traj_body["context_type"] == "trajectory_explanation"
 
-    # 8. Test Interaction Persistence in MongoDB
-    history_res = client.get("/api/v1/ai/history", headers=headers)
-    assert history_res.status_code == 200, f"History fetch failed: {history_res.text}"
-    history = history_res.json()
-    assert isinstance(history, list)
-    assert len(history) >= 1
-    assert history[0]["user_message"] is not None
-    assert history[0]["assistant_response"] is not None
+        # 7. Test Career Chat (Natural language grounded queries)
+        chat_res = await client.post("/api/v1/ai/chat", headers=headers, json={
+            "message": "Why am I not ready for this role and what projects should I build?",
+            "target_career_id": "CR001"
+        })
+        assert chat_res.status_code == 200, f"Chat failed: {chat_res.text}"
+        chat_body = chat_res.json()
+        assert "message" in chat_body
+        assert len(chat_body["key_points"]) > 0
+        assert len(chat_body["recommended_actions"]) > 0
+        assert len(chat_body["warnings"]) > 0
+        assert chat_body["context_type"] == "career_chat"
+
+        # 8. Test Interaction Persistence in MongoDB
+        history_res = await client.get("/api/v1/ai/history", headers=headers)
+        assert history_res.status_code == 200, f"History fetch failed: {history_res.text}"
+        history = history_res.json()
+        assert isinstance(history, list)
+        assert len(history) >= 1
+        assert history[0]["user_message"] is not None
+        assert history[0]["assistant_response"] is not None

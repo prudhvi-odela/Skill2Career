@@ -368,7 +368,10 @@ class CareerAIService:
                     system_instruction=SYSTEM_PROMPT,
                     generation_config={"response_mime_type": "application/json", "temperature": 0.2}
                 )
-                gemini_res = await model.generate_content_async(prompt)
+                gemini_res = await asyncio.wait_for(
+                    model.generate_content_async(prompt, request_options={"timeout": 3.0}),
+                    timeout=3.0
+                )
                 parsed = json.loads(gemini_res.text)
                 response_data = AIStructuredResponse(
                     message=parsed.get("message", ""),

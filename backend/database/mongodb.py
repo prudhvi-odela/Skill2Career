@@ -12,6 +12,14 @@ from pymongo.asynchronous.database import AsyncDatabase
 from backend.config import settings
 
 
+try:
+    import dns.resolver
+    if hasattr(dns.resolver, "default_resolver") and dns.resolver.default_resolver is not None:
+        dns.resolver.default_resolver.nameservers = ['8.8.8.8', '1.1.1.1', '8.8.4.4']
+except Exception:
+    pass
+
+
 class MongoDBManager:
     client: Optional[AsyncMongoClient] = None
     db: Optional[AsyncDatabase] = None
@@ -25,11 +33,13 @@ async def connect_to_mongo() -> AsyncDatabase:
     """Initializes AsyncMongoClient for the current event loop and verifies connection."""
     current_loop = asyncio.get_running_loop()
     if db_manager.client is None or db_manager.loop != current_loop:
-        db_manager.client = AsyncMongoClient(settings.MONGODB_URI)
+        db_manager.client = AsyncMongoClient(
+            settings.MONGODB_URI,
+            serverSelectionTimeoutMS=5000,
+            connectTimeoutMS=10000
+        )
         db_manager.db = db_manager.client[settings.MONGODB_DATABASE]
         db_manager.loop = current_loop
-        # Ping the server to verify connectivity
-        await db_manager.client.admin.command("ping")
     return db_manager.db
 
 
