@@ -280,6 +280,33 @@ async def build_student_ai_context(
     except Exception:
         pass
 
+    # 12. Career Readiness Analysis (Phase 09C)
+    career_readiness_context = None
+    if effective_target_career_id:
+        try:
+            from backend.services.career_readiness_service import CareerReadinessService
+            cr_svc = CareerReadinessService()
+            cr_analysis = await cr_svc.get_career_readiness_analysis(
+                student_id=user_id,
+                career_id=effective_target_career_id,
+                db=db
+            )
+            career_readiness_context = {
+                "ml_readiness_score": cr_analysis.existing_ml_readiness.readiness_score,
+                "ml_readiness_tier": cr_analysis.existing_ml_readiness.readiness_tier,
+                "skill_coverage_pct": cr_analysis.skill_alignment.coverage_percentage,
+                "evidence_coverage_ratio": cr_analysis.evidence_coverage.evidence_coverage_ratio,
+                "evidence_evaluation": cr_analysis.evidence_coverage.coverage_evaluation,
+                "trajectory_direction": cr_analysis.learning_trajectory.trajectory_direction,
+                "market_demand_score": cr_analysis.market_alignment.demand_score,
+                "market_status": cr_analysis.market_alignment.market_signal_status,
+                "top_strengths": [s.skill_name for s in cr_analysis.strengths[:3]],
+                "top_gaps": [g.skill_name for g in cr_analysis.gaps if not g.is_mastered][:3],
+                "top_actions": [a.skill_name for a in cr_analysis.next_actions[:3]]
+            }
+        except Exception:
+            pass
+
     # Return structured context bundle
     return {
         "student": {
@@ -307,6 +334,7 @@ async def build_student_ai_context(
         },
         "evidence_engine": evidence_context,
         "learning_intelligence": learning_intelligence_context,
+        "career_readiness": career_readiness_context,
         "ml_readiness": {
             "prediction_id": str(latest_prediction.get("_id", "N/A")) if latest_prediction else "N/A",
             "readiness_score": float(latest_prediction.get("readiness_score", 0.0)) if latest_prediction else 0.0,

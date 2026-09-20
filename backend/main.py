@@ -22,7 +22,8 @@ from backend.routers import (
     market_router,
     recommendation_router,
     evidence_router,
-    learning_intelligence_router
+    learning_intelligence_router,
+    career_readiness_router
 )
 
 
@@ -69,6 +70,7 @@ app.include_router(market_router.router, prefix=settings.API_V1_STR)
 app.include_router(recommendation_router.router, prefix=settings.API_V1_STR)
 app.include_router(evidence_router.router, prefix=settings.API_V1_STR)
 app.include_router(learning_intelligence_router.router, prefix=settings.API_V1_STR)
+app.include_router(career_readiness_router.router, prefix=settings.API_V1_STR)
 
 
 @app.get("/")

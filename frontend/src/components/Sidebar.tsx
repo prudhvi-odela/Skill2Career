@@ -15,7 +15,8 @@ import {
   Sparkles,
   Globe2,
   Award,
-  Activity
+  Activity,
+  Briefcase
 } from 'lucide-react';
 
 const NAV_ITEMS = [
@@ -31,7 +32,8 @@ const NAV_ITEMS = [
   { path: '/app/careers', label: 'Career Explorer', icon: Compass },
   { path: '/app/market-intelligence', label: 'Market Intelligence', icon: Globe2 },
   { path: '/app/skill-gap', label: 'Skill Gap Analysis', icon: GitPullRequest },
-  { path: '/app/job-readiness', label: 'Job Readiness', icon: CheckCircle2 },
+  { path: '/app/career-readiness', label: 'Career Readiness', icon: Briefcase },
+  { path: '/app/job-readiness', label: 'ML Benchmark', icon: CheckCircle2 },
 
   { section: 'FUTURE & ROADMAP' },
   { path: '/app/trajectory', label: 'Trajectory Forecaster', icon: TrendingUp },

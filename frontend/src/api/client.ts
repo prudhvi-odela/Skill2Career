@@ -183,4 +183,14 @@ export const learningIntelligenceApi = {
     apiClient.post('/learning-intelligence/snapshot', null, { params: { target_career_id: targetCareerId } }),
 };
 
+export const careerReadinessApi = {
+  getAnalysis: (careerId: string) => apiClient.get(`/career-readiness/${careerId}`),
+  getStrengths: (careerId: string) => apiClient.get(`/career-readiness/${careerId}/strengths`),
+  getGaps: (careerId: string) => apiClient.get(`/career-readiness/${careerId}/gaps`),
+  getEvidence: (careerId: string) => apiClient.get(`/career-readiness/${careerId}/evidence`),
+  compareCareers: (careerIds: string[]) =>
+    apiClient.get('/career-readiness/compare', { params: { career_ids: careerIds } }),
+};
+
+
 

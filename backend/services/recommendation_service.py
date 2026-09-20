@@ -254,7 +254,7 @@ class RecommendationService:
                 f"{market_desc}. Structurally, {downstream_str}; {prereq_status_str}."
             )
 
-            rec_id = f"rec_{uuid.uuid4().hex[:10]}"
+            rec_id = f"rec_{effective_career_id}_{s_id}"
             recommendations.append({
                 "recommendation_id": rec_id,
                 "student_id": student_id,

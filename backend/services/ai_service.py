@@ -45,6 +45,10 @@ CORE OPERATING PRINCIPLES:
    - When discussing momentum, learning velocity, consistency streaks, or stagnation status, ground observations strictly in the provided `learning_intelligence` metrics.
    - Do not confuse analytical trajectory confidence with machine learning model prediction confidence.
    - Do not guarantee employment or predict future salary outcomes based on learning velocity.
+8. Career Readiness & Evidence Interpretation (Phase 09C):
+   - When explaining career readiness, synthesize skill alignment, verified evidence coverage, trajectory momentum, and external market signals.
+   - Explain what remains missing, why specific skills are critical, and which evidence artifacts substantiate the evaluation.
+   - Never calculate a new readiness percentage, modify authoritative skill levels, or guarantee hiring.
 
 OUTPUT FORMAT:
 You must respond with valid JSON matching this schema:
@@ -236,6 +240,28 @@ class CareerAIService:
             prompt=prompt,
             context=context,
             context_type="trajectory_explanation",
+            db=db
+        )
+
+    async def explain_career_readiness(
+        self,
+        user_id: str,
+        career_id: str,
+        db: AsyncDatabase
+    ) -> AIStructuredResponse:
+        """Explains career-specific readiness, evidence coverage, strengths, and gaps."""
+        context = await build_student_ai_context(user_id=user_id, db=db, target_career_id=career_id)
+        prompt = (
+            f"Context:\n{json.dumps(context, indent=2)}\n\n"
+            f"Task: Explain my comprehensive career readiness for '{context.get('target_career', {}).get('title', career_id)}'. "
+            "Detail my demonstrated strengths with supporting evidence, critical gaps needing remediation, "
+            "how my learning trajectory influences progress, and how external market demand contextualizes this path."
+        )
+        return await self._generate_response(
+            user_id=user_id,
+            prompt=prompt,
+            context=context,
+            context_type="career_readiness_explanation",
             db=db
         )
 
