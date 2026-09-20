@@ -1,16 +1,18 @@
 """
 Skill2Career Skill Assessment & Quiz Router (MongoDB Async)
-Enables automated skill verification, interactive quizzes, and proficiency elevation in MongoDB.
+Enables automated skill verification, interactive quizzes, proficiency elevation, and authoring in MongoDB.
 """
 
-from typing import List, Dict, Any
+import uuid
+from typing import List, Dict, Any, Optional
 from bson import ObjectId
 from fastapi import APIRouter, Depends, HTTPException, status
 from pymongo.asynchronous.database import AsyncDatabase
 
 from backend.database.mongodb import get_db, get_utc_now, serialize_doc, serialize_docs
 from backend.schemas.schemas import (
-    AssessmentDetailResponse, QuestionItem, AssessmentSubmitRequest, AssessmentResultResponse
+    AssessmentDetailResponse, QuestionItem, AssessmentSubmitRequest, AssessmentResultResponse,
+    AssessmentCreate, AssessmentUpdate, QuestionCreate, QuestionUpdate
 )
 from backend.services.auth_service import get_current_user
 
@@ -39,7 +41,8 @@ async def list_assessments(db: AsyncDatabase = Depends(get_db)):
             "difficulty": a.get("difficulty", "Intermediate"),
             "time_limit_mins": int(a.get("time_limit_minutes", 10)),
             "pass_score": float(a.get("pass_score", 70.0)),
-            "total_questions": len(a.get("questions", []))
+            "total_questions": len(a.get("questions", [])),
+            "is_active": a.get("is_active", True)
         })
     return results
 
@@ -61,7 +64,8 @@ async def get_assessment_quiz(assessment_id: str, db: AsyncDatabase = Depends(ge
         QuestionItem(
             id=q.get("id", str(i)),
             question_text=q["question_text"],
-            options=q["options_json"]
+            options=q.get("options_json", q.get("options", [])),
+            explanation=q.get("explanation", "")
         )
         for i, q in enumerate(assessment.get("questions", []))
     ]
@@ -75,6 +79,7 @@ async def get_assessment_quiz(assessment_id: str, db: AsyncDatabase = Depends(ge
         time_limit_mins=int(assessment.get("time_limit_minutes", 10)),
         pass_score=float(assessment.get("pass_score", 70.0)),
         total_questions=len(questions),
+        is_active=assessment.get("is_active", True),
         questions=questions
     )
 
@@ -192,4 +197,161 @@ async def submit_assessment(
         correct_count=correct_count,
         total_questions=len(questions),
         explanation=explanation
+    )
+
+
+# ==================== Assessment Authoring API ====================
+@router.post("", status_code=status.HTTP_201_CREATED)
+async def create_assessment(
+    payload: AssessmentCreate,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncDatabase = Depends(get_db)
+):
+    """Creates a new skill assessment in the catalog."""
+    # Validate skill exists
+    skill_doc = await db.skills.find_one({"skill_code": payload.skill_id})
+    if not skill_doc:
+        raise HTTPException(status_code=400, detail=f"Skill '{payload.skill_id}' does not exist in canonical taxonomy.")
+
+    now = get_utc_now()
+    formatted_questions = [
+        {
+            "id": f"Q_{payload.skill_id}_{uuid.uuid4().hex[:6]}",
+            "question_text": q.question_text,
+            "options_json": q.options,
+            "correct_option_index": q.get_correct_option(),
+            "explanation": q.explanation or ""
+        }
+        for q in payload.questions
+    ]
+
+    doc = {
+        "skill_id": payload.skill_id,
+        "title": payload.title,
+        "difficulty": payload.difficulty,
+        "time_limit_minutes": payload.get_time_limit(),
+        "pass_score": payload.pass_score,
+        "is_active": payload.is_active,
+        "questions": formatted_questions,
+        "created_by": current_user.get("id", str(current_user.get("_id", ""))),
+        "updated_at": now
+    }
+
+    res = await db.assessments.update_one(
+        {"skill_id": payload.skill_id},
+        {"$set": doc, "$setOnInsert": {"created_at": now}},
+        upsert=True
+    )
+
+    return {
+        "status": "success",
+        "id": payload.skill_id,
+        "title": payload.title,
+        "message": f"Assessment for '{payload.skill_id}' successfully created/updated.",
+        "skill_id": payload.skill_id,
+        "total_questions": len(formatted_questions)
+    }
+
+
+@router.put("/{assessment_id}")
+async def update_assessment_metadata(
+    assessment_id: str,
+    payload: AssessmentUpdate,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncDatabase = Depends(get_db)
+):
+    query = {"$or": [{"skill_id": assessment_id}, {"_id": assessment_id}]}
+    if ObjectId.is_valid(assessment_id):
+        query["$or"].append({"_id": ObjectId(assessment_id)})
+
+    assessment = await db.assessments.find_one(query)
+    if not assessment:
+        raise HTTPException(status_code=404, detail="Assessment not found.")
+
+    update_fields = {"updated_at": get_utc_now()}
+    if payload.title is not None:
+        update_fields["title"] = payload.title
+    if payload.difficulty is not None:
+        update_fields["difficulty"] = payload.difficulty
+    if payload.time_limit_minutes is not None:
+        update_fields["time_limit_minutes"] = payload.time_limit_minutes
+    if payload.pass_score is not None:
+        update_fields["pass_score"] = payload.pass_score
+    if payload.is_active is not None:
+        update_fields["is_active"] = payload.is_active
+
+    await db.assessments.update_one({"_id": assessment["_id"]}, {"$set": update_fields})
+    return {"status": "success", "message": "Assessment updated."}
+
+
+@router.delete("/{assessment_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_assessment(
+    assessment_id: str,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncDatabase = Depends(get_db)
+):
+    query = {"$or": [{"skill_id": assessment_id}, {"_id": assessment_id}]}
+    if ObjectId.is_valid(assessment_id):
+        query["$or"].append({"_id": ObjectId(assessment_id)})
+
+    del_res = await db.assessments.delete_one(query)
+    if del_res.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Assessment not found.")
+
+
+@router.post("/{assessment_id}/questions", status_code=status.HTTP_201_CREATED)
+async def add_assessment_question(
+    assessment_id: str,
+    payload: QuestionCreate,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncDatabase = Depends(get_db)
+):
+    query = {"$or": [{"skill_id": assessment_id}, {"_id": assessment_id}]}
+    if ObjectId.is_valid(assessment_id):
+        query["$or"].append({"_id": ObjectId(assessment_id)})
+
+    assessment = await db.assessments.find_one(query)
+    if not assessment:
+        raise HTTPException(status_code=404, detail="Assessment not found.")
+
+    q_id = f"Q_{assessment.get('skill_id', 'GEN')}_{uuid.uuid4().hex[:6]}"
+    new_q = {
+        "id": q_id,
+        "question_text": payload.question_text,
+        "options_json": payload.options,
+        "correct_option_index": payload.correct_option_index,
+        "explanation": payload.explanation or ""
+    }
+
+    await db.assessments.update_one(
+        {"_id": assessment["_id"]},
+        {
+            "$push": {"questions": new_q},
+            "$set": {"updated_at": get_utc_now()}
+        }
+    )
+    return {"status": "success", "question_id": q_id, "question": new_q}
+
+
+@router.delete("/{assessment_id}/questions/{question_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_assessment_question(
+    assessment_id: str,
+    question_id: str,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncDatabase = Depends(get_db)
+):
+    query = {"$or": [{"skill_id": assessment_id}, {"_id": assessment_id}]}
+    if ObjectId.is_valid(assessment_id):
+        query["$or"].append({"_id": ObjectId(assessment_id)})
+
+    assessment = await db.assessments.find_one(query)
+    if not assessment:
+        raise HTTPException(status_code=404, detail="Assessment not found.")
+
+    await db.assessments.update_one(
+        {"_id": assessment["_id"]},
+        {
+            "$pull": {"questions": {"id": question_id}},
+            "$set": {"updated_at": get_utc_now()}
+        }
     )

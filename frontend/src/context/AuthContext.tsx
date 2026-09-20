@@ -17,6 +17,8 @@ export interface StudentProfileData {
   headline?: string;
   bio?: string;
   degree?: string;
+  major_or_branch?: string;
+  academic_year?: string;
   institution?: string;
   institution_tier?: number;
   graduation_year?: number;
@@ -26,8 +28,10 @@ export interface StudentProfileData {
   weekly_study_hours?: number;
   learning_velocity_index?: number;
   skills: any[];
+  interests?: string[];
   projects_count: number;
   certifications_count: number;
+  experiences_count?: number;
 }
 
 interface AuthContextType {

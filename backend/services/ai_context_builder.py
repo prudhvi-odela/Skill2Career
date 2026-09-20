@@ -94,6 +94,33 @@ async def build_student_ai_context(
         for a in assessments
     ]
 
+    # Work Experiences / Internships
+    exp_cursor = db.work_experiences.find({"student_id": user_id}).sort("start_date", -1)
+    experiences = await exp_cursor.to_list(length=10)
+    experiences_context = [
+        {
+            "company_name": e.get("company_name"),
+            "role": e.get("role"),
+            "employment_type": e.get("employment_type", "INTERNSHIP"),
+            "is_current": bool(e.get("is_current", False)),
+            "skills_used": e.get("skills_used", [])
+        }
+        for e in experiences
+    ]
+
+    # Peer Reviews
+    peer_cursor = db.peer_reviews.find({"student_id": user_id, "status": "APPROVED"}).sort("created_at", -1)
+    peer_reviews = await peer_cursor.to_list(length=10)
+    peer_reviews_context = [
+        {
+            "project_title": r.get("project_title"),
+            "reviewer_name": r.get("reviewer_name"),
+            "rating": r.get("rating"),
+            "skills_verified": r.get("skills_verified", [])
+        }
+        for r in peer_reviews
+    ]
+
     # 5. Latest Authoritative ML Readiness Prediction
     latest_prediction = await db.readiness_predictions.find_one(
         {"student_id": user_id},
@@ -383,10 +410,13 @@ async def build_student_ai_context(
         "student": {
             "name": student_name,
             "degree": profile.get("degree", "Undergraduate") if profile else "Undergraduate",
+            "major_or_branch": profile.get("major_or_branch", "") if profile else "",
+            "academic_year": profile.get("academic_year", "") if profile else "",
             "institution": profile.get("institution", "") if profile else "",
             "graduation_year": profile.get("graduation_year", 2027) if profile else 2027,
             "gpa": profile.get("gpa", 8.0) if profile else 8.0,
             "weekly_study_hours": profile.get("weekly_study_hours", 15.0) if profile else 15.0,
+            "interests": profile.get("interests", []) if profile else [],
             "skills_count": len(skills_context),
             "verified_skills_count": sum(1 for s in skills_context if s["is_verified"])
         },
@@ -401,7 +431,9 @@ async def build_student_ai_context(
         "evidence": {
             "projects": projects_context,
             "certifications": certs_context,
-            "assessments": assessments_context
+            "assessments": assessments_context,
+            "work_experiences": experiences_context,
+            "peer_reviews": peer_reviews_context
         },
         "evidence_engine": evidence_context,
         "learning_intelligence": learning_intelligence_context,

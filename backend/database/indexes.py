@@ -129,6 +129,16 @@ async def ensure_indexes(db: AsyncDatabase):
     await db.career_transitions.create_index([("student_id", ASCENDING), ("target_career_id", ASCENDING)])
     await db.career_transitions.create_index([("student_id", ASCENDING), ("created_at", DESCENDING)])
 
+    # 26. work_experiences
+    await db.work_experiences.create_index([("student_id", ASCENDING)])
+    await db.work_experiences.create_index([("student_id", ASCENDING), ("created_at", DESCENDING)])
+
+    # 27. peer_reviews
+    await db.peer_reviews.create_index([("student_id", ASCENDING)])
+    await db.peer_reviews.create_index([("reviewer_id", ASCENDING)])
+    await db.peer_reviews.create_index([("project_id", ASCENDING)])
+    await db.peer_reviews.create_index([("status", ASCENDING)])
+
     print("[MongoDB] All collection indexes successfully created and verified.")
     return True
 

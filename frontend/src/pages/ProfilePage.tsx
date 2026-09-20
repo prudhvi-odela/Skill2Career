@@ -9,6 +9,10 @@ export const ProfilePage: React.FC = () => {
   const [headline, setHeadline] = useState('');
   const [bio, setBio] = useState('');
   const [degree, setDegree] = useState('');
+  const [majorOrBranch, setMajorOrBranch] = useState('');
+  const [academicYear, setAcademicYear] = useState('');
+  const [interests, setInterests] = useState<string[]>([]);
+  const [interestInput, setInterestInput] = useState('');
   const [institution, setInstitution] = useState('');
   const [graduationYear, setGraduationYear] = useState<number | string>('');
   const [gpa, setGpa] = useState<number | string>('');
@@ -28,6 +32,9 @@ export const ProfilePage: React.FC = () => {
       setHeadline(profile.headline || '');
       setBio(profile.bio || '');
       setDegree(profile.degree || '');
+      setMajorOrBranch(profile.major_or_branch || '');
+      setAcademicYear(profile.academic_year || '');
+      setInterests(profile.interests || []);
       setInstitution(profile.institution || '');
       setGraduationYear(profile.graduation_year ?? '');
       setGpa(profile.gpa ?? '');
@@ -35,6 +42,18 @@ export const ProfilePage: React.FC = () => {
       setWeeklyStudyHours(profile.weekly_study_hours ?? '');
     }
   }, [profile]);
+
+  const handleAddInterest = () => {
+    const trimmed = interestInput.trim();
+    if (trimmed && !interests.includes(trimmed)) {
+      setInterests([...interests, trimmed]);
+      setInterestInput('');
+    }
+  };
+
+  const handleRemoveInterest = (item: string) => {
+    setInterests(interests.filter((i) => i !== item));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,6 +66,9 @@ export const ProfilePage: React.FC = () => {
         headline: headline || null,
         bio: bio || null,
         degree: degree || null,
+        major_or_branch: majorOrBranch || null,
+        academic_year: academicYear || null,
+        interests: interests,
         institution: institution || null,
         graduation_year: graduationYear !== '' ? Number(graduationYear) : null,
         gpa: gpa !== '' ? Number(gpa) : null,
@@ -133,7 +155,7 @@ export const ProfilePage: React.FC = () => {
           </select>
         </div>
 
-        {/* Headline & Bio */}
+        {/* Headline & Degree & Major */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
           <div>
             <label className="input-label">Professional Headline</label>
@@ -147,15 +169,112 @@ export const ProfilePage: React.FC = () => {
           </div>
 
           <div>
-            <label className="input-label">Academic Degree</label>
+            <label className="input-label">Degree</label>
             <input
               type="text"
               className="input-field"
-              placeholder="e.g. B.Tech Computer Science"
+              placeholder="e.g. B.Tech, B.S., M.S., BCA"
               value={degree}
               onChange={(e) => setDegree(e.target.value)}
             />
           </div>
+
+          <div>
+            <label className="input-label">Major / Branch / Specialization</label>
+            <input
+              type="text"
+              className="input-field"
+              placeholder="e.g. Computer Science and Engineering"
+              value={majorOrBranch}
+              onChange={(e) => setMajorOrBranch(e.target.value)}
+            />
+          </div>
+
+          <div>
+            <label className="input-label">Academic Year / Status</label>
+            <select
+              className="input-field"
+              value={academicYear}
+              onChange={(e) => setAcademicYear(e.target.value)}
+            >
+              <option value="">-- Select Academic Year --</option>
+              <option value="Year 1">1st Year (Freshman)</option>
+              <option value="Year 2">2nd Year (Sophomore)</option>
+              <option value="Year 3">3rd Year (Junior)</option>
+              <option value="Year 4">4th Year (Senior)</option>
+              <option value="Graduate / Master">Graduate / Master's</option>
+              <option value="Alumni / Working Professional">Alumni / Working Professional</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Interests & Technical Passions */}
+        <div>
+          <label className="input-label">Interests & Areas of Passion</label>
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
+            <input
+              type="text"
+              className="input-field"
+              placeholder="e.g. Artificial Intelligence, Distributed Systems, Web3..."
+              value={interestInput}
+              onChange={(e) => setInterestInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleAddInterest();
+                }
+              }}
+            />
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={handleAddInterest}
+              style={{ whiteSpace: 'nowrap' }}
+            >
+              Add Interest
+            </button>
+          </div>
+          {interests.length > 0 ? (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              {interests.map((interest, idx) => (
+                <span
+                  key={idx}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    background: 'rgba(99, 102, 241, 0.15)',
+                    border: '1px solid rgba(99, 102, 241, 0.3)',
+                    color: '#c7d2fe',
+                    padding: '4px 10px',
+                    borderRadius: '999px',
+                    fontSize: '0.85rem',
+                  }}
+                >
+                  {interest}
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveInterest(interest)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: '#f87171',
+                      cursor: 'pointer',
+                      padding: 0,
+                      fontWeight: 700,
+                      lineHeight: 1,
+                    }}
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+          ) : (
+            <p style={{ fontSize: '0.8rem', color: '#6b7280' }}>
+              No interests added yet. Add domain or technical interests to personalize your AI recommendations.
+            </p>
+          )}
         </div>
 
         {/* Institution & GPA */}

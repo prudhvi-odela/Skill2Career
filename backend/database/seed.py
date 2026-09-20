@@ -165,6 +165,188 @@ ASSESSMENT_DATA = [
                 "explanation": "A large gap between training performance and validation performance is the classic hallmark of overfitting."
             }
         ]
+    },
+    {
+        "skill_id": "SK008",
+        "title": "SQL & Relational Database Architecture Assessment",
+        "difficulty": "Intermediate",
+        "time_limit_minutes": 10,
+        "pass_score": 70.0,
+        "is_active": True,
+        "questions": [
+            {
+                "id": "Q_SQL_01",
+                "question_text": "What is the primary difference between WHERE and HAVING clauses in SQL?",
+                "options_json": [
+                    "WHERE filters rows before aggregation; HAVING filters groups after aggregation",
+                    "WHERE only works on strings; HAVING works on numbers",
+                    "HAVING is executed before WHERE",
+                    "There is no functional difference"
+                ],
+                "correct_option_index": 0,
+                "explanation": "WHERE filters source rows before grouping; HAVING applies conditions to aggregated group rows."
+            },
+            {
+                "id": "Q_SQL_02",
+                "question_text": "Which index structure is standard in B-Tree indexed relational databases for range queries?",
+                "options_json": [
+                    "Hash Index",
+                    "B+ Tree Index",
+                    "Inverted Index",
+                    "Bitmap Index"
+                ],
+                "correct_option_index": 1,
+                "explanation": "B+ Trees maintain sorted leaf nodes linked sequentially, making range scans exceptionally fast."
+            },
+            {
+                "id": "Q_SQL_03",
+                "question_text": "What does ACID isolation level SERIALIZABLE prevent?",
+                "options_json": [
+                    "Dirty reads, non-repeatable reads, and phantom reads",
+                    "Only database deadlocks",
+                    "Syntax errors in SQL statements",
+                    "Disk out-of-space errors"
+                ],
+                "correct_option_index": 0,
+                "explanation": "SERIALIZABLE is the highest isolation level, completely preventing dirty reads, non-repeatable reads, and phantom reads."
+            }
+        ]
+    },
+    {
+        "skill_id": "SK003",
+        "title": "TypeScript Advanced Type Systems & Interfaces Assessment",
+        "difficulty": "Intermediate",
+        "time_limit_minutes": 10,
+        "pass_score": 70.0,
+        "is_active": True,
+        "questions": [
+            {
+                "id": "Q_TS_01",
+                "question_text": "What is the key difference between TypeScript `unknown` and `any` types?",
+                "options_json": [
+                    "`unknown` is type-safe because operations require type narrowing or assertions before use",
+                    "`unknown` can only hold string values",
+                    "`any` performs compile-time validation while `unknown` does not",
+                    "`unknown` is deprecated in modern TypeScript"
+                ],
+                "correct_option_index": 0,
+                "explanation": "`unknown` represents any value but disallows invoking methods or properties without explicit type guards."
+            },
+            {
+                "id": "Q_TS_02",
+                "question_text": "What does the utility type `Record<K, T>` construct?",
+                "options_json": [
+                    "An object type whose property keys are K and values are T",
+                    "A tuple of fixed length K",
+                    "An asynchronous Promise of T",
+                    "A read-only array"
+                ],
+                "correct_option_index": 0,
+                "explanation": "`Record<K, T>` constructs a key-value mapping type with keys in K and values of type T."
+            }
+        ]
+    },
+    {
+        "skill_id": "SK034",
+        "title": "Docker Containerization & Virtualization Assessment",
+        "difficulty": "Intermediate",
+        "time_limit_minutes": 10,
+        "pass_score": 70.0,
+        "is_active": True,
+        "questions": [
+            {
+                "id": "Q_DCK_01",
+                "question_text": "Why are multi-stage Docker builds recommended for production deployments?",
+                "options_json": [
+                    "They separate build dependencies from final runtime images, significantly reducing image size and attack surface",
+                    "They allow running Windows containers on macOS",
+                    "They disable Linux namespaces",
+                    "They make containers bypass memory limits"
+                ],
+                "correct_option_index": 0,
+                "explanation": "Multi-stage builds allow copying only production artifacts into lightweight base images, omitting SDKs and compiler tools."
+            },
+            {
+                "id": "Q_DCK_02",
+                "question_text": "What does the `CMD` instruction in a Dockerfile do?",
+                "options_json": [
+                    "Specifies default command and arguments executed when a container starts",
+                    "Installs Linux packages during build time",
+                    "Sets filesystem permissions",
+                    "Exports host environment variables"
+                ],
+                "correct_option_index": 0,
+                "explanation": "`CMD` provides default executable and arguments for starting a container."
+            }
+        ]
+    },
+    {
+        "skill_id": "SK015",
+        "title": "FastAPI Asynchronous Web Services Assessment",
+        "difficulty": "Intermediate",
+        "time_limit_minutes": 10,
+        "pass_score": 70.0,
+        "is_active": True,
+        "questions": [
+            {
+                "id": "Q_FST_01",
+                "question_text": "How does FastAPI handle synchronous (`def`) endpoint functions vs asynchronous (`async def`) functions?",
+                "options_json": [
+                    "Synchronous endpoints are run in an external thread pool so they don't block the async event loop",
+                    "Synchronous endpoints always cause immediate 500 errors",
+                    "FastAPI converts all sync functions into C extensions",
+                    "Both execute identically on the main async event loop"
+                ],
+                "correct_option_index": 0,
+                "explanation": "FastAPI runs regular `def` functions in AnyIO/Starlette threadpools to prevent blocking the async event loop."
+            },
+            {
+                "id": "Q_FST_02",
+                "question_text": "What mechanism does FastAPI use for dependency injection across route handlers?",
+                "options_json": [
+                    "`Depends()` decorator inside route function parameter defaults",
+                    "Global singleton classes",
+                    "Decorator factory `@injector`",
+                    "Flask application context"
+                ],
+                "correct_option_index": 0,
+                "explanation": "FastAPI uses `Depends()` as default parameter values to evaluate and inject reusable dependencies."
+            }
+        ]
+    },
+    {
+        "skill_id": "SK040",
+        "title": "Data Structures & Algorithmic Analysis Assessment",
+        "difficulty": "Intermediate",
+        "time_limit_minutes": 12,
+        "pass_score": 70.0,
+        "is_active": True,
+        "questions": [
+            {
+                "id": "Q_DSA_01",
+                "question_text": "What is the worst-case time complexity of searching an element in a balanced Binary Search Tree (AVL / Red-Black)?",
+                "options_json": [
+                    "O(log n)",
+                    "O(n)",
+                    "O(1)",
+                    "O(n^2)"
+                ],
+                "correct_option_index": 0,
+                "explanation": "Balanced binary search trees maintain height O(log n), ensuring worst-case search time of O(log n)."
+            },
+            {
+                "id": "Q_DSA_02",
+                "question_text": "Which data structure is typically used to implement Breadth-First Search (BFS) on a graph?",
+                "options_json": [
+                    "Queue (FIFO)",
+                    "Stack (LIFO)",
+                    "Priority Queue",
+                    "Disjoint Set Union"
+                ],
+                "correct_option_index": 0,
+                "explanation": "BFS traverses nodes level-by-level using a First-In-First-Out (FIFO) queue."
+            }
+        ]
     }
 ]
 

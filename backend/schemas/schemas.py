@@ -62,12 +62,15 @@ class ProfileUpdate(BaseModel):
     headline: Optional[str] = None
     bio: Optional[str] = None
     degree: Optional[str] = None
+    major_or_branch: Optional[str] = None
+    academic_year: Optional[str] = None
     institution: Optional[str] = None
     institution_tier: Optional[int] = Field(default=None, ge=1, le=3)
     graduation_year: Optional[int] = None
     gpa: Optional[float] = Field(default=None, ge=0.0, le=10.0)
     target_career_id: Optional[str] = None
     weekly_study_hours: Optional[float] = Field(default=None, ge=0.0, le=80.0)
+    interests: Optional[List[str]] = None
 
 
 class ProfileResponse(BaseModel):
@@ -78,6 +81,8 @@ class ProfileResponse(BaseModel):
     headline: Optional[str] = None
     bio: Optional[str] = None
     degree: Optional[str] = None
+    major_or_branch: Optional[str] = None
+    academic_year: Optional[str] = None
     institution: Optional[str] = None
     institution_tier: Optional[int] = None
     graduation_year: Optional[int] = None
@@ -87,9 +92,55 @@ class ProfileResponse(BaseModel):
     weekly_study_hours: Optional[float] = 0.0
     learning_velocity_index: Optional[float] = 0.0
     skills: List[StudentSkillResponse] = []
+    interests: List[str] = []
     projects_count: int = 0
     certifications_count: int = 0
+    experiences_count: int = 0
     created_at: Optional[datetime] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ==================== Work Experience & Internships ====================
+class WorkExperienceCreate(BaseModel):
+    company_name: str = Field(..., min_length=2)
+    role: str = Field(..., min_length=2)
+    employment_type: str = Field(default="INTERNSHIP")  # INTERNSHIP, FULL_TIME, PART_TIME, FREELANCE
+    start_date: str = Field(..., description="YYYY-MM or YYYY-MM-DD")
+    end_date: Optional[str] = None
+    is_current: bool = False
+    description: Optional[str] = ""
+    responsibilities: List[str] = []
+    skills_used: List[str] = []
+
+
+class WorkExperienceUpdate(BaseModel):
+    company_name: Optional[str] = None
+    role: Optional[str] = None
+    employment_type: Optional[str] = None
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
+    is_current: Optional[bool] = None
+    description: Optional[str] = None
+    responsibilities: Optional[List[str]] = None
+    skills_used: Optional[List[str]] = None
+
+
+class WorkExperienceResponse(BaseModel):
+    id: str
+    student_id: str
+    company_name: str
+    role: str
+    employment_type: str
+    start_date: str
+    end_date: Optional[str] = None
+    is_current: bool
+    description: Optional[str] = ""
+    responsibilities: List[str] = []
+    skills_used: List[str] = []
+    verified: bool = False
+    created_at: datetime
+    updated_at: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -180,7 +231,6 @@ class ReadinessPredictResponse(BaseModel):
     generated_at: Optional[datetime] = None
 
 
-
 class TrajectorySimulateRequest(BaseModel):
     weekly_study_hours: Optional[float] = Field(default=12.0, ge=1.0, le=60.0)
     learning_consistency: Optional[float] = Field(default=1.0, ge=0.5, le=2.0)
@@ -215,6 +265,15 @@ class ProjectCreate(BaseModel):
     complexity_rating: float = Field(default=3.0, ge=1.0, le=5.0)
 
 
+class ProjectUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    repo_url: Optional[str] = None
+    live_url: Optional[str] = None
+    tech_stack: Optional[str] = None
+    complexity_rating: Optional[float] = Field(default=None, ge=1.0, le=5.0)
+
+
 class ProjectResponse(BaseModel):
     id: str
     profile_id: str
@@ -225,6 +284,7 @@ class ProjectResponse(BaseModel):
     tech_stack: str
     complexity_rating: float
     created_at: datetime
+    updated_at: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -232,6 +292,13 @@ class ProjectResponse(BaseModel):
 class CertificationCreate(BaseModel):
     name: str = Field(..., min_length=2)
     issuer: str = Field(..., min_length=2)
+    issue_date: Optional[str] = None
+    credential_url: Optional[str] = None
+
+
+class CertificationUpdate(BaseModel):
+    name: Optional[str] = None
+    issuer: Optional[str] = None
     issue_date: Optional[str] = None
     credential_url: Optional[str] = None
 
@@ -245,15 +312,65 @@ class CertificationResponse(BaseModel):
     credential_url: Optional[str]
     is_verified: bool
     created_at: datetime
+    updated_at: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)
 
 
-# ==================== Assessments ====================
+# ==================== Assessments & Authoring ====================
 class QuestionItem(BaseModel):
     id: str
     question_text: str
     options: List[str]
+    explanation: Optional[str] = None
+
+
+class QuestionCreate(BaseModel):
+    question_text: str = Field(..., min_length=5)
+    options: List[str] = Field(..., min_length=2)
+    correct_option_index: Optional[int] = None
+    correct_option: Optional[int] = None
+    explanation: Optional[str] = ""
+    order_idx: Optional[int] = 0
+
+    def get_correct_option(self) -> int:
+        if self.correct_option_index is not None:
+            return self.correct_option_index
+        if self.correct_option is not None:
+            return self.correct_option
+        return 0
+
+
+class QuestionUpdate(BaseModel):
+    question_text: Optional[str] = None
+    options: Optional[List[str]] = None
+    correct_option_index: Optional[int] = None
+    correct_option: Optional[int] = None
+    explanation: Optional[str] = None
+
+
+class AssessmentCreate(BaseModel):
+    skill_id: str = Field(..., description="Canonical skill code, e.g. SK001")
+    title: str = Field(..., min_length=3)
+    difficulty: str = Field(default="Intermediate")
+    time_limit_minutes: Optional[int] = None
+    time_limit_mins: Optional[int] = None
+    pass_score: float = Field(default=70.0, ge=10.0, le=100.0)
+    category: Optional[str] = None
+    is_active: bool = True
+    questions: List[QuestionCreate] = []
+
+    def get_time_limit(self) -> int:
+        return self.time_limit_minutes or self.time_limit_mins or 10
+
+
+class AssessmentUpdate(BaseModel):
+    title: Optional[str] = None
+    difficulty: Optional[str] = None
+    time_limit_minutes: Optional[int] = None
+    time_limit_mins: Optional[int] = None
+    pass_score: Optional[float] = None
+    is_active: Optional[bool] = None
 
 
 class AssessmentDetailResponse(BaseModel):
@@ -265,6 +382,7 @@ class AssessmentDetailResponse(BaseModel):
     time_limit_mins: int
     pass_score: float
     total_questions: int
+    is_active: bool = True
     questions: List[QuestionItem] = []
 
 
@@ -284,6 +402,48 @@ class AssessmentResultResponse(BaseModel):
     correct_count: int
     total_questions: int
     explanation: Optional[str] = None
+
+
+# ==================== Peer Reviews ====================
+class PeerReviewRequestCreate(BaseModel):
+    project_id: str
+    requested_skills: List[str] = []
+    skill_ids: List[str] = []
+    notes: Optional[str] = None
+
+
+class PeerReviewSubmit(BaseModel):
+    rating: Optional[float] = None
+    score: Optional[float] = None
+    comment: str = Field(..., min_length=5)
+    skills_verified: List[str] = []
+    status: Optional[str] = None
+    verification_status: Optional[str] = None
+
+    def get_rating(self) -> float:
+        return self.rating if self.rating is not None else (self.score if self.score is not None else 4.0)
+
+    def get_status(self) -> str:
+        return self.status or self.verification_status or "APPROVED"
+
+
+class PeerReviewResponse(BaseModel):
+    id: str
+    student_id: str
+    student_name: Optional[str] = None
+    reviewer_id: str
+    reviewer_name: Optional[str] = None
+    project_id: str
+    project_title: Optional[str] = None
+    requested_skills: List[str] = []
+    skills_verified: List[str] = []
+    rating: Optional[float] = None
+    comment: Optional[str] = None
+    status: str  # PENDING, APPROVED, REJECTED
+    created_at: datetime
+    reviewed_at: Optional[datetime] = None
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ==================== Roadmap ====================
@@ -341,4 +501,3 @@ class FeatureImportanceItem(BaseModel):
     importance: float
     importance_std: float
     normalized_pct: float
-

@@ -49,8 +49,17 @@ export const studentApi = {
   deleteSkill: (skillId: string) => apiClient.delete(`/student/skills/${skillId}`),
   getProjects: () => apiClient.get('/student/projects'),
   createProject: (data: any) => apiClient.post('/student/projects', data),
+  updateProject: (projectId: string, data: any) => apiClient.put(`/student/projects/${projectId}`, data),
+  deleteProject: (projectId: string) => apiClient.delete(`/student/projects/${projectId}`),
   getCertifications: () => apiClient.get('/student/certifications'),
   createCertification: (data: any) => apiClient.post('/student/certifications', data),
+  updateCertification: (certId: string, data: any) => apiClient.put(`/student/certifications/${certId}`, data),
+  deleteCertification: (certId: string) => apiClient.delete(`/student/certifications/${certId}`),
+  getWorkExperiences: () => apiClient.get('/student/work-experiences'),
+  createWorkExperience: (data: any) => apiClient.post('/student/work-experiences', data),
+  getWorkExperience: (id: string) => apiClient.get(`/student/work-experiences/${id}`),
+  updateWorkExperience: (id: string, data: any) => apiClient.put(`/student/work-experiences/${id}`, data),
+  deleteWorkExperience: (id: string) => apiClient.delete(`/student/work-experiences/${id}`),
   getActivities: () => apiClient.get('/student/activities'),
 };
 
@@ -108,6 +117,11 @@ export const assessmentsApi = {
   getAssessmentQuiz: (assessmentId: string) => apiClient.get(`/assessments/${assessmentId}`),
   submitAssessment: (assessmentId: string, answers: Record<string, number>) =>
     apiClient.post('/assessments/submit', { assessment_id: assessmentId, answers }),
+  createAssessment: (data: any) => apiClient.post('/assessments', data),
+  updateAssessment: (id: string, data: any) => apiClient.put(`/assessments/${id}`, data),
+  deleteAssessment: (id: string) => apiClient.delete(`/assessments/${id}`),
+  addQuestion: (id: string, data: any) => apiClient.post(`/assessments/${id}/questions`, data),
+  deleteQuestion: (id: string, questionId: string) => apiClient.delete(`/assessments/${id}/questions/${questionId}`),
 };
 
 export const mlAdminApi = {
@@ -152,6 +166,10 @@ export const marketApi = {
     apiClient.post('/market/career-comparison', { career_ids: careerIds }),
 };
 
+export const skillsApi = {
+  getSkills: (category?: string) => apiClient.get('/careers/skills/catalog', { params: { category } }),
+};
+
 export const evidenceApi = {
   getEvidence: (params?: { skill_id?: string; evidence_type?: string; verification_status?: string }) =>
     apiClient.get('/evidence', { params }),
@@ -172,6 +190,12 @@ export const evidenceApi = {
     apiClient.post(`/evidence/${evidenceId}/verify`, data),
   applySkillState: (skillId: string) => apiClient.post(`/evidence/skills/${skillId}/apply-state`),
   syncArtifacts: () => apiClient.post('/evidence/sync-artifacts'),
+  requestPeerReview: (data: { project_id: string; skill_ids?: string[]; requested_skills?: string[]; notes?: string | null }) =>
+    apiClient.post('/evidence/peer-reviews/request', data),
+  getPendingPeerReviews: () => apiClient.get('/evidence/peer-reviews/pending'),
+  getMyPeerReviews: () => apiClient.get('/evidence/peer-reviews/mine'),
+  submitPeerReview: (reviewId: string, data: { rating?: number; score?: number; comment: string; skills_verified?: string[]; verification_status?: string; status?: string }) =>
+    apiClient.post(`/evidence/peer-reviews/${reviewId}/submit`, data),
 };
 
 export const learningIntelligenceApi = {
@@ -236,7 +260,3 @@ export const careerTransitionApi = {
   getHistory: (limit?: number) =>
     apiClient.get('/career-transition/history', { params: { limit } }),
 };
-
-
-
-
