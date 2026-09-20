@@ -341,6 +341,33 @@ async def build_student_ai_context(
         except Exception:
             pass
 
+    # 14. Career Transition & Strategic Planning (Phase 11)
+    career_transition_context = None
+    if effective_target_career_id:
+        try:
+            from backend.services.career_transition_service import CareerTransitionService
+            ct_svc = CareerTransitionService()
+            ct_data = await ct_svc.analyze_transition(
+                student_id=user_id,
+                target_career_id=effective_target_career_id,
+                db=db,
+                persist=False
+            )
+            career_transition_context = {
+                "source_career": ct_data.source_career.title,
+                "target_career": ct_data.target_career.title,
+                "shared_skills_count": ct_data.skill_overlap.shared_required_skills_count,
+                "transferable_skills": [s.skill_name for s in ct_data.transferable_skills if s.transferability.value in ["DIRECTLY_TRANSFERABLE", "PARTIALLY_TRANSFERABLE"]][:4],
+                "transition_gaps": [g.skill_name for g in ct_data.transition_gaps if g.is_critical][:4],
+                "blocked_skills": [c.target_skill_name for c in ct_data.prerequisite_chains if c.is_blocked][:3],
+                "milestones": [m.title for m in ct_data.transition_milestones],
+                "market_provenance": ct_data.market_context.provenance_label,
+                "forecast_benchmark": ct_data.forecast_context.projected_readiness_benchmark,
+                "time_to_target_weeks": ct_data.forecast_context.time_to_target_weeks
+            }
+        except Exception:
+            pass
+
     # Return structured context bundle
     return {
         "student": {
@@ -370,6 +397,7 @@ async def build_student_ai_context(
         "learning_intelligence": learning_intelligence_context,
         "career_readiness": career_readiness_context,
         "career_forecast": career_forecast_context,
+        "career_transition": career_transition_context,
         "ml_readiness": {
             "prediction_id": str(latest_prediction.get("_id", "N/A")) if latest_prediction else "N/A",
             "readiness_score": float(latest_prediction.get("readiness_score", 0.0)) if latest_prediction else 0.0,

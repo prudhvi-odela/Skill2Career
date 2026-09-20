@@ -31,6 +31,11 @@ class AINextActionRequest(BaseModel):
     career_id: Optional[str] = Field(None, description="Optional target career ID")
 
 
+class AIExplainTransitionRequest(BaseModel):
+    target_career_id: str = Field(..., description="Target career ID for transition explanation")
+    source_career_id: Optional[str] = Field(None, description="Optional source career ID override")
+
+
 class AIStructuredResponse(BaseModel):
     message: str = Field(..., description="Primary grounded explanation or guidance text")
     key_points: List[str] = Field(default_factory=list, description="Bulleted executive takeaways")

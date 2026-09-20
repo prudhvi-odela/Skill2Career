@@ -129,6 +129,8 @@ export const aiApi = {
     apiClient.post('/ai/next-action', { career_id: careerId }),
   explainCareer: (careerId: string) =>
     apiClient.post('/ai/explain-career', { career_id: careerId }),
+  explainTransition: (targetCareerId: string, sourceCareerId?: string) =>
+    apiClient.post('/ai/explain-transition', { target_career_id: targetCareerId, source_career_id: sourceCareerId }),
   explainTrajectory: (weeklyHours?: number, consistency?: number) =>
     apiClient.post('/ai/explain-trajectory', { weekly_hours: weeklyHours, consistency }),
   chat: (message: string, conversationId?: string, targetCareerId?: string) =>
@@ -211,6 +213,30 @@ export const careerForecastApi = {
   compareScenarios: (careerId: string, horizon?: string) =>
     apiClient.get('/career-forecast/compare-scenarios', { params: { career_id: careerId, horizon } }),
 };
+
+export const careerTransitionApi = {
+  getTransitionAnalysis: (targetCareerId: string, sourceCareerId?: string) =>
+    apiClient.get(`/career-transition/${targetCareerId}`, { params: { source_career_id: sourceCareerId } }),
+  getTransferableSkills: (targetCareerId: string, sourceCareerId?: string) =>
+    apiClient.get(`/career-transition/${targetCareerId}/skills`, { params: { source_career_id: sourceCareerId } }),
+  getMilestones: (targetCareerId: string, sourceCareerId?: string) =>
+    apiClient.get(`/career-transition/${targetCareerId}/milestones`, { params: { source_career_id: sourceCareerId } }),
+  getTransferableEvidence: (targetCareerId: string) =>
+    apiClient.get(`/career-transition/${targetCareerId}/evidence`),
+  createOrUpdatePlan: (targetCareerId: string, data: { status?: string; custom_milestones?: any[]; notes?: string }) =>
+    apiClient.post(`/career-transition/${targetCareerId}/plan`, data),
+  compareTransitions: (targetCareerIds: string[]) =>
+    apiClient.post('/career-transition/compare', { target_career_ids: targetCareerIds }),
+  simulateScenario: (request: {
+    target_career_id: string;
+    scenario_type: string;
+    weekly_study_hours?: number;
+    focus_skill_ids?: string[];
+  }) => apiClient.post('/career-transition/simulate', request),
+  getHistory: (limit?: number) =>
+    apiClient.get('/career-transition/history', { params: { limit } }),
+};
+
 
 
 

@@ -24,7 +24,8 @@ from backend.routers import (
     evidence_router,
     learning_intelligence_router,
     career_readiness_router,
-    career_forecast_router
+    career_forecast_router,
+    career_transition_router
 )
 
 
@@ -73,6 +74,7 @@ app.include_router(evidence_router.router, prefix=settings.API_V1_STR)
 app.include_router(learning_intelligence_router.router, prefix=settings.API_V1_STR)
 app.include_router(career_readiness_router.router, prefix=settings.API_V1_STR)
 app.include_router(career_forecast_router.router, prefix=settings.API_V1_STR)
+app.include_router(career_transition_router.router, prefix=settings.API_V1_STR)
 
 
 @app.get("/")

@@ -14,6 +14,7 @@ from backend.schemas.ai_schemas import (
     AIExplainGapRequest,
     AIExplainCareerRequest,
     AIExplainTrajectoryRequest,
+    AIExplainTransitionRequest,
     AINextActionRequest,
     AIStructuredResponse,
     AIInteractionResponse
@@ -89,6 +90,26 @@ async def explain_career_match(
     return await ai_service.explain_career_match(
         user_id=user_id,
         career_id=payload.career_id,
+        db=db
+    )
+
+
+@router.post("/explain-transition", response_model=AIStructuredResponse)
+async def explain_career_transition(
+    payload: AIExplainTransitionRequest,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncDatabase = Depends(get_db)
+):
+    """
+    Explains the strategic transition between career profiles, highlighting transferable skills,
+    gap remediation, and prerequisite milestone ordering.
+    """
+    user_id = current_user["id"]
+    ai_service = get_ai_service()
+    return await ai_service.explain_career_transition(
+        user_id=user_id,
+        target_career_id=payload.target_career_id,
+        source_career_id=payload.source_career_id,
         db=db
     )
 

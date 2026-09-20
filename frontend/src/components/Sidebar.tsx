@@ -17,7 +17,8 @@ import {
   Award,
   Activity,
   Briefcase,
-  Target
+  Target,
+  GitMerge
 } from 'lucide-react';
 
 const NAV_ITEMS = [
@@ -38,6 +39,7 @@ const NAV_ITEMS = [
 
   { section: 'FUTURE & ROADMAP' },
   { path: '/app/career-forecast', label: 'Career Forecasting', icon: Target },
+  { path: '/app/career-transition', label: 'Career Transition', icon: GitMerge },
   { path: '/app/trajectory', label: 'Trajectory Forecaster', icon: TrendingUp },
   { path: '/app/roadmap', label: 'Personalized Roadmap', icon: Map },
 

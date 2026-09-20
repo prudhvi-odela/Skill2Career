@@ -293,6 +293,30 @@ class CareerAIService:
             db=db
         )
 
+    async def explain_career_transition(
+        self,
+        user_id: str,
+        target_career_id: str,
+        source_career_id: Optional[str],
+        db: AsyncDatabase
+    ) -> AIStructuredResponse:
+        """Explains transferable competencies, transition gaps, prerequisite ordering, and transition plan."""
+        context = await build_student_ai_context(user_id=user_id, db=db, target_career_id=target_career_id)
+        prompt = (
+            f"Context:\n{json.dumps(context, indent=2)}\n\n"
+            f"Task: Explain the strategic career transition into '{context.get('target_career', {}).get('title', target_career_id)}'. "
+            "Highlight directly transferable skills, critical transition gaps and why they matter, "
+            "prerequisite dependency ordering, and milestone sequencing. "
+            "Do NOT rank careers as objectively best, predict job offers, or guarantee employment."
+        )
+        return await self._generate_response(
+            user_id=user_id,
+            prompt=prompt,
+            context=context,
+            context_type="transition_explanation",
+            db=db
+        )
+
     async def chat(
         self,
         user_id: str,
@@ -548,6 +572,35 @@ class CareerAIService:
             recommended_actions = [
                 "Maintain steady weekly study hours without long hiatuses",
                 "Verify skills with assessments to validate actual retention"
+            ]
+
+        elif context_type == "transition_explanation":
+            trans_ctx = context.get("career_transition") or {}
+            src_title = trans_ctx.get("source_career", "Current Career")
+            tgt_title = trans_ctx.get("target_career", career_title)
+            trans_skills = trans_ctx.get("transferable_skills", [])
+            t_gaps = trans_ctx.get("transition_gaps", [])
+            blocked = trans_ctx.get("blocked_skills", [])
+            milestones = trans_ctx.get("milestones", [])
+            time_wks = trans_ctx.get("time_to_target_weeks", 12)
+
+            message = (
+                f"Transitioning from '{src_title}' into '{tgt_title}' leverages {len(trans_skills)} transferable competencies "
+                f"({', '.join(trans_skills[:3]) if trans_skills else 'general foundations'}). "
+                f"Your primary transition gaps include: {', '.join(t_gaps[:3]) if t_gaps else 'domain specializations'}. "
+                f"Estimated pathway effort spans ~{time_wks} weeks across structured prerequisite milestones. "
+                "This transition plan maps competency requirements and does not constitute a hiring guarantee."
+            )
+            key_points = [
+                f"Source Profile: {src_title} -> Target Profile: {tgt_title}",
+                f"Transferable Competencies: {', '.join(trans_skills[:3]) if trans_skills else 'Foundations'}",
+                f"Critical Remediation Gaps: {', '.join(t_gaps[:3]) if t_gaps else 'None'}",
+                f"Blocked Prerequisite Dependencies: {', '.join(blocked) if blocked else 'None'}"
+            ]
+            recommended_actions = [
+                f"Begin Phase 1 milestones for {blocked[0] if blocked else (t_gaps[0] if t_gaps else 'core skills')}",
+                "Document evidence artifacts as new competencies are completed",
+                "Review market signal demand metrics before finalizing career transition"
             ]
 
         else:  # General Chat Fallback
