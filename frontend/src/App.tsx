@@ -25,6 +25,7 @@ import { CareerMarketIntelligencePage } from './pages/CareerMarketIntelligencePa
 import { LearningEvidencePage } from './pages/LearningEvidencePage';
 import { LearningIntelligencePage } from './pages/LearningIntelligencePage';
 import { CareerReadinessPage } from './pages/CareerReadinessPage';
+import { CareerForecastPage } from './pages/CareerForecastPage';
 
 const ProtectedLayout: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -76,6 +77,7 @@ export const App: React.FC = () => {
               <Route path="market-intelligence" element={<CareerMarketIntelligencePage />} />
               <Route path="job-readiness" element={<JobReadinessPage />} />
               <Route path="career-readiness" element={<CareerReadinessPage />} />
+              <Route path="career-forecast" element={<CareerForecastPage />} />
               <Route path="trajectory" element={<TrajectoryPage />} />
               <Route path="roadmap" element={<RoadmapPage />} />
               <Route path="evidence" element={<LearningEvidencePage />} />

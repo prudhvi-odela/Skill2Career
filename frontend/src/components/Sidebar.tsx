@@ -16,7 +16,8 @@ import {
   Globe2,
   Award,
   Activity,
-  Briefcase
+  Briefcase,
+  Target
 } from 'lucide-react';
 
 const NAV_ITEMS = [
@@ -36,6 +37,7 @@ const NAV_ITEMS = [
   { path: '/app/job-readiness', label: 'ML Benchmark', icon: CheckCircle2 },
 
   { section: 'FUTURE & ROADMAP' },
+  { path: '/app/career-forecast', label: 'Career Forecasting', icon: Target },
   { path: '/app/trajectory', label: 'Trajectory Forecaster', icon: TrendingUp },
   { path: '/app/roadmap', label: 'Personalized Roadmap', icon: Map },
 

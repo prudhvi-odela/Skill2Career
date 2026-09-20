@@ -192,5 +192,25 @@ export const careerReadinessApi = {
     apiClient.get('/career-readiness/compare', { params: { career_ids: careerIds } }),
 };
 
+export const careerForecastApi = {
+  getForecast: (careerId: string, horizon?: string, forceRefresh?: boolean) =>
+    apiClient.get(`/career-forecast/${careerId}`, { params: { horizon, force_refresh: forceRefresh } }),
+  getBottlenecks: (careerId: string, horizon?: string) =>
+    apiClient.get(`/career-forecast/${careerId}/bottlenecks`, { params: { horizon } }),
+  getHistory: (careerId: string, limit?: number) =>
+    apiClient.get(`/career-forecast/${careerId}/history`, { params: { limit } }),
+  simulateScenario: (careerId: string, request: {
+    scenario_type: string;
+    horizon: string;
+    simulated_weekly_hours?: number;
+    consistency_multiplier?: number;
+    targeted_skills?: string[];
+    remediation_focused?: boolean;
+    custom_name?: string;
+  }) => apiClient.post(`/career-forecast/${careerId}/simulate`, request),
+  compareScenarios: (careerId: string, horizon?: string) =>
+    apiClient.get('/career-forecast/compare-scenarios', { params: { career_id: careerId, horizon } }),
+};
+
 
 

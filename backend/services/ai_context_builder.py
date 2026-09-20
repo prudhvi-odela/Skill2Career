@@ -307,6 +307,40 @@ async def build_student_ai_context(
         except Exception:
             pass
 
+    # 13. Career Forecasting & Scenario Intelligence (Phase 10)
+    career_forecast_context = None
+    if effective_target_career_id:
+        try:
+            from backend.services.career_forecast_service import CareerForecastService
+            from backend.schemas.career_forecast_schemas import ForecastHorizon
+            cf_svc = CareerForecastService()
+            cf_data = await cf_svc.generate_career_forecast(
+                student_id=user_id,
+                career_id=effective_target_career_id,
+                horizon_days=90,
+                db=db
+            )
+            career_forecast_context = {
+                "forecast_horizon_days": cf_data.forecast_horizon_days,
+                "current_readiness": cf_data.active_scenario.baseline_readiness_score,
+                "projected_readiness": cf_data.active_scenario.projected_readiness_benchmark,
+                "uncertainty_level": cf_data.uncertainty.value,
+                "uncertainty_rationale": cf_data.uncertainty_rationale,
+                "prediction_uncertainty_margin": cf_data.prediction_uncertainty_margin,
+                "projected_readiness_range": [cf_data.projected_range_low, cf_data.projected_range_high],
+                "time_to_target_weeks": f"{cf_data.time_to_target.min_weeks}-{cf_data.time_to_target.max_weeks} weeks ({cf_data.time_to_target.estimated_weeks_range})" if cf_data.time_to_target else "Unknown",
+                "bottlenecks": [
+                    {"skill": b.skill_name, "reason": b.reason.value, "severity": b.impact_severity}
+                    for b in cf_data.bottlenecks[:3]
+                ],
+                "projected_skills": [
+                    {"skill": s.skill_name, "current": s.current_proficiency, "projected": s.projected_proficiency, "status": s.status.value}
+                    for s in cf_data.skill_growth_projections[:5]
+                ]
+            }
+        except Exception:
+            pass
+
     # Return structured context bundle
     return {
         "student": {
@@ -335,6 +369,7 @@ async def build_student_ai_context(
         "evidence_engine": evidence_context,
         "learning_intelligence": learning_intelligence_context,
         "career_readiness": career_readiness_context,
+        "career_forecast": career_forecast_context,
         "ml_readiness": {
             "prediction_id": str(latest_prediction.get("_id", "N/A")) if latest_prediction else "N/A",
             "readiness_score": float(latest_prediction.get("readiness_score", 0.0)) if latest_prediction else 0.0,

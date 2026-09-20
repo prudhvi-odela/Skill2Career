@@ -49,6 +49,11 @@ CORE OPERATING PRINCIPLES:
    - When explaining career readiness, synthesize skill alignment, verified evidence coverage, trajectory momentum, and external market signals.
    - Explain what remains missing, why specific skills are critical, and which evidence artifacts substantiate the evaluation.
    - Never calculate a new readiness percentage, modify authoritative skill levels, or guarantee hiring.
+9. Career Forecasting & Scenario Intelligence (Phase 10):
+   - When explaining longitudinal career forecasts, ground projections strictly in the student's historical learning velocity and weekly commitment.
+   - Transparently surface uncertainty levels (High, Medium, Low) and confidence intervals.
+   - Emphasize that time-to-target estimations represent estimated study weeks under assumed learning pace, NOT guaranteed employment or hiring outcomes.
+   - Clearly delineate in-memory scenario simulations (e.g. Increased Consistency, Gap Focused) from actual historical progress.
 
 OUTPUT FORMAT:
 You must respond with valid JSON matching this schema:
@@ -240,6 +245,29 @@ class CareerAIService:
             prompt=prompt,
             context=context,
             context_type="trajectory_explanation",
+            db=db
+        )
+
+    async def explain_career_forecast(
+        self,
+        user_id: str,
+        career_id: str,
+        horizon_days: int,
+        db: AsyncDatabase
+    ) -> AIStructuredResponse:
+        """Explains longitudinal career readiness forecast, projected skill growth, bottlenecks, and time-to-target."""
+        context = await build_student_ai_context(user_id=user_id, db=db, target_career_id=career_id)
+        prompt = (
+            f"Context:\n{json.dumps(context, indent=2)}\n\n"
+            f"Task: Explain my longitudinal career forecast over a {horizon_days}-day horizon for '{context.get('target_career', {}).get('title', career_id)}'. "
+            "Detail projected readiness, the confidence interval and uncertainty factors, "
+            "competency bottlenecks that could impede progress, and realistic study pacing to reach benchmark readiness."
+        )
+        return await self._generate_response(
+            user_id=user_id,
+            prompt=prompt,
+            context=context,
+            context_type="forecast_explanation",
             db=db
         )
 
@@ -476,6 +504,35 @@ class CareerAIService:
             recommended_actions = [
                 action_text,
                 "Log your completed study hours and check off the milestone on your roadmap"
+            ]
+
+        elif context_type == "forecast_explanation":
+            forecast_ctx = context.get("career_forecast") or {}
+            horizon_d = forecast_ctx.get("forecast_horizon_days", 90)
+            proj_score = forecast_ctx.get("projected_readiness", score)
+            unc_level = forecast_ctx.get("uncertainty_level", "MEDIUM")
+            margin = forecast_ctx.get("prediction_uncertainty_margin", 2.2)
+            pr_range = forecast_ctx.get("projected_readiness_range", [max(0.0, round(proj_score - margin, 1)), min(100.0, round(proj_score + margin, 1))])
+            time_to_tgt = forecast_ctx.get("time_to_target_weeks", "8-16 weeks")
+            bottlenecks = forecast_ctx.get("bottlenecks", [])
+            bn_names = [b["skill"] for b in bottlenecks if "skill" in b]
+
+            message = (
+                f"Your longitudinal career forecast over a {horizon_d}-day horizon projects your readiness benchmark for {career_title} "
+                f"progressing from {score:.1f}% to approximately {proj_score:.1f}% (Prediction Range: [{pr_range[0]:.1f}%, {pr_range[1]:.1f}%], Uncertainty: {unc_level}). "
+                f"Estimated competency acquisition time is ~{time_to_tgt}. "
+                f"Key bottlenecks that could slow your velocity include: {', '.join(bn_names) if bn_names else 'prerequisite foundation pacing'}."
+            )
+            key_points = [
+                f"Projected Readiness: {proj_score:.1f}% (Current: {score:.1f}%)",
+                f"Prediction Range: [{pr_range[0]:.1f}%, {pr_range[1]:.1f}%] (±{margin:.1f} pts error margin, {unc_level} Data Uncertainty)",
+                f"Estimated Competency Acquisition Time: {time_to_tgt}",
+                f"Identified {len(bottlenecks)} competency bottleneck(s)"
+            ]
+            recommended_actions = [
+                f"Target remediation on bottleneck competency: {bn_names[0] if bn_names else 'primary gap'}",
+                "Maintain consistent weekly study sessions to preserve trajectory velocity",
+                "Complete evidence assessments to validate retention"
             ]
 
         elif context_type == "trajectory_explanation":
