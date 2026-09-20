@@ -6,7 +6,7 @@ Idempotently seeds skills taxonomy, career roles, assessment quizzes, model vers
 import os
 import json
 import asyncio
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import pandas as pd
 from pymongo.asynchronous.database import AsyncDatabase
 
@@ -605,10 +605,93 @@ async def seed_database():
     ev_svc = EvidenceService()
     ev_count = await ev_svc.sync_student_artifacts_to_evidence(student_id=user_id, db=db)
 
+    # 9. Seed Longitudinal Learning Snapshots (Phase 09B)
+    demo_snapshots = [
+        {
+            "student_id": user_id,
+            "snapshot_date": (now - timedelta(days=28)).isoformat(),
+            "skill_count": 6,
+            "verified_skill_count": 1,
+            "average_proficiency": 2.2,
+            "target_career_id": "CR001",
+            "projects_count": 1,
+            "assessments_count": 1,
+            "certifications_count": 0,
+            "learning_activity_count": 2,
+            "verified_evidence_count": 1,
+            "readiness_score": 45.0,
+            "skills_state": [
+                {"skill_id": "SK001", "name": "Python", "level": 2.5, "verified": False},
+                {"skill_id": "SK002", "name": "JavaScript", "level": 2.0, "verified": False},
+                {"skill_id": "SK004", "name": "React", "level": 2.0, "verified": False},
+                {"skill_id": "SK008", "name": "SQL", "level": 2.0, "verified": False},
+                {"skill_id": "SK015", "name": "FastAPI", "level": 2.0, "verified": False},
+                {"skill_id": "SK034", "name": "Docker", "level": 2.5, "verified": True}
+            ],
+            "snapshot_source": "learning_intelligence_engine",
+            "created_at": (now - timedelta(days=28)).isoformat()
+        },
+        {
+            "student_id": user_id,
+            "snapshot_date": (now - timedelta(days=14)).isoformat(),
+            "skill_count": 7,
+            "verified_skill_count": 3,
+            "average_proficiency": 3.1,
+            "target_career_id": "CR001",
+            "projects_count": 2,
+            "assessments_count": 2,
+            "certifications_count": 1,
+            "learning_activity_count": 6,
+            "verified_evidence_count": 3,
+            "readiness_score": 62.0,
+            "skills_state": [
+                {"skill_id": "SK001", "name": "Python", "level": 3.5, "verified": True},
+                {"skill_id": "SK002", "name": "JavaScript", "level": 2.8, "verified": False},
+                {"skill_id": "SK003", "name": "TypeScript", "level": 3.0, "verified": False},
+                {"skill_id": "SK004", "name": "React", "level": 3.0, "verified": False},
+                {"skill_id": "SK008", "name": "SQL", "level": 3.2, "verified": True},
+                {"skill_id": "SK015", "name": "FastAPI", "level": 3.0, "verified": False},
+                {"skill_id": "SK034", "name": "Docker", "level": 3.0, "verified": True}
+            ],
+            "snapshot_source": "learning_intelligence_engine",
+            "created_at": (now - timedelta(days=14)).isoformat()
+        },
+        {
+            "student_id": user_id,
+            "snapshot_date": now.isoformat(),
+            "skill_count": 8,
+            "verified_skill_count": 5,
+            "average_proficiency": 3.8,
+            "target_career_id": "CR001",
+            "projects_count": 3,
+            "assessments_count": 3,
+            "certifications_count": 1,
+            "learning_activity_count": 10,
+            "verified_evidence_count": 5,
+            "readiness_score": 78.5,
+            "skills_state": [
+                {"skill_id": "SK001", "name": "Python", "level": 4.2, "verified": True},
+                {"skill_id": "SK002", "name": "JavaScript", "level": 3.5, "verified": False},
+                {"skill_id": "SK003", "name": "TypeScript", "level": 3.8, "verified": True},
+                {"skill_id": "SK004", "name": "React", "level": 3.5, "verified": False},
+                {"skill_id": "SK008", "name": "SQL", "level": 4.0, "verified": True},
+                {"skill_id": "SK015", "name": "FastAPI", "level": 3.8, "verified": True},
+                {"skill_id": "SK034", "name": "Docker", "level": 3.5, "verified": True},
+                {"skill_id": "SK035", "name": "Kubernetes", "level": 3.0, "verified": False}
+            ],
+            "snapshot_source": "learning_intelligence_engine",
+            "created_at": now.isoformat()
+        }
+    ]
+
+    await db.learning_snapshots.delete_many({"student_id": user_id})
+    await db.learning_snapshots.insert_many(demo_snapshots)
+
     print(f"[OK] Seeded demo user ({demo_email}) and profile successfully.")
     print(f"[OK] Seeded {len(market_sources)} market data sources, {len(career_signals)} career signals, and {len(skill_signals)} skill signals.")
     print(f"[OK] Seeded {len(skill_dependencies_seed)} canonical skill dependencies.")
     print(f"[OK] Seeded {ev_count} initial verified skill evidence records.")
+    print(f"[OK] Seeded {len(demo_snapshots)} longitudinal learning snapshots.")
     print("MongoDB database seeding complete.")
 
 

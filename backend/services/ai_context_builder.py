@@ -259,6 +259,27 @@ async def build_student_ai_context(
     except Exception:
         pass
 
+    # 11. Learning Intelligence & Trajectory Context (Phase 09B)
+    learning_intelligence_context = None
+    try:
+        from backend.services.learning_intelligence_service import LearningIntelligenceService
+        li_svc = LearningIntelligenceService()
+        li_overview = await li_svc.get_learning_trajectory_overview(student_id=user_id, db=db)
+        learning_intelligence_context = {
+            "trajectory_direction": li_overview.trajectory_direction.value,
+            "trajectory_confidence": li_overview.trajectory_confidence.value,
+            "overall_learning_velocity": li_overview.velocity.overall_learning_velocity,
+            "velocity_tier": li_overview.velocity.velocity_tier,
+            "consistency_score": li_overview.consistency.consistency_score,
+            "consistency_tier": li_overview.consistency.consistency_tier,
+            "current_streak_days": li_overview.consistency.current_streak_days,
+            "stagnation_status": li_overview.stagnation.status.value,
+            "top_improving_skills": li_overview.top_improving_skills,
+            "total_snapshots": li_overview.total_snapshots
+        }
+    except Exception:
+        pass
+
     # Return structured context bundle
     return {
         "student": {
@@ -285,6 +306,7 @@ async def build_student_ai_context(
             "assessments": assessments_context
         },
         "evidence_engine": evidence_context,
+        "learning_intelligence": learning_intelligence_context,
         "ml_readiness": {
             "prediction_id": str(latest_prediction.get("_id", "N/A")) if latest_prediction else "N/A",
             "readiness_score": float(latest_prediction.get("readiness_score", 0.0)) if latest_prediction else 0.0,

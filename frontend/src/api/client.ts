@@ -172,4 +172,15 @@ export const evidenceApi = {
   syncArtifacts: () => apiClient.post('/evidence/sync-artifacts'),
 };
 
+export const learningIntelligenceApi = {
+  getOverview: () => apiClient.get('/learning-intelligence/overview'),
+  getTrajectory: () => apiClient.get('/learning-intelligence/trajectory'),
+  getVelocity: () => apiClient.get('/learning-intelligence/velocity'),
+  getConsistency: () => apiClient.get('/learning-intelligence/consistency'),
+  getStagnation: () => apiClient.get('/learning-intelligence/stagnation'),
+  getSkillHistory: (skillId: string) => apiClient.get(`/learning-intelligence/skills/${skillId}`),
+  recordSnapshot: (targetCareerId?: string) =>
+    apiClient.post('/learning-intelligence/snapshot', null, { params: { target_career_id: targetCareerId } }),
+};
+
 

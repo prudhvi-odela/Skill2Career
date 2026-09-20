@@ -14,7 +14,8 @@ import {
   Cpu,
   Sparkles,
   Globe2,
-  Award
+  Award,
+  Activity
 } from 'lucide-react';
 
 const NAV_ITEMS = [
@@ -38,6 +39,7 @@ const NAV_ITEMS = [
 
   { section: 'VERIFICATION & WORK' },
   { path: '/app/evidence', label: 'Learning Evidence', icon: Award },
+  { path: '/app/learning-intelligence', label: 'Learning Intelligence', icon: Activity },
   { path: '/app/assessments', label: 'Skill Assessments', icon: BookOpenCheck },
   { path: '/app/portfolio', label: 'Projects & Certs', icon: FolderGit2 },
   { path: '/app/ml-models', label: 'ML Model Registry', icon: Cpu },
