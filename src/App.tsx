@@ -18,6 +18,7 @@ import { SkillGapPage } from './pages/SkillGapPage';
 import { JobReadinessPage } from './pages/JobReadinessPage';
 import { TrajectoryPage } from './pages/TrajectoryPage';
 import { OnboardingPage } from './pages/OnboardingPage';
+import { BranchCurriculumPage } from './pages/BranchCurriculumPage';
 
 // Placement-Ops-AI Reference Pages
 import { PlacementOpsPage } from './pages/PlacementOpsPage';
@@ -76,6 +77,8 @@ export const App: React.FC = () => {
               <Route path="trajectory" element={<TrajectoryPage />} />
               <Route path="job-readiness" element={<JobReadinessPage />} />
               <Route path="skills" element={<SkillsPage />} />
+              <Route path="curriculum" element={<BranchCurriculumPage />} />
+              <Route path="compiler" element={<BranchCurriculumPage />} />
               <Route path="profile" element={<ProfilePage />} />
 
               {/* Placement Ops AI Modules */}

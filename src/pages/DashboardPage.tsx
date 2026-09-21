@@ -4,6 +4,9 @@ import { useAuth } from '../context/AuthContext';
 import { analysisApi, careersApi } from '../api/client';
 import { ScoreGauge } from '../components/ScoreGauge';
 import { KPICard } from '../components/KPICard';
+import { ALL_BRANCHES } from '../data/engineeringBranches';
+import { getCareersForBranch } from '../data/branchCareerRoles';
+import { Terminal, BookOpen, ArrowRight } from 'lucide-react';
 
 export const DashboardPage: React.FC = () => {
   const { user, profile, updateProfile } = useAuth();
@@ -15,23 +18,37 @@ export const DashboardPage: React.FC = () => {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const targetCareerId = profile?.target_career_id || 'CR004';
+  const userBranch = profile?.branch || profile?.major_or_branch || 'CSE';
 
   useEffect(() => {
     loadDashboardData();
-  }, [profile?.target_career_id, profile?.skills]);
+  }, [profile?.target_career_id, profile?.skills, profile?.branch]);
 
   const loadDashboardData = async () => {
     setLoading(true);
     setErrorMsg(null);
     try {
       const [recsRes, readyRes, gapRes, trajRes] = await Promise.all([
-        careersApi.getRecommendations().catch(() => ({ data: [] })),
+        careersApi.getRecommendations(userBranch).catch(() => ({ data: [] })),
         analysisApi.predictReadiness(targetCareerId).catch(() => ({ data: null })),
         analysisApi.getSkillGap(targetCareerId).catch(() => ({ data: null })),
         analysisApi.forecastTrajectory(profile?.weekly_study_hours || 15, 0.9, targetCareerId).catch(() => ({ data: null }))
       ]);
 
-      setRecommendations(recsRes.data || []);
+      let finalRecs = recsRes.data || [];
+      if (finalRecs.length === 0) {
+        // Fallback to branch-specific career definitions
+        finalRecs = getCareersForBranch(userBranch).map(c => ({
+          career_id: c.career_id,
+          career_title: c.career_title,
+          domain: c.domain,
+          match_score: 75,
+          readiness_score: 70,
+          avg_salary: c.avg_salary_usd
+        }));
+      }
+
+      setRecommendations(finalRecs);
       setReadinessData(readyRes.data);
       setGapData(gapRes.data);
       setTrajectoryData(trajRes.data);
@@ -127,6 +144,123 @@ export const DashboardPage: React.FC = () => {
           subtitle={`At current pace (${profile?.weekly_study_hours || 15} hrs/wk)`}
         />
       </div>
+
+      {/* Branch-Specific Learning Roadmap & Specialized Practice Section */}
+      {(() => {
+        const userBranch = profile?.branch || profile?.major_or_branch || 'CSE';
+        const branchInfo = ALL_BRANCHES.find(
+          b => b.code.toLowerCase() === userBranch.toLowerCase() ||
+               b.name.toLowerCase().includes(userBranch.toLowerCase())
+        ) || ALL_BRANCHES[0];
+
+        return (
+          <div
+            className="panel-card"
+            style={{
+              background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+              border: '1px solid #cbd5e1',
+              borderRadius: '12px',
+              padding: '22px 24px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '16px',
+              boxShadow: '0 2px 4px rgba(15, 23, 42, 0.04)',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '24px' }}>{branchInfo.categoryEmoji}</span>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '11px', fontWeight: 800, color: '#006EFF', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      {branchInfo.category}
+                    </span>
+                    <span style={{ fontSize: '11px', background: '#eff6ff', color: '#1d4ed8', padding: '1px 6px', borderRadius: '4px', fontWeight: 700 }}>
+                      ACTIVE DISCIPLINE
+                    </span>
+                  </div>
+                  <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#0f172a', margin: '2px 0 0 0' }}>
+                    {branchInfo.name}
+                  </h3>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <Link
+                  to="/app/curriculum"
+                  className="btn-secondary"
+                  style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', padding: '6px 12px' }}
+                >
+                  <BookOpen size={14} />
+                  <span>Curriculum & Schedule</span>
+                </Link>
+                <Link
+                  to="/app/curriculum"
+                  className="btn-primary"
+                  style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', padding: '6px 12px' }}
+                >
+                  <Terminal size={14} />
+                  <span>Launch Practice Lab</span>
+                  <ArrowRight size={14} />
+                </Link>
+              </div>
+            </div>
+
+            {/* Quick Preview of What They Have to Learn in This Branch */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px' }}>
+              <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '14px' }}>
+                <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: '6px' }}>
+                  Core Required Subjects ({branchInfo.subjects.length})
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  {branchInfo.subjects.slice(0, 3).map((sub) => (
+                    <div key={sub.code} style={{ fontSize: '12px', color: '#1e293b', display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ fontWeight: 600 }}>{sub.code}: {sub.name}</span>
+                      <span style={{ color: '#64748b' }}>Sem {sub.semester}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '14px' }}>
+                <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: '6px' }}>
+                  Weekly Lab Workflow & Compiler Focus
+                </div>
+                {branchInfo.schedule.length > 0 ? (
+                  <div style={{ fontSize: '12px', color: '#334155' }}>
+                    <div style={{ fontWeight: 700, color: '#006EFF', marginBottom: '2px' }}>
+                      Week {branchInfo.schedule[0].week}: {branchInfo.schedule[0].theme}
+                    </div>
+                    <div style={{ color: '#64748b', lineHeight: 1.4 }}>
+                      {branchInfo.schedule[0].labWorkflow}
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ fontSize: '12px', color: '#64748b' }}>
+                    Full 12-week schedule with automated deliverables configured.
+                  </div>
+                )}
+              </div>
+
+              <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '14px' }}>
+                <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: '6px' }}>
+                  Tailored Compilers & Tooling
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginBottom: '8px' }}>
+                  {branchInfo.toolsAndTech.slice(0, 5).map((t) => (
+                    <span key={t} style={{ fontSize: '10px', background: '#f1f5f9', color: '#334155', padding: '2px 6px', borderRadius: '4px', fontWeight: 600 }}>
+                      {t}
+                    </span>
+                  ))}
+                </div>
+                <div style={{ fontSize: '11px', color: '#006EFF', fontWeight: 600 }}>
+                  Primary Sandbox: {branchInfo.compilerType.replace('_', ' ').toUpperCase()}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Main Analysis Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: '20px' }}>

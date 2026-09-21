@@ -1,3 +1,5 @@
+import { ALL_CAREER_ROLES } from '../src/data/branchCareerRoles.js';
+
 export interface Skill {
   skill_id: string;
   skill_name: string;
@@ -19,9 +21,13 @@ export interface CareerRole {
   career_id: string;
   career_title: string;
   domain: string;
+  category?: string;
+  branch_codes?: string[];
   description: string;
   min_exp_years: number;
   avg_salary_usd: number;
+  market_demand?: string;
+  key_workflows?: string[];
   required_skills: CareerSkillRequirement[];
 }
 
@@ -79,6 +85,7 @@ export const SKILLS_CATALOG: Skill[] = [
 ];
 
 export const CAREER_ROLES: CareerRole[] = [
+  ...ALL_CAREER_ROLES,
   {
     career_id: 'CR001',
     career_title: 'Full-Stack Software Engineer',

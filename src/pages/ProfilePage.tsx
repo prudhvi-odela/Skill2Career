@@ -10,6 +10,7 @@ import {
   getMyProfile, updateMyProfile, uploadMyResume, extractProfileFromResume,
   type StudentProfile, type StudentProfileUpdate, type ExtractedProfileData,
 } from '@/lib/student-api'
+import { ENGINEERING_CATEGORIES } from '../data/engineeringBranches'
 
 // ── small reusable bits (kept local -- page.tsx's helpers aren't exported) ──
 
@@ -404,8 +405,22 @@ export function ProfilePage() {
                 </Field>
               </div>
               <div className="data-field">
-                <Field label="Branch">
-                  <input className={inputClass} value={profile.branch} onChange={(e) => patch({ branch: e.target.value })} placeholder="e.g. CSE" />
+                <Field label="Branch / Discipline">
+                  <select
+                    className={inputClass}
+                    value={profile.branch}
+                    onChange={(e) => patch({ branch: e.target.value })}
+                  >
+                    {ENGINEERING_CATEGORIES.map((cat) => (
+                      <optgroup key={cat.name} label={`${cat.emoji} ${cat.name}`}>
+                        {cat.branches.map((b) => (
+                          <option key={b.code} value={b.code}>
+                            {b.name} ({b.code})
+                          </option>
+                        ))}
+                      </optgroup>
+                    ))}
+                  </select>
                 </Field>
               </div>
               <div className="data-field">

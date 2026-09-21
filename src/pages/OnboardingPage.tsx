@@ -6,6 +6,7 @@ import {
   GraduationCap, Target, Award, Sparkles, CheckCircle2,
   ArrowRight, ArrowLeft, Plus, X, Upload, BookOpen
 } from 'lucide-react';
+import { ENGINEERING_CATEGORIES, ALL_BRANCHES } from '../data/engineeringBranches';
 
 const COMMON_SKILLS = [
   'Python', 'JavaScript', 'TypeScript', 'React', 'SQL',
@@ -344,14 +345,22 @@ export const OnboardingPage: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="input-label">Branch / Department</label>
-                    <input
-                      type="text"
+                    <label className="input-label">Branch / Engineering Discipline</label>
+                    <select
                       className="input-field"
                       value={branch}
                       onChange={(e) => setBranch(e.target.value)}
-                      placeholder="e.g. Computer Science & Engineering"
-                    />
+                    >
+                      {ENGINEERING_CATEGORIES.map((cat) => (
+                        <optgroup key={cat.name} label={`${cat.emoji} ${cat.name}`}>
+                          {cat.branches.map((b) => (
+                            <option key={b.code} value={b.name}>
+                              {b.name}
+                            </option>
+                          ))}
+                        </optgroup>
+                      ))}
+                    </select>
                   </div>
                 </div>
 

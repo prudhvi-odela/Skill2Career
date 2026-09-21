@@ -64,10 +64,11 @@ export const studentApi = {
 };
 
 export const careersApi = {
-  getCareers: (domain?: string) => apiClient.get('/careers', { params: { domain } }),
+  getCareers: (domain?: string, branch?: string, category?: string) =>
+    apiClient.get('/careers', { params: { domain, branch, category } }),
   getCareerDetail: (careerId: string) => apiClient.get(`/careers/${careerId}`),
   getSkillsCatalog: (category?: string) => apiClient.get('/careers/skills/catalog', { params: { category } }),
-  getRecommendations: () => apiClient.get('/careers/matching/recommendations'),
+  getRecommendations: (branch?: string) => apiClient.get('/careers/matching/recommendations', { params: { branch } }),
 };
 
 export const analysisApi = {
