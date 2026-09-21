@@ -15,15 +15,20 @@ export interface CareerGoalDefinition {
     skill_id: string;
     skill_name: string;
     required_level: number; // 1 to 5 scale
+    default_student_level: number; // realistic baseline (e.g. 2.1, 4.2, 3.5, 2.8, 1.5)
     importance: number; // 0 to 1
     priority: 'Critical' | 'High' | 'Medium';
     estimated_hours: number;
+    subject_category: 'Core Subject' | 'Applied Engineering' | 'Tooling & Systems';
+    recommended_learning: string;
   }[];
   roadmap_stages: {
     stage: number;
     title: string;
     focus_skills: string[];
+    main_subjects: string[];
     deliverable: string;
+    recommended_topics: string[];
   }[];
 }
 
@@ -2297,6 +2302,74 @@ export function getCareerGoalsForBranch(branchCode: string) {
   return formatGoals('CSE', CAREER_GOALS_DATA['CSE']);
 }
 
+function getSpecificRecommendedLearning(skill: string): string {
+  const s = skill.toLowerCase();
+  if (s.includes('dsa') || s.includes('algorithm') || s.includes('data structure')) {
+    return 'DSA: Master Trees, Graphs, Sorting, Hash Maps & solve Medium LeetCode problems.';
+  }
+  if (s.includes('python') || s.includes('programming') || s.includes('c++') || s.includes('java')) {
+    return `${skill}: Deepen language fundamentals, memory management, OOP patterns, and clean architecture.`;
+  }
+  if (s.includes('dbms') || s.includes('database')) {
+    return 'DBMS: Study Relational Schema Design, Normalization (1NF to BCNF), ACID Properties & Indexing.';
+  }
+  if (s.includes('sql')) {
+    return 'SQL: Practice Advanced Joins, Window Functions, Group By rollups & Query Optimization.';
+  }
+  if (s.includes('os') || s.includes('operating system')) {
+    return 'Operating Systems: Process Scheduling, Threads/Concurrency, Mutexes, Virtual Memory & Linux Syscalls.';
+  }
+  if (s.includes('network')) {
+    return 'Computer Networks: Master OSI 7-Layer, TCP/IP handshake, Sockets, HTTP/3 & Routing Protocols.';
+  }
+  if (s.includes('git')) {
+    return 'Git Version Control: Branching strategies, Interactive Rebase, Merge Conflicts & GitHub Actions.';
+  }
+  if (s.includes('system design') || s.includes('architecture')) {
+    return 'System Design: Scalability patterns, Load Balancing, Caching (Redis), Sharding & Microservices.';
+  }
+  if (s.includes('cloud') || s.includes('aws') || s.includes('docker') || s.includes('kubernetes')) {
+    return `${skill}: Containerization, CI/CD deployment pipelines, Infrastructure-as-Code & Observability.`;
+  }
+  if (s.includes('control') || s.includes('matlab') || s.includes('simulink')) {
+    return `${skill}: State-space representations, PID controller tuning, Frequency domain analysis & stability.`;
+  }
+  if (s.includes('circuit') || s.includes('pcb') || s.includes('electronics')) {
+    return `${skill}: Schematic design, SPICE simulation, component tolerances, KiCad/Altium layout & testing.`;
+  }
+  if (s.includes('machine learning') || s.includes('ml') || s.includes('deep learning')) {
+    return `${skill}: Mathematical formulations, Loss backprop, PyTorch modeling, Cross-validation & Evaluation metrics.`;
+  }
+  return `${skill}: Study core engineering textbooks, complete lab problem sets, and build an integrated module.`;
+}
+
+function getSubjectCategory(skill: string): 'Core Subject' | 'Applied Engineering' | 'Tooling & Systems' {
+  const s = skill.toLowerCase();
+  if (s.includes('git') || s.includes('docker') || s.includes('linux') || s.includes('autocad') || s.includes('kicad') || s.includes('tool') || s.includes('excel') || s.includes('ansys')) {
+    return 'Tooling & Systems';
+  }
+  if (s.includes('dsa') || s.includes('dbms') || s.includes('os') || s.includes('operating') || s.includes('network') || s.includes('oop') || s.includes('math') || s.includes('thermodynamics') || s.includes('mechanics') || s.includes('structures') || s.includes('circuits') || s.includes('control') || s.includes('algorithms')) {
+    return 'Core Subject';
+  }
+  return 'Applied Engineering';
+}
+
+function getDefaultStudentLevel(skillName: string, index: number): number {
+  const s = skillName.toLowerCase();
+  if (s.includes('python')) return 4.2;
+  if (s.includes('dsa') || s.includes('algorithm')) return 2.1;
+  if (s.includes('sql')) return 3.5;
+  if (s.includes('dbms')) return 2.8;
+  if (s.includes('git')) return 4.0;
+  if (s.includes('system design')) return 1.5;
+  if (s.includes('operating system') || s.includes('os')) return 2.5;
+  if (s.includes('network')) return 2.7;
+
+  // Realistic fallback pattern based on skill position
+  const baselineValues = [4.0, 2.1, 3.5, 2.8, 4.0, 1.5, 2.4, 3.1, 2.0, 3.4];
+  return baselineValues[index % baselineValues.length];
+}
+
 function formatGoals(branchCode: string, entry: (typeof CAREER_GOALS_DATA)[string]): CareerGoalDefinition[] {
   return entry.goals.map((g, idx) => {
     const slug = g.title.toLowerCase().replace(/[^a-z0-9]+/g, '_');
@@ -2305,15 +2378,25 @@ function formatGoals(branchCode: string, entry: (typeof CAREER_GOALS_DATA)[strin
     const required_skills = g.mainly_learn.map((skillName, sIdx) => {
       const isTop = sIdx < 3;
       const isMid = sIdx >= 3 && sIdx < 6;
+      const reqLevel = isTop ? 4.5 : (isMid ? 4.0 : 3.5);
+      const studentLevel = getDefaultStudentLevel(skillName, sIdx);
+      const category = getSubjectCategory(skillName);
+
       return {
         skill_id: `SK_${slug}_${sIdx}`,
         skill_name: skillName,
-        required_level: isTop ? 4 : (isMid ? 3 : 3),
+        required_level: reqLevel,
+        default_student_level: studentLevel,
         importance: isTop ? 0.95 : (isMid ? 0.85 : 0.75),
         priority: (isTop ? 'Critical' : (isMid ? 'High' : 'Medium')) as 'Critical' | 'High' | 'Medium',
-        estimated_hours: isTop ? 25 : 15
+        estimated_hours: isTop ? 35 : 20,
+        subject_category: category,
+        recommended_learning: getSpecificRecommendedLearning(skillName)
       };
     });
+
+    const coreSubjects = g.mainly_learn.filter(s => getSubjectCategory(s) === 'Core Subject');
+    const mainList = coreSubjects.length >= 3 ? coreSubjects : g.mainly_learn;
 
     return {
       id,
@@ -2330,21 +2413,39 @@ function formatGoals(branchCode: string, entry: (typeof CAREER_GOALS_DATA)[strin
       roadmap_stages: [
         {
           stage: 1,
-          title: 'Foundational Competencies',
+          title: 'Core Subject Fundamentals & Foundations',
           focus_skills: g.mainly_learn.slice(0, 3),
-          deliverable: 'Core theoretical and syntax fundamentals with hands-on exercises.'
+          main_subjects: mainList.slice(0, 2),
+          deliverable: 'Comprehensive mastery of foundational theory, standard problem sets, and core lab assignments.',
+          recommended_topics: [
+            'Core Subject Textbook Theory & Standard Syllabus Principles',
+            'Analytical Problem Sets & Algorithmic Rigor',
+            'Weekly Laboratory Experiments & Hands-On Coding'
+          ]
         },
         {
           stage: 2,
-          title: 'Applied Engineering Workflows',
-          focus_skills: g.mainly_learn.slice(3, 6),
-          deliverable: 'Real-world project pipeline, automated testing, and industry tooling.'
+          title: 'Core Engineering Systems & Subject Mastery',
+          focus_skills: g.mainly_learn.slice(3, 6).length > 0 ? g.mainly_learn.slice(3, 6) : g.mainly_learn.slice(1, 3),
+          main_subjects: mainList.slice(2, 4).length > 0 ? mainList.slice(2, 4) : mainList.slice(0, 2),
+          deliverable: 'Integrated multi-module project simulating real-world industry pipeline and laboratory requirements.',
+          recommended_topics: [
+            'System Architecture, Interfacing & Protocol Standards',
+            'Performance Benchmarking, Complexity & Optimization',
+            'Automated Testing, Verification & Simulation Runs'
+          ]
         },
         {
           stage: 3,
-          title: 'Production Systems & Verification',
-          focus_skills: g.mainly_learn.slice(6),
-          deliverable: 'End-to-end deployment, optimization, and capstone portfolio verification.'
+          title: 'Advanced Subject Mastery & Capstone Deployment',
+          focus_skills: g.mainly_learn.slice(6).length > 0 ? g.mainly_learn.slice(6) : g.mainly_learn.slice(g.mainly_learn.length - 2),
+          main_subjects: mainList.slice(mainList.length - 2),
+          deliverable: 'Production-ready capstone project, system design review, and placement interview readiness.',
+          recommended_topics: [
+            'Scalable Production Architectures & Edge-Case Resilience',
+            'Comprehensive Engineering Capstone & Code/Design Review',
+            'Technical Placement Interviews & Defense Presentation'
+          ]
         }
       ]
     };
