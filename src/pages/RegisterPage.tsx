@@ -30,34 +30,47 @@ export const RegisterPage: React.FC = () => {
   return (
     <div
       style={{
-        minHeight: 'calc(100vh - 64px)',
+        minHeight: 'calc(100vh - 60px)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '24px',
-        background: '#f0f2f5',
+        padding: '32px 24px',
+        background: '#f8fafc',
       }}
     >
-      <div className="panel-card" style={{ width: '100%', maxWidth: '420px', padding: '32px' }}>
-        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+      <div
+        className="panel-card"
+        style={{
+          width: '100%',
+          maxWidth: '440px',
+          padding: '36px',
+          borderRadius: '12px',
+          boxShadow: '0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 2px 4px -2px rgba(15, 23, 42, 0.05)',
+        }}
+      >
+        <div style={{ textAlign: 'center', marginBottom: '28px' }}>
           <div
             style={{
-              display: 'inline-block',
-              padding: '4px 10px',
-              background: '#e2e8f0',
-              border: '1px solid #cbd5e1',
-              borderRadius: '3px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              padding: '4px 12px',
+              background: '#eff6ff',
+              border: '1px solid #bfdbfe',
+              borderRadius: '6px',
               fontSize: '0.75rem',
               fontWeight: 700,
-              color: '#1e3a8a',
-              marginBottom: '10px',
+              color: '#1e40af',
+              marginBottom: '12px',
+              letterSpacing: '0.04em',
             }}
           >
             ED-05 ONBOARDING
           </div>
-          <h2 style={{ fontSize: '1.4rem', color: '#0f172a', marginBottom: '4px' }}>Create Student Profile</h2>
-          <p style={{ color: '#475569', fontSize: '0.85rem' }}>
-            Start mapping your skills to industry career roles today.
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a', marginBottom: '6px' }}>
+            Create Student Profile
+          </h2>
+          <p style={{ color: '#475569', fontSize: '0.875rem', margin: 0 }}>
+            Start mapping your competencies to verified career roles today.
           </p>
         </div>
 
@@ -67,17 +80,20 @@ export const RegisterPage: React.FC = () => {
               background: '#fef2f2',
               border: '1px solid #fecaca',
               color: '#991b1b',
-              padding: '10px 12px',
-              borderRadius: '3px',
+              padding: '12px 14px',
+              borderRadius: '8px',
               fontSize: '0.85rem',
-              marginBottom: '16px',
+              marginBottom: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
             }}
           >
-            [ERROR] {error}
+            <span style={{ fontWeight: 700 }}>Notice:</span> {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div>
             <label className="input-label">Full Name</label>
             <input
@@ -114,14 +130,19 @@ export const RegisterPage: React.FC = () => {
             />
           </div>
 
-          <button type="submit" disabled={loading} className="btn-primary" style={{ padding: '10px', marginTop: '4px' }}>
+          <button
+            type="submit"
+            disabled={loading}
+            className="btn-primary"
+            style={{ padding: '11px', marginTop: '6px', width: '100%', fontSize: '0.9rem' }}
+          >
             {loading ? 'Registering...' : 'Create Account'}
           </button>
         </form>
 
-        <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '0.85rem', color: '#475569' }}>
+        <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '0.875rem', color: '#475569', marginBottom: 0 }}>
           Already have an account?{' '}
-          <Link to="/login" style={{ color: '#1e3a8a', fontWeight: 600 }}>
+          <Link to="/login" style={{ color: '#1e40af', fontWeight: 600 }}>
             Sign In
           </Link>
         </p>

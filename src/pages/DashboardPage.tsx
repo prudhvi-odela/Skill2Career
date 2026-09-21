@@ -61,16 +61,18 @@ export const DashboardPage: React.FC = () => {
     <div style={{ padding: '24px', maxWidth: '1400px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
       {/* Problem Statement Mission Header */}
       <div
+        className="panel-card"
         style={{
-          background: '#f8f9fa',
-          border: '1px solid #cbd5e1',
-          borderRadius: '4px',
-          padding: '20px 24px',
+          background: '#ffffff',
+          border: '1px solid #e2e8f0',
+          borderRadius: '12px',
+          padding: '22px 26px',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           flexWrap: 'wrap',
           gap: '16px',
+          boxShadow: '0 1px 3px rgba(15, 23, 42, 0.03)',
         }}
       >
         <div>

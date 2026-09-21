@@ -62,7 +62,7 @@ export const LandingPage: React.FC = () => {
   const liveReadinessScore = Math.round((weightedScore / totalWeight) * 100);
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#f0f2f5' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#f8fafc' }}>
       {/* Platform Header */}
       <section
         style={{
@@ -74,14 +74,15 @@ export const LandingPage: React.FC = () => {
       >
         <div
           style={{
-            display: 'inline-block',
-            padding: '4px 10px',
-            background: '#e2e8f0',
-            border: '1px solid #cbd5e1',
-            borderRadius: '4px',
-            fontSize: '0.8rem',
+            display: 'inline-flex',
+            alignItems: 'center',
+            padding: '4px 12px',
+            background: '#eff6ff',
+            border: '1px solid #bfdbfe',
+            borderRadius: '6px',
+            fontSize: '0.75rem',
             fontWeight: 700,
-            color: '#1e3a8a',
+            color: '#1e40af',
             marginBottom: '16px',
             letterSpacing: '0.04em',
           }}
@@ -139,7 +140,7 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Interactive Live Product Demo (Two-column layout, not 3 cards in a row) */}
+      {/* Interactive Live Product Demo */}
       <section
         style={{
           maxWidth: '1100px',
@@ -149,14 +150,16 @@ export const LandingPage: React.FC = () => {
         }}
       >
         <div
+          className="panel-card"
           style={{
-            background: '#f8f9fa',
-            border: '1px solid #cbd5e1',
-            borderRadius: '4px',
-            padding: '24px',
+            background: '#ffffff',
+            border: '1px solid #e2e8f0',
+            borderRadius: '12px',
+            padding: '28px',
+            boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04), 0 4px 6px -1px rgba(15, 23, 42, 0.02)',
           }}
         >
-          <div style={{ borderBottom: '1px solid #cbd5e1', paddingBottom: '16px', marginBottom: '20px' }}>
+          <div style={{ borderBottom: '1px solid #e2e8f0', paddingBottom: '18px', marginBottom: '22px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
               <div>
                 <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a', marginBottom: '4px' }}>
@@ -168,17 +171,17 @@ export const LandingPage: React.FC = () => {
               </div>
               <div
                 style={{
-                  background: '#e0e7ff',
-                  border: '1px solid #c7d2fe',
-                  borderRadius: '4px',
-                  padding: '6px 14px',
+                  background: '#eff6ff',
+                  border: '1px solid #bfdbfe',
+                  borderRadius: '8px',
+                  padding: '8px 16px',
                   textAlign: 'right',
                 }}
               >
-                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#1e3a8a', textTransform: 'uppercase' }}>
+                <div style={{ fontSize: '0.725rem', fontWeight: 700, color: '#1e40af', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                   Calculated Readiness
                 </div>
-                <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#1e3a8a', lineHeight: 1.1 }}>
+                <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#1e40af', lineHeight: 1.1 }}>
                   {liveReadinessScore}%
                 </div>
               </div>
@@ -193,14 +196,16 @@ export const LandingPage: React.FC = () => {
                     key={c.id}
                     onClick={() => handleCareerChange(idx)}
                     style={{
-                      padding: '6px 14px',
-                      background: isActive ? '#1e3a8a' : '#e2e8f0',
-                      color: isActive ? '#f8f9fa' : '#334155',
-                      border: isActive ? '1px solid #1e3a8a' : '1px solid #cbd5e1',
-                      borderRadius: '4px',
+                      padding: '7px 16px',
+                      background: isActive ? '#1e40af' : '#ffffff',
+                      color: isActive ? '#ffffff' : '#334155',
+                      border: isActive ? '1px solid #1e40af' : '1px solid #cbd5e1',
+                      borderRadius: '8px',
                       fontSize: '0.85rem',
                       fontWeight: 600,
                       cursor: 'pointer',
+                      boxShadow: isActive ? '0 1px 2px rgba(30, 64, 175, 0.2)' : '0 1px 2px rgba(0, 0, 0, 0.03)',
+                      transition: 'all 0.15s ease',
                     }}
                   >
                     {c.title}
@@ -231,10 +236,10 @@ export const LandingPage: React.FC = () => {
                     <div
                       key={skill.name}
                       style={{
-                        padding: '12px',
-                        background: '#f1f4f8',
-                        border: '1px solid #d9dfe7',
-                        borderRadius: '4px',
+                        padding: '12px 14px',
+                        background: '#f8fafc',
+                        border: '1px solid #e2e8f0',
+                        borderRadius: '8px',
                       }}
                     >
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
@@ -253,17 +258,17 @@ export const LandingPage: React.FC = () => {
                           max={5}
                           value={current}
                           onChange={(e) => handleLevelChange(idx, parseInt(e.target.value))}
-                          style={{ flex: 1, accentColor: '#1e3a8a', cursor: 'pointer' }}
+                          style={{ flex: 1, accentColor: '#1e40af', cursor: 'pointer' }}
                         />
                         <span
                           style={{
                             fontSize: '0.825rem',
                             fontWeight: 700,
-                            padding: '2px 8px',
-                            borderRadius: '3px',
-                            background: current >= skill.required ? '#dcfce7' : '#fee2e2',
-                            color: current >= skill.required ? '#14532d' : '#7f1d1d',
-                            border: current >= skill.required ? '1px solid #bbf7d0' : '1px solid #fecaca',
+                            padding: '3px 8px',
+                            borderRadius: '5px',
+                            background: current >= skill.required ? '#ecfdf5' : '#fef2f2',
+                            color: current >= skill.required ? '#065f46' : '#991b1b',
+                            border: current >= skill.required ? '1px solid #a7f3d0' : '1px solid #fecaca',
                             minWidth: '68px',
                             textAlign: 'center',
                           }}
@@ -283,20 +288,20 @@ export const LandingPage: React.FC = () => {
                 Grounded ML Architecture
               </h3>
 
-              <div style={{ background: '#f1f4f8', border: '1px solid #d9dfe7', borderRadius: '4px', padding: '14px' }}>
-                <div style={{ fontSize: '0.825rem', fontWeight: 700, color: '#1e3a8a', marginBottom: '4px' }}>
+              <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '16px' }}>
+                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e40af', marginBottom: '4px' }}>
                   Supervised Gradient Boosting Pipeline
                 </div>
-                <p style={{ fontSize: '0.85rem', color: '#475569', lineHeight: 1.5 }}>
+                <p style={{ fontSize: '0.85rem', color: '#475569', lineHeight: 1.5, margin: 0 }}>
                   The decision engine calculates an objective candidate readiness score (0-100%) by processing verified course grades, quiz diagnostics, coding lab test cases, and project artifacts.
                 </p>
               </div>
 
-              <div style={{ background: '#f1f4f8', border: '1px solid #d9dfe7', borderRadius: '4px', padding: '14px' }}>
-                <div style={{ fontSize: '0.825rem', fontWeight: 700, color: '#1e3a8a', marginBottom: '4px' }}>
+              <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '16px' }}>
+                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e40af', marginBottom: '4px' }}>
                   24-Week Trajectory Simulation
                 </div>
-                <p style={{ fontSize: '0.85rem', color: '#475569', lineHeight: 1.5 }}>
+                <p style={{ fontSize: '0.85rem', color: '#475569', lineHeight: 1.5, margin: 0 }}>
                   Simulates student competency growth based on weekly dedicated hours and learning velocity, projecting exact milestones when candidates cross the 75% job-ready threshold.
                 </p>
               </div>
@@ -305,7 +310,7 @@ export const LandingPage: React.FC = () => {
                 <Link
                   to="/app/dashboard"
                   className="btn-primary"
-                  style={{ width: '100%', textAlign: 'center', padding: '10px' }}
+                  style={{ width: '100%', textAlign: 'center', padding: '11px' }}
                 >
                   Enter Verified Student Dashboard
                 </Link>
@@ -319,8 +324,8 @@ export const LandingPage: React.FC = () => {
       <footer
         style={{
           marginTop: 'auto',
-          background: '#e6e9ee',
-          borderTop: '1px solid #cbd5e1',
+          background: '#ffffff',
+          borderTop: '1px solid #e2e8f0',
           padding: '24px',
         }}
       >

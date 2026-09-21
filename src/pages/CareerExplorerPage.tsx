@@ -91,15 +91,17 @@ export const CareerExplorerPage: React.FC = () => {
               key={dom}
               onClick={() => setSelectedDomain(dom)}
               style={{
-                background: selectedDomain === dom ? '#1e3a8a' : '#e2e8f0',
-                color: selectedDomain === dom ? '#f8f9fa' : '#334155',
-                border: selectedDomain === dom ? '1px solid #1e3a8a' : '1px solid #cbd5e1',
-                padding: '6px 12px',
-                borderRadius: '3px',
+                background: selectedDomain === dom ? '#1e40af' : '#ffffff',
+                color: selectedDomain === dom ? '#ffffff' : '#334155',
+                border: selectedDomain === dom ? '1px solid #1e40af' : '1px solid #cbd5e1',
+                padding: '6px 14px',
+                borderRadius: '6px',
                 fontSize: '0.8rem',
                 fontWeight: 600,
                 cursor: 'pointer',
                 whiteSpace: 'nowrap',
+                boxShadow: selectedDomain === dom ? '0 1px 2px rgba(30, 64, 175, 0.15)' : '0 1px 2px rgba(0, 0, 0, 0.02)',
+                transition: 'all 0.15s ease',
               }}
             >
               {dom}

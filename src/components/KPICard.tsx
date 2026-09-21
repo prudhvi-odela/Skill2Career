@@ -53,16 +53,19 @@ export const KPICard: React.FC<KPICardProps> = ({
   return (
     <div
       onClick={onClick}
+      className="panel-card"
       style={{
-        background: '#f8f9fa',
-        border: '1px solid #cbd5e1',
-        borderRadius: '4px',
-        padding: '16px',
+        background: '#ffffff',
+        border: '1px solid #e2e8f0',
+        borderRadius: '10px',
+        padding: '18px',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
         minHeight: '110px',
         cursor: onClick ? 'pointer' : 'default',
+        boxShadow: '0 1px 3px rgba(15, 23, 42, 0.03)',
+        transition: 'border-color 0.15s ease, box-shadow 0.15s ease',
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
