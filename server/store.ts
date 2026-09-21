@@ -275,7 +275,8 @@ class DataStore {
     let profile = this.profiles.get(userId);
     if (!profile) {
       const user = this.users.get(userId);
-      profile = this.getOrCreateUser(user ? user.email : 'demo@skill2career.com');
+      this.getOrCreateUser(user ? user.email : 'demo@skill2career.com', user?.full_name);
+      profile = this.profiles.get(userId) || this.profiles.get('usr_demo_01')!;
     }
     return profile;
   }
@@ -304,12 +305,16 @@ class DataStore {
   // Skill Gap Analysis Engine
   calculateSkillGap(userId: string, targetCareerId?: string) {
     const profile = this.getProfile(userId);
-    const careerId = targetCareerId || profile.target_career_id || 'CR004';
+    const careerId = (targetCareerId && targetCareerId.trim() !== '') ? targetCareerId : (profile.target_career_id || 'CR001');
     const career = CAREER_ROLES.find(c => c.career_id === careerId) || CAREER_ROLES[0];
 
     const studentSkills: StudentSkill[] = profile.skills || [];
     const skillMap = new Map<string, StudentSkill>();
-    studentSkills.forEach(s => skillMap.set(s.skill_id, s));
+    const nameMap = new Map<string, StudentSkill>();
+    studentSkills.forEach(s => {
+      if (s.skill_id) skillMap.set(s.skill_id, s);
+      if (s.name) nameMap.set(s.name.toLowerCase().trim(), s);
+    });
 
     let matchedSkills: any[] = [];
     let missingSkills: any[] = [];
@@ -318,19 +323,29 @@ class DataStore {
 
     career.required_skills.forEach(req => {
       weightTotal += req.importance;
-      const studentSkill = skillMap.get(req.skill_id);
+      const reqNameLower = (req.skill_name || '').toLowerCase().trim();
+      
+      // Match by skill_id, exact name, or fuzzy inclusion
+      let studentSkill = skillMap.get(req.skill_id) || nameMap.get(reqNameLower);
+      if (!studentSkill) {
+        studentSkill = studentSkills.find(s => {
+          const sName = (s.name || '').toLowerCase().trim();
+          return sName && (sName === reqNameLower || reqNameLower.includes(sName) || sName.includes(reqNameLower));
+        });
+      }
 
       if (studentSkill) {
-        const gap = Math.max(0, req.required_level - studentSkill.level);
-        const matchPct = Math.min(100, Math.round((studentSkill.level / req.required_level) * 100));
-        const contribution = (Math.min(studentSkill.level, req.required_level) / req.required_level) * req.importance;
+        const currentLevel = Number(studentSkill.level) || 3.0;
+        const gap = Math.max(0, req.required_level - currentLevel);
+        const matchPct = Math.min(100, Math.round((currentLevel / req.required_level) * 100));
+        const contribution = (Math.min(currentLevel, req.required_level) / req.required_level) * req.importance;
         weightedScoreTotal += contribution;
 
         matchedSkills.push({
           skill_id: req.skill_id,
           skill_name: req.skill_name,
           required_level: req.required_level,
-          current_level: studentSkill.level,
+          current_level: currentLevel,
           gap,
           match_percentage: matchPct,
           importance: req.importance,
@@ -355,15 +370,46 @@ class DataStore {
     const matchPercentage = weightTotal > 0 ? Math.round((weightedScoreTotal / weightTotal) * 100) : 0;
     const readinessScore = Math.min(98, Math.max(25, Math.round(matchPercentage * 0.85 + (profile.gpa || 8) * 1.5)));
 
+    const gaps = [
+      ...matchedSkills.map(m => ({
+        skill_id: m.skill_id,
+        skill_name: m.skill_name,
+        category: m.category || 'Core Competency',
+        current_level: m.current_level,
+        required_level: m.required_level,
+        gap: m.gap,
+        priority: m.gap === 0 ? 'Mastered' : m.priority,
+        estimated_hours: Math.round(m.gap * 12)
+      })),
+      ...missingSkills.map(ms => ({
+        skill_id: ms.skill_id,
+        skill_name: ms.skill_name,
+        category: ms.category || 'Specialized Competency',
+        current_level: ms.current_level,
+        required_level: ms.required_level,
+        gap: ms.gap,
+        priority: ms.priority,
+        estimated_hours: Math.round(ms.gap * 15)
+      }))
+    ];
+
+    const totalRemediationHours = gaps.reduce((acc, g) => acc + (g.estimated_hours || 0), 0);
+    const proficientCount = matchedSkills.filter(s => s.gap === 0).length;
+
     return {
       career_id: career.career_id,
       career_title: career.career_title,
       domain: career.domain,
       match_percentage: matchPercentage,
       readiness_score: readinessScore,
+      coverage_percentage: matchPercentage,
+      total_skills_required: career.required_skills.length,
       total_required_skills: career.required_skills.length,
       matched_skills_count: matchedSkills.length,
       missing_skills_count: missingSkills.length,
+      proficient_count: proficientCount,
+      estimated_remediation_hours: totalRemediationHours,
+      gaps: gaps,
       matched_skills: matchedSkills,
       missing_skills: missingSkills,
       strengths: matchedSkills.filter(s => s.gap === 0).map(s => s.skill_name),

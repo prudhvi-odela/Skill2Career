@@ -24,7 +24,7 @@ export const SkillGapPage: React.FC = () => {
     try {
       const res = await careersApi.getCareers();
       setCareers(res.data);
-      const initialId = profile?.target_career_id || (res.data.length > 0 ? res.data[0].id : '');
+      const initialId = profile?.target_career_id || (res.data.length > 0 ? (res.data[0].career_id || res.data[0].id) : '');
       setSelectedCareerId(initialId);
       if (initialId) {
         const gapRes = await analysisApi.getSkillGap(initialId);
@@ -90,11 +90,15 @@ export const SkillGapPage: React.FC = () => {
             value={selectedCareerId}
             onChange={handleCareerChange}
           >
-            {careers.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.title} ({c.domain})
-              </option>
-            ))}
+            {careers.map((c) => {
+              const cid = c.career_id || c.id;
+              const cname = c.career_title || c.title;
+              return (
+                <option key={cid} value={cid}>
+                  {cname} ({c.domain})
+                </option>
+              );
+            })}
           </select>
         </div>
       </div>

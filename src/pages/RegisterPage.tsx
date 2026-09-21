@@ -19,7 +19,7 @@ export const RegisterPage: React.FC = () => {
 
     try {
       await register({ full_name: fullName, email, password });
-      navigate('/app/dashboard');
+      navigate('/onboarding');
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Registration failed. Please try again.');
     } finally {

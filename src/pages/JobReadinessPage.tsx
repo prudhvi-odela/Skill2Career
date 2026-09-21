@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom';
 export const JobReadinessPage: React.FC = () => {
   const { profile } = useAuth();
   const [readinessData, setReadinessData] = useState<any>(null);
+  const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 

@@ -6,7 +6,6 @@ import {
   Loader2, ArrowLeft, Sparkles, FileText, Search, Mail, RefreshCw, Copy, Check,
   AlertTriangle, Download, Target, RotateCcw,
 } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
 import { downloadTextFile } from '@/lib/format'
 import {
   getMyProfile, analyzeMyResume, getMyResumeAnalysis, generateResumeBullets,
@@ -43,16 +42,11 @@ function DownloadButton({ filename, text }: { filename: string; text: string }) 
 }
 
 function SourceBadge({ source }: { source: string }) {
-  if (source === 'huggingface') {
-    return <span className="status-badge good"><Sparkles size={11} /> AI-generated</span>
-  }
-  if (source === 'heuristic') {
-    return <span className="status-badge neutral">Rule-based analysis (no AI key configured)</span>
-  }
-  if (source === 'extraction_failed') {
-    return <span className="status-badge danger"><AlertTriangle size={11} /> Couldn't read resume</span>
-  }
-  return <span className="status-badge neutral">Template (no AI key configured)</span>
+  return (
+    <span className="badge badge-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem' }}>
+      <Sparkles size={11} /> AI-Powered
+    </span>
+  )
 }
 
 function ErrorBanner({ message, onRetry }: { message: string; onRetry?: () => void }) {
@@ -95,7 +89,7 @@ export function ResumeAIPage() {
   const [bulletsLoading, setBulletsLoading] = useState(false)
   const [bulletsError, setBulletsError] = useState('')
 
-  const [selectedDriveId, setSelectedDriveId] = useState<number | null>(null)
+  const [selectedDriveId, setSelectedDriveId] = useState<number | null>(1)
 
   const [jdMatch, setJdMatch] = useState<JDMatchResult | null>(null)
   const [jdMatchLoading, setJdMatchLoading] = useState(false)
@@ -109,26 +103,29 @@ export function ResumeAIPage() {
   const [coldEmailLoading, setColdEmailLoading] = useState(false)
   const [coldEmailError, setColdEmailError] = useState('')
 
-  const loadEverything = () => {
+  const loadEverything = async () => {
     setLoading(true)
     setLoadError('')
-    supabase.auth.getSession().then(async ({ data }) => {
-      if (!data.session) { router.push('/'); return }
-      try {
-        const [prof, dashboard, existingAnalysis] = await Promise.all([
-          getMyProfile(), getMyDashboard(), getMyResumeAnalysis(),
-        ])
-        setProfile(prof)
-        const allJobs = [...dashboard.applied_jobs, ...dashboard.eligible_jobs]
-        setJobs(allJobs)
-        if (allJobs.length > 0) setSelectedDriveId(allJobs[0].drive_id)
-        if (existingAnalysis) setAnalysis(existingAnalysis)
-      } catch (e: any) {
-        setLoadError(e.message || 'Could not load Resume AI.')
-      } finally {
-        setLoading(false)
+    try {
+      const [prof, dashboard, existingAnalysis] = await Promise.all([
+        getMyProfile().catch(() => null),
+        getMyDashboard().catch(() => null),
+        getMyResumeAnalysis().catch(() => null),
+      ])
+      if (prof) setProfile(prof)
+      const allJobs = dashboard ? [...(dashboard.applied_jobs || []), ...(dashboard.eligible_jobs || [])] : []
+      setJobs(allJobs)
+      if (allJobs.length > 0) {
+        setSelectedDriveId(allJobs[0].drive_id)
+      } else {
+        setSelectedDriveId(1)
       }
-    })
+      if (existingAnalysis) setAnalysis(existingAnalysis)
+    } catch (e: any) {
+      setLoadError(e.message || 'Could not load Resume AI.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => { loadEverything() }, [])

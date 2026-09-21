@@ -17,6 +17,7 @@ import { CareerDetailPage } from './pages/CareerDetailPage';
 import { SkillGapPage } from './pages/SkillGapPage';
 import { JobReadinessPage } from './pages/JobReadinessPage';
 import { TrajectoryPage } from './pages/TrajectoryPage';
+import { OnboardingPage } from './pages/OnboardingPage';
 
 // Placement-Ops-AI Reference Pages
 import { PlacementOpsPage } from './pages/PlacementOpsPage';
@@ -63,6 +64,7 @@ export const App: React.FC = () => {
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/onboarding" element={<OnboardingPage />} />
 
             {/* Protected Student Portal & Placement Operations Suite */}
             <Route path="/app" element={<ProtectedLayout />}>

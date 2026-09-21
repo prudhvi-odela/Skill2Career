@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, Link, useNavigate, useLocation } from 'react-router-dom';
 import {
-  Briefcase, Sparkles, LogOut, Compass,
-  LayoutDashboard, Menu, X, Users, GraduationCap
+  Sparkles, LogOut, Compass,
+  LayoutDashboard, Menu, X, GraduationCap, Target, UserCheck
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -11,7 +11,6 @@ export const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<'Student' | 'TPO Cell' | 'Faculty'>('Student');
   const [navigating, setNavigating] = useState(false);
 
   useEffect(() => {
@@ -25,13 +24,13 @@ export const Navbar: React.FC = () => {
     navigate('/login');
   };
 
-  // Only the strictly required navigation modules
+  // Student-first navigation modules
   const requiredNav = [
     { to: '/app/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { to: '/app/careers', label: 'Career Engine', icon: Compass },
-    { to: '/app/placement-ops', label: 'Placement Ops', icon: Briefcase },
-    { to: '/app/resume-ai', label: 'Resume AI', icon: Sparkles },
-    { to: '/app/agent-13', label: 'Agent 13', icon: Users },
+    { to: '/app/careers', label: 'Career Explorer', icon: Compass },
+    { to: '/app/skill-gap', label: 'Skill Gap Engine', icon: Target },
+    { to: '/app/resume-ai', label: 'Resume AI Studio', icon: Sparkles },
+    { to: '/app/profile', label: 'Student Profile', icon: UserCheck },
   ];
 
   return (
@@ -156,41 +155,6 @@ export const Navbar: React.FC = () => {
       {/* Right Controls */}
       {isAuthenticated && user ? (
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          {/* Active Workspace / Role Switcher */}
-          <div
-            id="nav-role-switcher"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              background: '#f1f5f9',
-              borderRadius: '6px',
-              padding: '2px',
-              border: '1px solid #e2e8f0',
-            }}
-          >
-            {(['Student', 'TPO Cell', 'Faculty'] as const).map((role) => (
-              <button
-                key={role}
-                id={`role-btn-${role.toLowerCase().replace(/\s+/g, '-')}`}
-                onClick={() => setSelectedRole(role)}
-                style={{
-                  padding: '4px 10px',
-                  borderRadius: '4px',
-                  border: 'none',
-                  fontSize: '11px',
-                  fontWeight: selectedRole === role ? 700 : 500,
-                  color: selectedRole === role ? '#006EFF' : '#64748b',
-                  background: selectedRole === role ? '#ffffff' : 'transparent',
-                  boxShadow: selectedRole === role ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease',
-                }}
-              >
-                {role}
-              </button>
-            ))}
-          </div>
-
           {/* Student Target Career Pill */}
           {profile?.target_career_title && (
             <Link

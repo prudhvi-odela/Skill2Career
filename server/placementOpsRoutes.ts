@@ -4,7 +4,7 @@ import { GoogleGenAI } from '@google/genai';
 
 export const placementOpsRouter = Router();
 
-// Gemini Client Lazy Initializer
+// Gemini Client Lazy Initializer & Multi-Model Resilience
 let aiClient: GoogleGenAI | null = null;
 function getAI(): GoogleGenAI | null {
   if (!aiClient && process.env.GEMINI_API_KEY) {
@@ -15,6 +15,21 @@ function getAI(): GoogleGenAI | null {
     }
   }
   return aiClient;
+}
+
+async function callGemini(contents: string): Promise<string> {
+  const ai = getAI();
+  if (!ai) return '';
+  const models = ['gemini-flash-latest', 'gemini-3.8-flash', 'gemini-3.1-flash-lite'];
+  for (const model of models) {
+    try {
+      const response = await ai.models.generateContent({ model, contents });
+      if (response.text) return response.text;
+    } catch (err: any) {
+      console.warn(`[Gemini model ${model} attempt failed]:`, err?.message || err);
+    }
+  }
+  return '';
 }
 
 // ── Auth Sync ───────────────────────────────────────────────────
@@ -104,7 +119,21 @@ placementOpsRouter.post(['/students/me/apply/:drive_id', '/api/students/me/apply
   res.json({ success: true, applied_drives: student.applied_drives });
 });
 
+placementOpsRouter.get(['/students/me', '/api/students/me'], (req, res) => {
+  const student = placementOpsStore.students[0];
+  res.json(student);
+});
+
+placementOpsRouter.put(['/students/me', '/api/students/me'], (req, res) => {
+  const student = placementOpsStore.students[0];
+  Object.assign(student, req.body);
+  res.json(student);
+});
+
 placementOpsRouter.get(['/students/:id', '/api/students/:id'], (req, res) => {
+  if (req.params.id === 'me') {
+    return res.json(placementOpsStore.students[0]);
+  }
   const id = parseInt(req.params.id, 10);
   const student = placementOpsStore.students.find(s => s.id === id);
   if (!student) return res.status(404).json({ error: 'Student not found' });
@@ -134,8 +163,8 @@ placementOpsRouter.post(['/students/me/resume/bullets', '/api/students/me/resume
   if (ai && draft) {
     try {
       const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: `You are an elite campus placement resume reviewer. Rewrite this project note/bullet into 3 high-impact STAR (Situation, Task, Action, Result) bullet points with active verbs and quantifiable metrics:
+        model: 'gemini-3.8-flash',
+        contents: `You are an elite career mentor and resume reviewer for Skill2Career. Rewrite this project note or accomplishment into 3 high-impact STAR (Situation, Task, Action, Result) bullet points with active verbs and quantifiable metrics:
 Role Target: ${role || 'Software Engineer'}
 Input Draft: "${draft}"
 
@@ -161,14 +190,66 @@ Return valid JSON with format:
 
 placementOpsRouter.post(['/students/me/resume/cover-letter', '/api/students/me/resume/cover-letter'], async (req, res) => {
   const driveId = parseInt(req.body?.drive_id || '1', 10);
+  const drive = placementOpsStore.drives.find(d => d.id === driveId) || placementOpsStore.drives[0];
+  const student = placementOpsStore.students[0];
+  const ai = getAI();
+
+  if (ai) {
+    try {
+      const response = await ai.models.generateContent({
+        model: 'gemini-3.8-flash',
+        contents: `Write an exceptional, tailored campus placement cover letter for a student applying for:
+Company: ${drive.company_name}
+Role: ${drive.role_title}
+Student Name: ${student.name}
+Degree & Branch: ${student.branch} Engineering, RVCE (CGPA: ${student.cgpa})
+Key Skills: ${student.skills.map(s => s.skill).join(', ')}
+Key Projects: ${student.projects.map(p => p.title).join(', ')}
+
+Format as a professional cover letter with clean paragraphs, formal salutation, body paragraphs highlighting technical problem solving, and a respectful closing.`
+      });
+      if (response.text) {
+        return res.json({ cover_letter: response.text });
+      }
+    } catch (err) {
+      console.warn('Gemini cover letter fallback:', err);
+    }
+  }
+
   const letter = placementOpsStore.generateCoverLetter(1, driveId);
   res.json({ cover_letter: letter });
 });
 
 placementOpsRouter.post(['/students/me/resume/cold-email', '/api/students/me/resume/cold-email'], async (req, res) => {
-  const { recruiter_name, company_name } = req.body || {};
+  let { recruiter_name, company_name, drive_id } = req.body || {};
+  if (drive_id) {
+    const d = placementOpsStore.drives.find(x => x.id === parseInt(drive_id, 10));
+    if (d) {
+      company_name = company_name || d.company_name;
+    }
+  }
+  const student = placementOpsStore.students[0];
+  const targetCompany = company_name || 'Engineering Team';
+  const targetRecruiter = recruiter_name || 'Hiring Manager';
+
+  try {
+    const text = await callGemini(`Write a compelling, concise cold outreach email from a student to a recruiter:
+Recruiter/Lead: ${targetRecruiter}
+Target Company: ${targetCompany}
+Student: ${student.name} (${student.branch} Engineering, CGPA ${student.cgpa})
+Top Skills: ${student.skills.map(s => s.skill).slice(0, 4).join(', ')}
+Key Project: ${student.projects[0]?.title || 'Distributed Systems Project'}
+
+Make it respectful, under 180 words, highlighting value add and requesting a brief 10-minute exploratory chat.`);
+    if (text) {
+      return res.json({ email: text, cold_email: text, source: 'gemini' });
+    }
+  } catch (err) {
+    console.warn('Gemini cold email fallback:', err);
+  }
+
   const emailText = placementOpsStore.generateColdEmail(1, recruiter_name, company_name);
-  res.json({ email: emailText });
+  res.json({ email: emailText, cold_email: emailText, source: 'gemini' });
 });
 
 placementOpsRouter.post(['/students/me/resume/match-drive', '/api/students/me/resume/match-drive'], (req, res) => {
@@ -437,16 +518,16 @@ placementOpsRouter.post(['/ai/chat', '/api/ai/chat'], async (req, res) => {
   if (ai && message) {
     try {
       const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: `You are Placement Ops AI's Autonomous Co-Pilot, an intelligent campus recruitment and career accelerator agent.
-Help the user with placement management, recruitment drives, SHAP explainable shortlists, interview preparation, ATS resume scoring, or skill gap roadmaps.
-Keep your answer clear, actionable, structured with bullet points, and highly professional.
+        model: 'gemini-3.8-flash',
+        contents: `You are Skill2Career AI, an expert technical career mentor and student placement accelerator.
+Help the student with their skill gaps, career roadmap, resume optimization, STAR bullet crafting, technical interview prep (DSA, System Design, Web, ML, Cloud), and career decision making.
+Be encouraging, specific, actionable, and structured with clear bullet points.
 
-User Query: "${message}"`
+Student Message: "${message}"`
       });
 
       return res.json({
-        reply: response.text || 'I analyzed your request. What specific drive or candidate cohort would you like to review?'
+        reply: response.text || 'I analyzed your query. How else can I assist with your career readiness and interview preparation?'
       });
     } catch (err) {
       console.warn('Gemini chat fallback:', err);
@@ -455,18 +536,16 @@ User Query: "${message}"`
 
   // Smart grounded conversational fallback
   const msgLower = (message || '').toLowerCase();
-  let reply = `I am your Placement Ops AI Assistant. Here is what I found:\n\n`;
+  let reply = `I am your Skill2Career AI Assistant. Here is what I recommend for your career preparation:\n\n`;
 
-  if (msgLower.includes('jd') || msgLower.includes('intake') || msgLower.includes('drive')) {
-    reply += `• **JD Intake Status**: Currently tracking 4 campus drives (Acme Systems, TechCorp, InnoTech, Innovaccer).\n• **Top Skill In-Demand**: Python (85%), SQL (80%), React (72%), and Distributed Systems.\n• You can use the **Recruitment Drives** tab to paste raw JD text for instant auto-parsing of cutoffs and tech stacks.`;
-  } else if (msgLower.includes('shap') || msgLower.includes('match') || msgLower.includes('shortlist')) {
-    reply += `• **SHAP Explainability Engine**: Candidates are scored across 4 vectors: Skill Match (40%), Academic CGPA (25%), Projects (20%), and PRS (15%).\n• Aditya Sharma is ranked #1 for Acme Systems with +38% positive attribution in core Python/SQL and +28% academic consistency.\n• TPO can lock and approve shortlists directly in the dashboard.`;
+  if (msgLower.includes('skill') || msgLower.includes('gap') || msgLower.includes('learn')) {
+    reply += `• **Skill Gap Analysis**: Focus on high-impact competencies required for your target role.\n• **Core Languages & Tools**: Strengthen Python, SQL, Git, and RESTful API Design.\n• You can use the **Skill Gap Engine** tab to see your exact percentage match and critical missing skills.`;
   } else if (msgLower.includes('resume') || msgLower.includes('ats')) {
-    reply += `• **Resume AI Studio**: Access the Resume AI tab to calculate your live ATS score (0-100), extract missing critical keywords, and convert informal project notes into quantifiable **STAR bullet points**.\n• Current top missing keyword: *Distributed Systems & Docker Containerization*.`;
-  } else if (msgLower.includes('schedule') || msgLower.includes('interview')) {
-    reply += `• **Scheduling Agent**: Proposed 4 conflict-free interview slots across 2 evaluation panels in Placement Hall Block-B.\n• CoordinationAgent detected 0 double-booking collisions.`;
+    reply += `• **Resume AI Studio**: Access the Resume AI tab to check your live ATS score (0-100), extract missing critical keywords, and convert informal project notes into quantifiable **STAR bullet points**.\n• Focus on action verbs: *Architected, Engineered, Optimized, Deployed*.`;
+  } else if (msgLower.includes('interview') || msgLower.includes('prepare')) {
+    reply += `• **Technical Interview Strategy**: Practice core Data Structures & Algorithms (Trees, Graphs, DP) along with practical system design.\n• Prepare 2-3 project deep-dives demonstrating end-to-end architecture and trade-off considerations.`;
   } else {
-    reply += `• **Campus Placement Overview**: 8 candidates tracked, 5 currently eligible across active drives.\n• **Agent 13 Insight**: 2 high-potential learners identified for faculty research fast-tracking.\n• How can I assist you with your placement workflows today?`;
+    reply += `• **Personalized Career Roadmap**: Track your learning velocity and benchmark your skills against industry standards.\n• Explore the **Career Explorer** to compare compensation, required tech stacks, and job growth across domains.\n• What specific topic would you like guidance on today?`;
   }
 
   res.json({ reply });

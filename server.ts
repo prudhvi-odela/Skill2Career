@@ -58,7 +58,7 @@ app.get('/api/health', (req, res) => {
     version: '2.0.0',
     database: 'In-Memory High-Performance Store (Active)',
     ml_models: 'loaded (readiness_pipeline.joblib & trajectory_pipeline.joblib)',
-    ai_engine: process.env.GEMINI_API_KEY ? 'google-gemini-2.5-flash' : 'grounded-deterministic-advisor',
+    ai_engine: process.env.GEMINI_API_KEY ? 'google-gemini-3.8-flash' : 'grounded-deterministic-advisor',
     environment: 'production-ready'
   });
 });
@@ -290,10 +290,15 @@ app.get('/api/v1/student/activities', (req, res) => {
 // -------------------------------------------------------------
 app.get('/api/v1/careers', (req, res) => {
   const domain = req.query.domain as string;
+  let list = CAREER_ROLES;
   if (domain && domain !== 'All') {
-    return res.json(CAREER_ROLES.filter(c => c.domain.toLowerCase().includes(domain.toLowerCase())));
+    list = CAREER_ROLES.filter(c => c.domain.toLowerCase().includes(domain.toLowerCase()));
   }
-  res.json(CAREER_ROLES);
+  res.json(list.map(c => ({
+    ...c,
+    id: c.career_id,
+    title: c.career_title,
+  })));
 });
 
 app.get('/api/v1/careers/skills/catalog', (req, res) => {
@@ -323,9 +328,13 @@ app.get('/api/v1/careers/matching/recommendations', (req, res) => {
 });
 
 app.get('/api/v1/careers/:careerId', (req, res) => {
-  const career = CAREER_ROLES.find(c => c.career_id === req.params.careerId);
+  const career = CAREER_ROLES.find(c => c.career_id === req.params.careerId || (c as any).id === req.params.careerId);
   if (career) {
-    res.json(career);
+    res.json({
+      ...career,
+      id: career.career_id,
+      title: career.career_title
+    });
   } else {
     res.status(404).json({ error: 'Career role not found' });
   }
@@ -654,7 +663,7 @@ app.post('/api/v1/ai/chat', async (req, res) => {
   if (ai) {
     try {
       const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-3.8-flash',
         contents: `You are Skill2Career AI, an expert career advisor and technical mentor.
 Student Profile:
 Name: ${profile.full_name}

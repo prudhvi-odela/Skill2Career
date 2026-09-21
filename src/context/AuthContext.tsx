@@ -32,6 +32,7 @@ export interface StudentProfileData {
   projects_count: number;
   certifications_count: number;
   experiences_count?: number;
+  onboarded?: boolean;
 }
 
 interface AuthContextType {
@@ -44,6 +45,7 @@ interface AuthContextType {
   register: (data: any) => Promise<void>;
   logout: () => void;
   refreshProfile: () => Promise<void>;
+  updateProfile: (data: any) => Promise<any>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -90,6 +92,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { access_token, user: userData } = res.data;
     localStorage.setItem('token', access_token);
     localStorage.setItem('user', JSON.stringify(userData));
+    localStorage.setItem('placement_ops_token', access_token);
+    localStorage.setItem('placement_ops_current_user', JSON.stringify({ ...userData, name: userData.full_name }));
     setToken(access_token);
     setUser(userData);
     await refreshProfile();
@@ -100,14 +104,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { access_token, user: userData } = res.data;
     localStorage.setItem('token', access_token);
     localStorage.setItem('user', JSON.stringify(userData));
+    localStorage.setItem('placement_ops_token', access_token);
+    localStorage.setItem('placement_ops_current_user', JSON.stringify({ ...userData, name: userData.full_name }));
     setToken(access_token);
     setUser(userData);
     await refreshProfile();
   };
 
+  const updateProfile = async (data: any) => {
+    const res = await studentApi.updateProfile(data);
+    setProfile(res.data);
+    return res.data;
+  };
+
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    localStorage.removeItem('placement_ops_token');
+    localStorage.removeItem('placement_ops_current_user');
     setToken(null);
     setUser(null);
     setProfile(null);
@@ -125,6 +139,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         register,
         logout,
         refreshProfile,
+        updateProfile,
       }}
     >
       {children}

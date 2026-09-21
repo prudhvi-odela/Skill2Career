@@ -51,10 +51,12 @@ export const CareerExplorerPage: React.FC = () => {
   const domains = ['All', ...Array.from(new Set(careers.map((c) => c.domain)))];
 
   const filteredCareers = careers.filter((c) => {
+    const title = c.career_title || c.title || '';
+    const desc = c.description || '';
     const matchesDomain = selectedDomain === 'All' || c.domain === selectedDomain;
     const matchesSearch =
-      c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.description.toLowerCase().includes(searchQuery.toLowerCase());
+      title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      desc.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesDomain && matchesSearch;
   });
 
@@ -129,12 +131,14 @@ export const CareerExplorerPage: React.FC = () => {
           }}
         >
           {filteredCareers.map((c) => {
-            const matchPct = recMap.get(c.id);
-            const isTarget = profile?.target_career_id === c.id;
+            const cid = c.career_id || c.id;
+            const ctitle = c.career_title || c.title;
+            const matchPct = recMap.get(cid) ?? recMap.get(c.id);
+            const isTarget = profile?.target_career_id === cid || profile?.target_career_id === c.id;
 
             return (
               <div
-                key={c.id}
+                key={cid}
                 className="panel-card"
                 style={{
                   padding: '20px',
@@ -142,8 +146,8 @@ export const CareerExplorerPage: React.FC = () => {
                   flexDirection: 'column',
                   justifyContent: 'space-between',
                   gap: '14px',
-                  border: isTarget ? '2px solid #1e3a8a' : '1px solid #cbd5e1',
-                  background: isTarget ? '#eff6ff' : '#f8f9fa',
+                  border: isTarget ? '2px solid #006EFF' : '1px solid #e2e8f0',
+                  background: isTarget ? '#eff6ff' : '#ffffff',
                 }}
               >
                 <div>
@@ -159,7 +163,7 @@ export const CareerExplorerPage: React.FC = () => {
                   </div>
 
                   <h3 style={{ fontSize: '1.15rem', marginBottom: '6px', color: '#0f172a' }}>
-                    {c.title}
+                    {ctitle}
                   </h3>
                   <p style={{ color: '#475569', fontSize: '0.85rem', lineHeight: 1.5, marginBottom: '14px' }}>
                     {c.description}
@@ -168,7 +172,7 @@ export const CareerExplorerPage: React.FC = () => {
                   <div style={{ display: 'flex', gap: '16px', fontSize: '0.8rem', color: '#475569', borderTop: '1px solid #cbd5e1', paddingTop: '10px' }}>
                     <div>
                       <span style={{ color: '#64748b' }}>Benchmark: </span>
-                      <strong style={{ color: '#15803d' }}>${c.avg_salary_usd.toLocaleString()} / yr</strong>
+                      <strong style={{ color: '#15803d' }}>${(c.avg_salary_usd || 105000).toLocaleString()} / yr</strong>
                     </div>
                     <div>
                       <span style={{ color: '#64748b' }}>Experience: </span>
@@ -179,7 +183,7 @@ export const CareerExplorerPage: React.FC = () => {
 
                 <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
                   <button
-                    onClick={() => handleSetTarget(c.id)}
+                    onClick={() => handleSetTarget(cid)}
                     className={isTarget ? 'btn-secondary' : 'btn-primary'}
                     style={{ flex: 1, padding: '7px 10px', fontSize: '0.8rem' }}
                   >
@@ -187,7 +191,7 @@ export const CareerExplorerPage: React.FC = () => {
                   </button>
 
                   <Link
-                    to={`/app/careers/${c.id}`}
+                    to={`/app/careers/${cid}`}
                     className="btn-secondary"
                     style={{ padding: '7px 12px', fontSize: '0.8rem' }}
                   >

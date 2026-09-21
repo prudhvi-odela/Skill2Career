@@ -430,15 +430,20 @@ export async function generateCoverLetter(driveId?: number): Promise<{ cover_let
   };
 }
 
-export async function generateColdEmail(recruiterName?: string, companyName?: string): Promise<{ email: string; source: string }> {
+export async function generateColdEmail(driveIdOrRecruiter?: number | string, companyName?: string): Promise<{ cold_email: string; email: string; source: string }> {
+  const body = typeof driveIdOrRecruiter === 'number'
+    ? { drive_id: driveIdOrRecruiter }
+    : { recruiter_name: driveIdOrRecruiter, company_name: companyName };
   const res = await apiFetch('/students/me/resume/cold-email', {
     method: 'POST',
-    body: JSON.stringify({ recruiter_name: recruiterName, company_name: companyName })
+    body: JSON.stringify(body)
   });
   const data = await handle<any>(res);
+  const text = data.cold_email || data.email || '';
   return {
-    email: data.email || '',
-    source: 'huggingface'
+    cold_email: text,
+    email: text,
+    source: data.source || 'gemini'
   };
 }
 

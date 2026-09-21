@@ -76,7 +76,7 @@ export const CareerDetailPage: React.FC = () => {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '14px' }}>
           <div>
             <span className="badge badge-neutral" style={{ marginBottom: '6px' }}>{career.domain}</span>
-            <h1 style={{ fontSize: '1.6rem', color: '#0f172a' }}>{career.title}</h1>
+            <h1 style={{ fontSize: '1.6rem', color: '#0f172a' }}>{career.career_title || career.title}</h1>
           </div>
 
           <div style={{ display: 'flex', gap: '10px' }}>

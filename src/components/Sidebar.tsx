@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, Compass, GitCommit, Target, Trophy,
-  Briefcase, Sparkles, Users, Award, User
+  Sparkles, Award, User
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -29,17 +29,15 @@ const SIDEBAR_SECTIONS: SidebarSection[] = [
     ],
   },
   {
-    title: 'PLACEMENT OPERATIONS',
+    title: 'AI CAREER ACCELERATOR',
     items: [
-      { path: '/app/placement-ops', label: 'Placement Operations', icon: Briefcase },
-      { path: '/app/resume-ai', label: 'Resume Studio', icon: Sparkles },
-      { path: '/app/agent-13', label: 'Talent Discovery', icon: Users },
+      { path: '/app/resume-ai', label: 'Resume AI Studio', icon: Sparkles },
+      { path: '/app/skills', label: 'My Skills & Evidence', icon: Award },
     ],
   },
   {
     title: 'STUDENT RECORD',
     items: [
-      { path: '/app/skills', label: 'My Skills & Evidence', icon: Award },
       { path: '/app/profile', label: 'Student Profile', icon: User },
     ],
   },
