@@ -5,9 +5,11 @@ import { useAuth } from '../context/AuthContext';
 import { SkeletonLoader, EmptyState, ErrorState } from '../components/StateFeedback';
 import { ALL_BRANCHES, ENGINEERING_CATEGORIES } from '../data/engineeringBranches';
 import { ALL_CAREER_ROLES, getCareersForBranch } from '../data/branchCareerRoles';
+import { BranchCareerGoalNavigator } from '../components/BranchCareerGoalNavigator';
 
 export const CareerExplorerPage: React.FC = () => {
   const { profile, refreshProfile } = useAuth();
+  const [viewMode, setViewMode] = useState<'hierarchy' | 'catalog'>('hierarchy');
   const [careers, setCareers] = useState<any[]>([]);
   const [recommendations, setRecommendations] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -120,20 +122,70 @@ export const CareerExplorerPage: React.FC = () => {
         </p>
       </div>
 
-      {/* Active Branch Status Banner */}
-      <div
-        className="panel-card"
-        style={{
-          padding: '16px 20px',
-          background: 'linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%)',
-          border: '1px solid #bbf7d0',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '12px'
-        }}
-      >
+      {/* Mode Selector Tabs */}
+      <div style={{ display: 'flex', gap: '10px', borderBottom: '2px solid #e2e8f0', paddingBottom: '12px', flexWrap: 'wrap' }}>
+        <button
+          onClick={() => setViewMode('hierarchy')}
+          style={{
+            padding: '8px 18px',
+            borderRadius: '6px',
+            background: viewMode === 'hierarchy' ? '#006EFF' : '#f1f5f9',
+            color: viewMode === 'hierarchy' ? '#ffffff' : '#334155',
+            fontWeight: 700,
+            fontSize: '0.85rem',
+            border: 'none',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            boxShadow: viewMode === 'hierarchy' ? '0 2px 4px rgba(0, 110, 255, 0.2)' : 'none'
+          }}
+        >
+          <span>🎯 Branch → Career Goal Hierarchy</span>
+          <span style={{ fontSize: '0.7rem', background: viewMode === 'hierarchy' ? 'rgba(255,255,255,0.25)' : '#e2e8f0', padding: '2px 6px', borderRadius: '4px' }}>
+            Mainly Learn & Roadmaps
+          </span>
+        </button>
+
+        <button
+          onClick={() => setViewMode('catalog')}
+          style={{
+            padding: '8px 18px',
+            borderRadius: '6px',
+            background: viewMode === 'catalog' ? '#006EFF' : '#f1f5f9',
+            color: viewMode === 'catalog' ? '#ffffff' : '#334155',
+            fontWeight: 700,
+            fontSize: '0.85rem',
+            border: 'none',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            boxShadow: viewMode === 'catalog' ? '0 2px 4px rgba(0, 110, 255, 0.2)' : 'none'
+          }}
+        >
+          <span>📋 All Roles Catalog & Matching</span>
+        </button>
+      </div>
+
+      {viewMode === 'hierarchy' ? (
+        <BranchCareerGoalNavigator initialBranchCode={selectedBranch !== 'All' ? selectedBranch : undefined} />
+      ) : (
+        <>
+          {/* Active Branch Status Banner */}
+          <div
+            className="panel-card"
+            style={{
+              padding: '16px 20px',
+              background: 'linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%)',
+              border: '1px solid #bbf7d0',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '12px'
+            }}
+          >
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{ fontSize: '1.8rem' }}>{userBranchDef.categoryEmoji || '🎓'}</div>
           <div>
@@ -446,6 +498,8 @@ export const CareerExplorerPage: React.FC = () => {
             );
           })}
         </div>
+      )}
+        </>
       )}
     </div>
   );

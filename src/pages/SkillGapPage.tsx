@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import { KPICard } from '../components/KPICard';
 import { SkeletonLoader, EmptyState, ErrorState } from '../components/StateFeedback';
+import { BranchCareerGoalNavigator } from '../components/BranchCareerGoalNavigator';
 
 export const SkillGapPage: React.FC = () => {
   const { profile } = useAuth();
@@ -102,6 +103,15 @@ export const SkillGapPage: React.FC = () => {
           </select>
         </div>
       </div>
+
+      {/* Interactive Branch -> Career Goal -> Required Skills Hierarchy */}
+      <BranchCareerGoalNavigator
+        initialBranchCode={profile?.branch || profile?.major_or_branch}
+        onSelectCareer={(id) => {
+          setSelectedCareerId(id);
+          fetchGap(id);
+        }}
+      />
 
       {loading ? (
         <SkeletonLoader rows={5} type="cards" />

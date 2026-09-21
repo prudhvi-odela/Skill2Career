@@ -20,7 +20,9 @@ export interface BranchCareerRole {
   }[];
 }
 
-export const ALL_CAREER_ROLES: BranchCareerRole[] = [
+import { getAllCareerGoals } from './careerGoalsHierarchy';
+
+export const BASE_CAREER_ROLES: BranchCareerRole[] = [
   // ==========================================
   // 💻 COMPUTER & IT (13 Branches)
   // ==========================================
@@ -764,6 +766,32 @@ export const ALL_CAREER_ROLES: BranchCareerRole[] = [
   }
 ];
 
+// Convert structured career goals to BranchCareerRole format
+const STRUCTURED_GOALS_AS_ROLES: BranchCareerRole[] = getAllCareerGoals().map(g => ({
+  career_id: g.id,
+  career_title: `${g.title} (${g.branch_code})`,
+  domain: g.branch_name,
+  category: g.category,
+  branch_codes: [g.branch_code],
+  description: g.description,
+  min_exp_years: g.min_exp_years,
+  avg_salary_usd: g.avg_salary_usd,
+  market_demand: g.market_demand,
+  key_workflows: g.roadmap_stages.map(s => `${s.title}: ${s.focus_skills.join(', ')}`),
+  required_skills: g.required_skills.map(s => ({
+    skill_id: s.skill_id,
+    skill_name: s.skill_name,
+    required_level: s.required_level,
+    importance: s.importance,
+    is_core: s.priority === 'Critical'
+  }))
+}));
+
+export const ALL_CAREER_ROLES: BranchCareerRole[] = [
+  ...BASE_CAREER_ROLES,
+  ...STRUCTURED_GOALS_AS_ROLES
+];
+
 // Helper to get career roles for a branch
 export function getCareersForBranch(branchCode: string): BranchCareerRole[] {
   if (!branchCode) return ALL_CAREER_ROLES;
@@ -773,6 +801,5 @@ export function getCareersForBranch(branchCode: string): BranchCareerRole[] {
   );
   if (directMatches.length > 0) return directMatches;
 
-  // Search by category
   return ALL_CAREER_ROLES;
 }
