@@ -1,6 +1,0 @@
-{
-  "name": "Skill2Career",
-  "description": "Skill2Career Official Competency Architecture, Career Readiness Forecasting & Placement Platform",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}
