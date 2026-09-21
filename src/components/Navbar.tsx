@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { NavLink, Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   Sparkles, LogOut, Compass,
-  LayoutDashboard, Menu, X, GraduationCap, Target, UserCheck, Terminal
+  LayoutDashboard, Menu, X, GraduationCap, Target, UserCheck, Terminal, Bot, ShieldCheck
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -27,11 +27,13 @@ export const Navbar: React.FC = () => {
   // Student-first navigation modules
   const requiredNav = [
     { to: '/app/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { to: '/app/ai-copilot', label: 'AI Copilot', icon: Bot },
+    { to: '/app/assessments', label: 'Assessments', icon: ShieldCheck },
     { to: '/app/curriculum', label: 'Branch & Compilers', icon: Terminal },
-    { to: '/app/careers', label: 'Career Explorer', icon: Compass },
-    { to: '/app/skill-gap', label: 'Skill Gap Engine', icon: Target },
-    { to: '/app/resume-ai', label: 'Resume AI Studio', icon: Sparkles },
-    { to: '/app/profile', label: 'Student Profile', icon: UserCheck },
+    { to: '/app/careers', label: 'Careers', icon: Compass },
+    { to: '/app/skill-gap', label: 'Skill Gap', icon: Target },
+    { to: '/app/resume-ai', label: 'Resume AI', icon: Sparkles },
+    { to: '/app/profile', label: 'Profile', icon: UserCheck },
   ];
 
   return (

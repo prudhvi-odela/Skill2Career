@@ -23,6 +23,8 @@ import { BranchCurriculumPage } from './pages/BranchCurriculumPage';
 // Placement-Ops-AI Reference Pages
 import { PlacementOpsPage } from './pages/PlacementOpsPage';
 import { ResumeAIPage } from './pages/ResumeAIPage';
+import { AssessmentsPage } from './pages/AssessmentsPage';
+import { AICopilotPage } from './pages/AICopilotPage';
 import FacultyDiscoveryDashboard from './components/dashboards/FacultyDiscoveryDashboard';
 
 const ProtectedLayout: React.FC = () => {
@@ -81,7 +83,10 @@ export const App: React.FC = () => {
               <Route path="compiler" element={<BranchCurriculumPage />} />
               <Route path="profile" element={<ProfilePage />} />
 
-              {/* Placement Ops AI Modules */}
+              {/* Placement Ops AI & Diagnostic Suite */}
+              <Route path="ai-copilot" element={<AICopilotPage />} />
+              <Route path="chat" element={<AICopilotPage />} />
+              <Route path="assessments" element={<AssessmentsPage />} />
               <Route path="placement-ops" element={<PlacementOpsPage />} />
               <Route path="resume-ai" element={<ResumeAIPage />} />
               <Route path="agent-13" element={<FacultyDiscoveryDashboard />} />

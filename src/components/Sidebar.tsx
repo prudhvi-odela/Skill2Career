@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, Compass, GitCommit, Target, Trophy,
-  Sparkles, Award, User
+  Sparkles, Award, User, Bot, ShieldCheck
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -31,6 +31,8 @@ const SIDEBAR_SECTIONS: SidebarSection[] = [
   {
     title: 'AI CAREER ACCELERATOR',
     items: [
+      { path: '/app/ai-copilot', label: 'AI Copilot (Full Chat)', icon: Bot },
+      { path: '/app/assessments', label: 'Topic Assessments', icon: ShieldCheck },
       { path: '/app/resume-ai', label: 'Resume AI Studio', icon: Sparkles },
       { path: '/app/skills', label: 'My Skills & Evidence', icon: Award },
     ],

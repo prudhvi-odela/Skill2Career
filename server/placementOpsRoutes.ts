@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { placementOpsStore } from './placementOpsStore.js';
 import { GoogleGenAI } from '@google/genai';
+import { TOPIC_ASSESSMENTS } from './assessmentData.js';
+import { store } from './store.js';
 
 export const placementOpsRouter = Router();
 
@@ -677,42 +679,319 @@ placementOpsRouter.all(['/students/me/resume/match-jd/:drive_id', '/api/students
   });
 });
 
-// ── Multi-Agent AI Chat Co-Pilot ────────────────────────────────
-placementOpsRouter.post(['/ai/chat', '/api/ai/chat'], async (req, res) => {
-  const { message, model, history } = req.body || {};
-  const ai = getAI();
+// ── Topic Diagnostic Assessments API ────────────────────────────
+placementOpsRouter.get(['/assessments', '/api/v1/assessments', '/api/assessments'], (req, res) => {
+  const list = TOPIC_ASSESSMENTS.map(a => ({
+    id: a.id,
+    skill_id: a.skill_id,
+    title: a.title,
+    category: a.category,
+    domain: a.domain,
+    difficulty: a.difficulty,
+    time_limit_minutes: a.time_limit_minutes,
+    pass_score: a.pass_score,
+    questions_count: a.questions.length,
+    learning_resources: a.learning_resources
+  }));
+  res.json(list);
+});
 
-  if (ai && message) {
-    try {
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.8-flash',
-        contents: `You are Skill2Career AI, an expert technical career mentor and student placement accelerator.
-Help the student with their skill gaps, career roadmap, resume optimization, STAR bullet crafting, technical interview prep (DSA, System Design, Web, ML, Cloud), and career decision making.
-Be encouraging, specific, actionable, and structured with clear bullet points.
+placementOpsRouter.get(['/assessments/:id', '/api/v1/assessments/:id', '/api/assessments/:id'], (req, res) => {
+  const { id } = req.params;
+  const assessment = TOPIC_ASSESSMENTS.find(a => a.id === id || a.skill_id === id);
+  if (!assessment) {
+    return res.status(404).json({ detail: `Assessment for ${id} not found.` });
+  }
 
-Student Message: "${message}"`
+  // Return quiz with questions (sanitize correct answer index for test mode if desired, or include for client-side feedback)
+  res.json({
+    id: assessment.id,
+    skill_id: assessment.skill_id,
+    title: assessment.title,
+    category: assessment.category,
+    domain: assessment.domain,
+    difficulty: assessment.difficulty,
+    time_limit_minutes: assessment.time_limit_minutes,
+    pass_score: assessment.pass_score,
+    learning_resources: assessment.learning_resources,
+    questions: assessment.questions
+  });
+});
+
+placementOpsRouter.post(['/assessments/submit', '/api/v1/assessments/submit', '/api/assessments/submit'], (req, res) => {
+  const { assessment_id, skill_id, answers } = req.body || {};
+  const assessment = TOPIC_ASSESSMENTS.find(a => a.id === assessment_id || a.skill_id === skill_id || a.skill_id === assessment_id);
+
+  if (!assessment) {
+    return res.status(404).json({ detail: 'Assessment not found' });
+  }
+
+  const userAnswers: Record<string, number> = answers || {};
+  let correctCount = 0;
+  const totalQuestions = assessment.questions.length;
+  const breakdown: any[] = [];
+
+  assessment.questions.forEach((q) => {
+    const selectedIdx = userAnswers[q.id];
+    const isCorrect = selectedIdx === q.correct_option_index;
+    if (isCorrect) correctCount++;
+
+    breakdown.push({
+      question_id: q.id,
+      question_text: q.question_text,
+      selected_index: selectedIdx,
+      correct_index: q.correct_option_index,
+      is_correct: isCorrect,
+      explanation: q.explanation
+    });
+  });
+
+  const scorePct = totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0;
+  const passed = scorePct >= assessment.pass_score;
+
+  // If passed, update student profile in store
+  const demoProfile = store.profiles.get('usr_demo_01');
+  if (demoProfile) {
+    const existingSkill = demoProfile.skills.find((s: any) => s.skill_id === assessment.skill_id);
+    if (existingSkill) {
+      existingSkill.verified = passed;
+      existingSkill.verification_source = 'Skill2Career Assessment';
+      if (passed) existingSkill.level = Math.max(existingSkill.level || 3.0, 4.0);
+    } else if (passed) {
+      demoProfile.skills.push({
+        skill_id: assessment.skill_id,
+        name: assessment.title.replace(' Assessment', ''),
+        category: assessment.category,
+        domain: assessment.domain,
+        level: 4.0,
+        verified: true,
+        verification_source: 'Skill2Career Assessment',
+        years_experience: 1.0
       });
-
-      return res.json({
-        reply: response.text || 'I analyzed your query. How else can I assist with your career readiness and interview preparation?'
-      });
-    } catch (err) {
-      console.warn('Gemini chat fallback:', err);
+    }
+    if (passed) {
+      demoProfile.statistics.assessments_passed = (demoProfile.statistics.assessments_passed || 0) + 1;
     }
   }
 
-  // Smart grounded conversational fallback
-  const msgLower = (message || '').toLowerCase();
-  let reply = `I am your Skill2Career AI Assistant. Here is what I recommend for your career preparation:\n\n`;
+  res.json({
+    assessment_id: assessment.id,
+    skill_id: assessment.skill_id,
+    title: assessment.title,
+    score_percentage: scorePct,
+    correct_count: correctCount,
+    total_questions: totalQuestions,
+    passed,
+    pass_score: assessment.pass_score,
+    feedback: passed
+      ? `🎉 Congratulations! You achieved ${scorePct}% and officially verified proficiency in ${assessment.title}.`
+      : `You scored ${scorePct}% (pass threshold: ${assessment.pass_score}%). Review the questions and study the recommended Chrome documentation links below before re-taking!`,
+    breakdown,
+    learning_resources: assessment.learning_resources
+  });
+});
 
-  if (msgLower.includes('skill') || msgLower.includes('gap') || msgLower.includes('learn')) {
-    reply += `• **Skill Gap Analysis**: Focus on high-impact competencies required for your target role.\n• **Core Languages & Tools**: Strengthen Python, SQL, Git, and RESTful API Design.\n• You can use the **Skill Gap Engine** tab to see your exact percentage match and critical missing skills.`;
-  } else if (msgLower.includes('resume') || msgLower.includes('ats')) {
-    reply += `• **Resume AI Studio**: Access the Resume AI tab to check your live ATS score (0-100), extract missing critical keywords, and convert informal project notes into quantifiable **STAR bullet points**.\n• Focus on action verbs: *Architected, Engineered, Optimized, Deployed*.`;
-  } else if (msgLower.includes('interview') || msgLower.includes('prepare')) {
-    reply += `• **Technical Interview Strategy**: Practice core Data Structures & Algorithms (Trees, Graphs, DP) along with practical system design.\n• Prepare 2-3 project deep-dives demonstrating end-to-end architecture and trade-off considerations.`;
+// ── Multi-Agent AI Chat Co-Pilot ────────────────────────────────
+placementOpsRouter.post(['/ai/chat', '/api/ai/chat', '/api/v1/ai/chat'], async (req, res) => {
+  const { message, model, history } = req.body || {};
+  const query = (message || '').trim();
+
+  // Try Gemini AI if available
+  const ai = getAI();
+  if (ai && query) {
+    try {
+      const response = await ai.models.generateContent({
+        model: 'gemini-3.8-flash',
+        contents: `You are Skill2Career AI, an expert technical career mentor, tutor, and placement advisor modeled after Google Gemini and ChatGPT.
+Your mission is to provide students with authoritative, structured, and actionable guidance for software engineering, AI/ML, data science, cloud/DevOps, and core CS interviews.
+
+GUIDELINES:
+1. When asked "What to prepare today" or "How to prepare today", generate a realistic, structured 4-stage daily preparation schedule with time blocks (e.g. Phase 1: DSA Practice 60m, Phase 2: Core Tech Stack & Projects 90m, Phase 3: System Design / CS Fundamentals 45m, Phase 4: Assessment Diagnostic 15m).
+2. Always provide direct, authoritative Chrome web links in markdown format (e.g. [FastAPI Documentation](https://fastapi.tiangolo.com), [MDN Web Docs](https://developer.mozilla.org), [PyTorch Tutorials](https://pytorch.org/tutorials/), [NeetCode 150](https://neetcode.io/roadmap), [System Design Primer](https://github.com/donnemartin/system-design-primer), [LeetCode Practice](https://leetcode.com)).
+3. Always suggest taking one of the diagnostic assessments available in Skill2Career (Python, JavaScript, TypeScript, SQL, React, FastAPI, Docker, PyTorch, Scikit-Learn, DSA, System Design).
+4. Format your responses with clean Markdown: bold headings, structured bullet points, code snippets where helpful, and step-by-step checklists.
+
+Student Prompt: "${query}"`
+      });
+
+      if (response.text) {
+        return res.json({ reply: response.text });
+      }
+    } catch (err) {
+      console.warn('Gemini chat fallback triggered:', err);
+    }
+  }
+
+  // Grounded Deterministic Intelligence Engine
+  const msgLower = query.toLowerCase();
+  let reply = '';
+
+  if (
+    msgLower.includes('what to prepare today') ||
+    msgLower.includes('what should i prepare') ||
+    msgLower.includes('today schedule') ||
+    msgLower.includes('daily plan') ||
+    msgLower.includes('study plan today') ||
+    msgLower === 'today'
+  ) {
+    reply = `### 📅 High-Yield Daily Preparation Plan for Today
+
+Here is your structured 4-stage placement readiness schedule engineered for maximum retention and interview performance:
+
+---
+
+#### ⏱️ **Block 1: Data Structures & Algorithms (60 Minutes)**
+- **Focus Topic**: Binary Search & Two-Pointer Patterns (e.g., Search in Rotated Sorted Array, Container With Most Water)
+- **Goal**: Solve 2 LeetCode Medium problems under 25 minutes each without looking at hints.
+- **Resource Link**: 🌐 [NeetCode 150 Blind Roadmap](https://neetcode.io/roadmap) | 🌐 [LeetCode Algorithms Plan](https://leetcode.com/studyplan/blind-75/)
+
+---
+
+#### ⏱️ **Block 2: Core Engineering Stack & System Building (90 Minutes)**
+- **Focus Topic**: Asynchronous APIs & Database Indexing (FastAPI / Node.js + PostgreSQL)
+- **Goal**: Implement a clean CRUD service with input validation (Pydantic / Zod) and connection pooling.
+- **Resource Links**: 
+  - 🌐 [FastAPI Official Async Tutorial](https://fastapi.tiangolo.com/tutorial/)
+  - 🌐 [MDN JavaScript Event Loop & Microtasks](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Event_loop)
+  - 🌐 [PostgreSQL Indexing & B-Tree Guide](https://use-the-index-luke.com/)
+
+---
+
+#### ⏱️ **Block 3: System Design & CS Fundamentals (45 Minutes)**
+- **Focus Topic**: Distributed Caching (Redis LRU Eviction & Write-Through vs Write-Back Caching)
+- **Goal**: Understand the CAP theorem tradeoffs and draw a high-level architecture diagram.
+- **Resource Links**:
+  - 🌐 [System Design Primer (GitHub)](https://github.com/donnemartin/system-design-primer)
+  - 🌐 [ByteByteGo Scalable Architecture Articles](https://bytebytego.com/)
+
+---
+
+#### ⏱️ **Block 4: Diagnostic Assessment Verification (15 Minutes)**
+- **Goal**: Complete today's topic assessment to benchmark your retention and earn a verified skill badge on your profile!
+- **Recommended Quiz**: **Python Core & OOP Assessment** or **React Architecture Assessment** in the **Assessment Center**.
+
+*Would you like me to quiz you right now on any of these topics, or generate a customized schedule for a specific tech stack (e.g. AI/ML or Cloud/DevOps)?*`;
+  } else if (
+    msgLower.includes('how to prepare today') ||
+    msgLower.includes('how to prepare') ||
+    msgLower.includes('preparation strategy') ||
+    msgLower.includes('how should i study')
+  ) {
+    reply = `### 🚀 Step-by-Step Technical Preparation Blueprint
+
+To maximize your placement readiness and ace top-tier technical interviews, follow this proven 5-step methodology:
+
+---
+
+#### 1️⃣ **Active Recall over Passive Reading (25m Pomodoro Blocks)**
+Avoid passively reading tutorials. Instead, immediately write code from scratch after reading a concept. Test edge cases manually in your terminal.
+
+#### 2️⃣ **Solve Problems with the UMPIRE Technique**
+- **Understand**: Clarify input constraints (e.g. integer ranges, empty arrays).
+- **Match**: Identify the algorithmic paradigm (Hash Map, Two Pointers, Sliding Window, BFS/DFS).
+- **Plan**: Write pseudocode before typing executable code.
+- **Implement**: Write clean, modular functions.
+- **Review**: Dry run with custom test vectors.
+- **Evaluate**: State exact Big-O time and space complexity.
+
+#### 🌐 **Essential Chrome Learning Links & Documentation**:
+- 🔗 [Python 3 Official Tutorial](https://docs.python.org/3/tutorial/) — Core standard library and data structures.
+- 🔗 [React.dev Official Guide](https://react.dev/learn) — Modern hooks, component lifecycle, and state immutability.
+- 🔗 [FastAPI User Guide](https://fastapi.tiangolo.com) — High-performance REST APIs with automatic OpenAPI specs.
+- 🔗 [PyTorch Official Tutorials](https://pytorch.org/tutorials/) — Tensors, autograd, and deep neural nets.
+- 🔗 [NeetCode Algorithms Roadmap](https://neetcode.io/roadmap) — Visual problem categorization.
+- 🔗 [System Design Primer](https://github.com/donnemartin/system-design-primer) — Scalable distributed system patterns.
+
+---
+
+#### 3️⃣ **Take a Daily Diagnostic Assessment**
+Head over to our **Assessment Center** to test your knowledge on **Python, SQL, React, Docker, or DSA**. Scoring $\\ge 70\\%$ automatically updates your verified candidate badge!`;
+  } else if (msgLower.includes('fastapi') || msgLower.includes('api')) {
+    reply = `### ⚡ FastAPI High-Performance Backend Architecture
+
+FastAPI is a modern, high-performance web framework for building APIs with Python 3.10+ based on standard Python type hints.
+
+#### Key Highlights:
+1. **Pydantic Validation**: Automatic serialization and deserialization with runtime type validation.
+2. **Async Support**: Native 'async def' route handlers running concurrently on the 'asyncio' event loop.
+3. **Dependency Injection**: Powerful 'Depends()' system for auth, DB sessions, and rate limiting.
+
+Example Endpoint:
+from fastapi import FastAPI, Depends, HTTPException
+from pydantic import BaseModel, EmailStr
+
+app = FastAPI(title="Skill2Career Placement API")
+
+class StudentSchema(BaseModel):
+    name: str
+    email: EmailStr
+    target_role: str
+
+@app.post("/students", status_code=201)
+async def create_student(student: StudentSchema):
+    return {"message": "Student created", "data": student}
+
+#### 🌐 Official Chrome Links:
+- 🔗 [FastAPI Official Docs](https://fastapi.tiangolo.com/)
+- 🔗 [Pydantic V2 Documentation](https://docs.pydantic.dev/latest/)
+
+👉 *Ready to verify your knowledge? Try the **FastAPI & Async APIs Assessment** in the Assessment Center!*`;
+  } else if (msgLower.includes('python') || msgLower.includes('py')) {
+    reply = `### 🐍 Python Core & OOP Mastery
+
+Python is the leading language for AI/ML, backend microservices, data engineering, and automation.
+
+#### Key Topics to Master for Interviews:
+- **Hash Table Internals**: Dictionaries and Sets have O(1) average lookup and amortized insertion time.
+- **Generators & Iterators**: Memory-efficient stream processing with yield.
+- **List Comprehensions vs Loops**: Run in optimized C bytecode inside CPython.
+- **Object-Oriented Design**: @property, __dunder__ methods, and inheritance.
+
+#### 🌐 Chrome Resources:
+- 🔗 [Python 3 Official Documentation](https://docs.python.org/3/tutorial/)
+- 🔗 [Real Python In-Depth Guides](https://realpython.com/)
+
+👉 *Test your skills now: Take the **Python Core & OOP Proficiency Assessment** (10 questions, 10 min)!*`;
+  } else if (msgLower.includes('react') || msgLower.includes('frontend')) {
+    reply = `### ⚛️ React 19 & Modern Frontend Architecture
+
+React is the industry standard declarative UI library for modern web applications.
+
+#### Core Concepts Tested in Interviews:
+1. **State Immutability**: Always treat state as immutable; React uses shallow reference comparisons (Object.is) to trigger re-renders.
+2. **Hook Rules & Dependencies**: useEffect, useMemo, useCallback, and custom hooks.
+3. **Virtual DOM Diffing**: Fiber reconciliation tree algorithm with key-based element tracking.
+
+#### 🌐 Recommended Chrome Documentation:
+- 🔗 [React.dev Official Interactive Tutorials](https://react.dev/learn)
+- 🔗 [MDN JavaScript Reference](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+
+👉 *Verify your skills: Take the **React Architecture & Hooks Assessment** in the Assessment Center!*`;
+  } else if (msgLower.includes('resume') || msgLower.includes('ats') || msgLower.includes('bullet')) {
+    reply = `### 📄 Resume AI & Quantified STAR Bullets
+
+A top-tier engineering resume should score $\\ge 85$ on ATS (Applicant Tracking Systems) and feature quantifiable impact metrics.
+
+#### The Google X-Y-Z / STAR Formula:
+> *"Accomplished [X], as measured by [Y], by doing [Z]"*
+
+#### Example Transformation:
+- ❌ **Before**: *"Created backend APIs for student portal using Python and Docker."*
+- ✅ **After**: *"Architected high-throughput REST APIs using **FastAPI** and **PostgreSQL**, containerizing with multi-stage **Docker** builds to reduce deployment latency by **38%** and serve **5,000+** daily student queries."*
+
+👉 *Head over to the **Resume AI Studio** tab to run real-time ATS scoring and STAR bullet enhancements!*`;
   } else {
-    reply += `• **Personalized Career Roadmap**: Track your learning velocity and benchmark your skills against industry standards.\n• Explore the **Career Explorer** to compare compensation, required tech stacks, and job growth across domains.\n• What specific topic would you like guidance on today?`;
+    reply = `### 🤖 Skill2Career AI Placement Mentor
+
+Hello! I am your AI Career Copilot, built to guide your end-to-end technical placement preparation.
+
+#### Here is how I can assist you right now:
+1. 📅 **Daily Study Routine**: Ask *"What should I prepare today?"* or *"How to prepare today?"* for a time-blocked study schedule.
+2. 🌐 **Chrome Documentation Links**: Ask for curated official documentation and roadmaps on Python, React, FastAPI, PyTorch, Docker, or SQL.
+3. 📝 **Topic Assessments**: Take diagnostic quizzes across 15+ engineering skills with instant badge verification.
+4. 📄 **Resume Optimization**: Transform your project points into quantifiable Google/Amazon-style STAR bullet points.
+
+*What topic or role would you like to prepare for today?*`;
   }
 
   res.json({ reply });

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Sparkles, X, Send, Bot, User, RefreshCw, Copy, Check, MessageSquare } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Sparkles, X, Send, Bot, User, RefreshCw, Copy, Check, MessageSquare, Maximize2 } from 'lucide-react';
 import { apiFetch } from '../lib/api';
 
 interface Message {
@@ -10,6 +11,7 @@ interface Message {
 }
 
 export function AIChatbox() {
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -140,13 +142,25 @@ export function AIChatbox() {
                 <p className="text-[11px] text-slate-400">Personalized technical career guidance</p>
               </div>
             </div>
-            <button
-              onClick={() => setIsOpen(false)}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
-              title="Close chat"
-            >
-              <X size={18} />
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => {
+                  setIsOpen(false);
+                  navigate('/app/ai-copilot');
+                }}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                title="Open full page ChatGPT/Gemini Copilot"
+              >
+                <Maximize2 size={16} />
+              </button>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                title="Close chat"
+              >
+                <X size={18} />
+              </button>
+            </div>
           </div>
 
           {/* Messages Area */}
