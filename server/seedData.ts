@@ -1,0 +1,402 @@
+export interface Skill {
+  skill_id: string;
+  skill_name: string;
+  category: string;
+  domain: string;
+  description: string;
+  aliases: string[];
+}
+
+export interface CareerSkillRequirement {
+  skill_id: string;
+  skill_name: string;
+  required_level: number;
+  importance: number;
+  is_core: boolean;
+}
+
+export interface CareerRole {
+  career_id: string;
+  career_title: string;
+  domain: string;
+  description: string;
+  min_exp_years: number;
+  avg_salary_usd: number;
+  required_skills: CareerSkillRequirement[];
+}
+
+export const SKILLS_CATALOG: Skill[] = [
+  { skill_id: 'SK001', skill_name: 'Python', category: 'Languages', domain: 'General', description: 'High-level versatile programming language.', aliases: ['python', 'py', 'python3'] },
+  { skill_id: 'SK002', skill_name: 'JavaScript', category: 'Languages', domain: 'Web Development', description: 'Dynamic scripting language for web development.', aliases: ['javascript', 'js', 'es6'] },
+  { skill_id: 'SK003', skill_name: 'TypeScript', category: 'Languages', domain: 'Web Development', description: 'Typed superset of JavaScript.', aliases: ['typescript', 'ts'] },
+  { skill_id: 'SK004', skill_name: 'Java', category: 'Languages', domain: 'Enterprise & Backend', description: 'Object-oriented language for enterprise applications.', aliases: ['java', 'core java'] },
+  { skill_id: 'SK005', skill_name: 'C++', category: 'Languages', domain: 'Systems & High Performance', description: 'General-purpose language with low-level memory control.', aliases: ['cpp', 'c++'] },
+  { skill_id: 'SK006', skill_name: 'Go', category: 'Languages', domain: 'Cloud & Backend', description: 'Concurrent compiled language developed by Google.', aliases: ['golang', 'go'] },
+  { skill_id: 'SK007', skill_name: 'Rust', category: 'Languages', domain: 'Systems & Security', description: 'Memory-safe systems programming language.', aliases: ['rust', 'rustlang'] },
+  { skill_id: 'SK008', skill_name: 'SQL', category: 'Languages', domain: 'Databases', description: 'Standard query language for relational databases.', aliases: ['sql', 'postgres', 'mysql'] },
+  { skill_id: 'SK009', skill_name: 'React', category: 'Frontend', domain: 'Web Development', description: 'Component-based declarative UI library.', aliases: ['react', 'reactjs'] },
+  { skill_id: 'SK010', skill_name: 'Vue.js', category: 'Frontend', domain: 'Web Development', description: 'Progressive JavaScript framework for UI.', aliases: ['vue', 'vuejs'] },
+  { skill_id: 'SK011', skill_name: 'Next.js', category: 'Frontend', domain: 'Web Development', description: 'React framework for production SSR and SSG.', aliases: ['nextjs', 'next'] },
+  { skill_id: 'SK012', skill_name: 'HTML5 & CSS3', category: 'Frontend', domain: 'Web Development', description: 'Core markup and styling standards of the web.', aliases: ['html', 'css', 'html5', 'css3'] },
+  { skill_id: 'SK013', skill_name: 'Tailwind CSS', category: 'Frontend', domain: 'Web Development', description: 'Utility-first CSS framework for rapid UI.', aliases: ['tailwind', 'tailwindcss'] },
+  { skill_id: 'SK014', skill_name: 'Redux / State Management', category: 'Frontend', domain: 'Web Development', description: 'Predictable state container for JavaScript apps.', aliases: ['redux', 'zustand'] },
+  { skill_id: 'SK015', skill_name: 'FastAPI', category: 'Backend', domain: 'Backend & APIs', description: 'Modern high-performance Python web framework.', aliases: ['fastapi', 'fast-api'] },
+  { skill_id: 'SK016', skill_name: 'Node.js & Express', category: 'Backend', domain: 'Backend & APIs', description: 'JavaScript runtime and minimalist web framework.', aliases: ['nodejs', 'node', 'express'] },
+  { skill_id: 'SK017', skill_name: 'Django', category: 'Backend', domain: 'Backend & APIs', description: 'Full-featured batteries-included Python framework.', aliases: ['django', 'drf'] },
+  { skill_id: 'SK018', skill_name: 'Spring Boot', category: 'Backend', domain: 'Enterprise & Backend', description: 'Production-grade Java framework for microservices.', aliases: ['spring', 'springboot'] },
+  { skill_id: 'SK019', skill_name: 'RESTful API Design', category: 'Backend', domain: 'System Architecture', description: 'Standard architectural principles for REST APIs.', aliases: ['rest', 'rest api', 'http api'] },
+  { skill_id: 'SK020', skill_name: 'GraphQL', category: 'Backend', domain: 'APIs & Integration', description: 'Query language for APIs and runtime for fulfilling queries.', aliases: ['graphql', 'apollo'] },
+  { skill_id: 'SK021', skill_name: 'PostgreSQL', category: 'Databases', domain: 'Relational Databases', description: 'Advanced open-source relational database system.', aliases: ['postgres', 'postgresql', 'psql'] },
+  { skill_id: 'SK022', skill_name: 'MySQL', category: 'Databases', domain: 'Relational Databases', description: 'Widely deployed open-source relational database.', aliases: ['mysql', 'mariadb'] },
+  { skill_id: 'SK023', skill_name: 'MongoDB', category: 'Databases', domain: 'NoSQL', description: 'Document-based distributed NoSQL database.', aliases: ['mongodb', 'mongo', 'nosql'] },
+  { skill_id: 'SK024', skill_name: 'Redis', category: 'Databases', domain: 'Caching & In-Memory', description: 'In-memory data structure store used as cache/broker.', aliases: ['redis', 'caching'] },
+  { skill_id: 'SK025', skill_name: 'Vector Databases (Pinecone/Milvus)', category: 'Databases', domain: 'AI & Search', description: 'Databases engineered for embedding storage & cosine similarity.', aliases: ['vector db', 'pinecone', 'milvus', 'qdrant', 'chroma'] },
+  { skill_id: 'SK026', skill_name: 'Pandas & NumPy', category: 'AI & ML', domain: 'Data Analysis', description: 'Core Python libraries for numerical computing and dataframes.', aliases: ['pandas', 'numpy'] },
+  { skill_id: 'SK027', skill_name: 'Scikit-Learn', category: 'AI & ML', domain: 'Machine Learning', description: 'Standard machine learning library for predictive data analysis.', aliases: ['sklearn', 'scikit-learn'] },
+  { skill_id: 'SK028', skill_name: 'PyTorch', category: 'AI & ML', domain: 'Deep Learning', description: 'Tensors and dynamic neural networks in Python.', aliases: ['pytorch', 'torch'] },
+  { skill_id: 'SK029', skill_name: 'TensorFlow / Keras', category: 'AI & ML', domain: 'Deep Learning', description: 'End-to-end open source platform for machine learning.', aliases: ['tensorflow', 'tf', 'keras'] },
+  { skill_id: 'SK030', skill_name: 'Natural Language Processing (NLP)', category: 'AI & ML', domain: 'NLP & LLMs', description: 'Techniques for processing, tokenizing, and understanding natural text.', aliases: ['nlp', 'transformers', 'huggingface'] },
+  { skill_id: 'SK031', skill_name: 'Computer Vision', category: 'AI & ML', domain: 'Vision', description: 'Algorithms for image classification, segmentation, and object detection.', aliases: ['cv', 'opencv', 'vision'] },
+  { skill_id: 'SK032', skill_name: 'Generative AI & LLMs (LangChain/RAG)', category: 'AI & ML', domain: 'Generative AI', description: 'Prompt engineering, Retrieval Augmented Generation, and LLM chains.', aliases: ['rag', 'genai', 'langchain', 'llamaindex'] },
+  { skill_id: 'SK033', skill_name: 'MLOps & Model Deployment', category: 'AI & ML', domain: 'MLOps', description: 'Pipeline automation, model tracking, and serving endpoints.', aliases: ['mlops', 'mlflow', 'bentoml'] },
+  { skill_id: 'SK034', skill_name: 'Docker & Containerization', category: 'DevOps & Cloud', domain: 'Containers', description: 'Container platform for isolating application environments.', aliases: ['docker', 'containers'] },
+  { skill_id: 'SK035', skill_name: 'Kubernetes', category: 'DevOps & Cloud', domain: 'Orchestration', description: 'Automated container deployment, scaling, and management.', aliases: ['k8s', 'kubernetes'] },
+  { skill_id: 'SK036', skill_name: 'AWS / Cloud Architecture', category: 'DevOps & Cloud', domain: 'Cloud Infrastructure', description: 'Scalable cloud computing resources, IAM, VPC, and serverless.', aliases: ['aws', 'cloud', 'gcp', 'azure'] },
+  { skill_id: 'SK037', skill_name: 'Terraform (IaC)', category: 'DevOps & Cloud', domain: 'Infrastructure as Code', description: 'Declarative infrastructure configuration and provisioning.', aliases: ['terraform', 'iac'] },
+  { skill_id: 'SK038', skill_name: 'CI/CD Pipelines (GitHub Actions)', category: 'DevOps & Cloud', domain: 'Automation', description: 'Automated build, test, and deployment workflows.', aliases: ['cicd', 'github actions', 'jenkins'] },
+  { skill_id: 'SK039', skill_name: 'Linux / Unix CLI & Shell Scripting', category: 'DevOps & Cloud', domain: 'Systems', description: 'Command-line system navigation, piping, and bash scripting.', aliases: ['linux', 'bash', 'shell'] },
+  { skill_id: 'SK040', skill_name: 'Data Structures & Algorithms', category: 'Core CS', domain: 'Fundamentals', description: 'Trees, graphs, dynamic programming, sorting, and complexity analysis.', aliases: ['dsa', 'algorithms', 'data structures'] },
+  { skill_id: 'SK041', skill_name: 'System Design & Distributed Systems', category: 'Core CS', domain: 'Architecture', description: 'High availability, load balancing, caching, partition tolerance.', aliases: ['system design', 'distributed systems'] },
+  { skill_id: 'SK042', skill_name: 'Computer Networks (TCP/IP, HTTP/3)', category: 'Core CS', domain: 'Networking', description: 'OSI layers, packet routing, socket programming, and protocol handshakes.', aliases: ['networking', 'tcp', 'http'] },
+  { skill_id: 'SK043', skill_name: 'Git & Version Control', category: 'Software Tools', domain: 'Collaboration', description: 'Branching strategies, merge conflict resolution, and git flow.', aliases: ['git', 'github', 'version control'] },
+  { skill_id: 'SK044', skill_name: 'Unit & Integration Testing (PyTest/Jest)', category: 'Software Tools', domain: 'Quality Assurance', description: 'Automated testing methodologies, test coverage, and mocks.', aliases: ['testing', 'pytest', 'jest'] },
+  { skill_id: 'SK045', skill_name: 'Network Security & Cryptography', category: 'Security', domain: 'Cybersecurity', description: 'Symmetric/asymmetric encryption, TLS certificates, and auth tokens.', aliases: ['security', 'cryptography', 'cybersecurity'] },
+  { skill_id: 'SK046', skill_name: 'Penetration Testing & Vulnerability Assessment', category: 'Security', domain: 'Cybersecurity', description: 'OWASP Top 10 vulnerabilities, burp suite, and defensive hardening.', aliases: ['pentesting', 'owasp', 'ethical hacking'] },
+  { skill_id: 'SK047', skill_name: 'Problem Solving & Critical Reasoning', category: 'Soft Skills', domain: 'Cognitive', description: 'Deconstructing complex engineering bottlenecks logically.', aliases: ['problem solving', 'logic'] },
+  { skill_id: 'SK048', skill_name: 'Technical Communication & Documentation', category: 'Soft Skills', domain: 'Professional', description: 'Writing RFCs, architecture decision records (ADRs), and clear documentation.', aliases: ['communication', 'documentation', 'writing'] },
+  { skill_id: 'SK049', skill_name: 'Agile & Scrum Methodologies', category: 'Soft Skills', domain: 'Workflow', description: 'Sprint planning, retrospectives, story points, and backlog grooming.', aliases: ['agile', 'scrum', 'kanban'] },
+  { skill_id: 'SK050', skill_name: 'UI/UX Principles & Accessibility (a11y)', category: 'Frontend', domain: 'Design', description: 'WCAG standards, semantic elements, and intuitive visual hierarchies.', aliases: ['ui/ux', 'accessibility', 'a11y'] }
+];
+
+export const CAREER_ROLES: CareerRole[] = [
+  {
+    career_id: 'CR001',
+    career_title: 'Full-Stack Software Engineer',
+    domain: 'Software Engineering',
+    description: 'Designs, builds, and deploys scalable web applications across the complete stack from frontend to backend databases.',
+    min_exp_years: 0.5,
+    avg_salary_usd: 105000,
+    required_skills: [
+      { skill_id: 'SK001', skill_name: 'Python', required_level: 3, importance: 0.7, is_core: false },
+      { skill_id: 'SK002', skill_name: 'JavaScript', required_level: 4, importance: 0.9, is_core: true },
+      { skill_id: 'SK003', skill_name: 'TypeScript', required_level: 4, importance: 0.8, is_core: true },
+      { skill_id: 'SK008', skill_name: 'SQL', required_level: 4, importance: 0.8, is_core: true },
+      { skill_id: 'SK009', skill_name: 'React', required_level: 4, importance: 0.9, is_core: true },
+      { skill_id: 'SK012', skill_name: 'HTML5 & CSS3', required_level: 4, importance: 0.8, is_core: true },
+      { skill_id: 'SK015', skill_name: 'FastAPI', required_level: 3, importance: 0.7, is_core: false },
+      { skill_id: 'SK016', skill_name: 'Node.js & Express', required_level: 4, importance: 0.8, is_core: true },
+      { skill_id: 'SK019', skill_name: 'RESTful API Design', required_level: 4, importance: 0.9, is_core: true },
+      { skill_id: 'SK021', skill_name: 'PostgreSQL', required_level: 3, importance: 0.8, is_core: true },
+      { skill_id: 'SK034', skill_name: 'Docker & Containerization', required_level: 3, importance: 0.7, is_core: false },
+      { skill_id: 'SK040', skill_name: 'Data Structures & Algorithms', required_level: 4, importance: 0.9, is_core: true },
+      { skill_id: 'SK041', skill_name: 'System Design & Distributed Systems', required_level: 3, importance: 0.8, is_core: true },
+      { skill_id: 'SK043', skill_name: 'Git & Version Control', required_level: 4, importance: 0.9, is_core: true }
+    ]
+  },
+  {
+    career_id: 'CR002',
+    career_title: 'Frontend Engineer',
+    domain: 'Web Development',
+    description: 'Specializes in building responsive, accessible, high-performance web user interfaces and client-side web architectures.',
+    min_exp_years: 0.0,
+    avg_salary_usd: 98000,
+    required_skills: [
+      { skill_id: 'SK002', skill_name: 'JavaScript', required_level: 5, importance: 1.0, is_core: true },
+      { skill_id: 'SK003', skill_name: 'TypeScript', required_level: 4, importance: 0.9, is_core: true },
+      { skill_id: 'SK009', skill_name: 'React', required_level: 5, importance: 1.0, is_core: true },
+      { skill_id: 'SK011', skill_name: 'Next.js', required_level: 4, importance: 0.8, is_core: true },
+      { skill_id: 'SK012', skill_name: 'HTML5 & CSS3', required_level: 5, importance: 1.0, is_core: true },
+      { skill_id: 'SK013', skill_name: 'Tailwind CSS', required_level: 4, importance: 0.8, is_core: true },
+      { skill_id: 'SK014', skill_name: 'Redux / State Management', required_level: 4, importance: 0.8, is_core: true },
+      { skill_id: 'SK019', skill_name: 'RESTful API Design', required_level: 3, importance: 0.7, is_core: false },
+      { skill_id: 'SK040', skill_name: 'Data Structures & Algorithms', required_level: 3, importance: 0.7, is_core: false },
+      { skill_id: 'SK043', skill_name: 'Git & Version Control', required_level: 4, importance: 0.8, is_core: true },
+      { skill_id: 'SK050', skill_name: 'UI/UX Principles & Accessibility (a11y)', required_level: 4, importance: 0.8, is_core: true }
+    ]
+  },
+  {
+    career_id: 'CR003',
+    career_title: 'Backend Engineer',
+    domain: 'Backend & Cloud',
+    description: 'Engineers distributed server systems, high-throughput APIs, data pipelines, and microservice infrastructure.',
+    min_exp_years: 0.5,
+    avg_salary_usd: 110000,
+    required_skills: [
+      { skill_id: 'SK001', skill_name: 'Python', required_level: 4, importance: 0.8, is_core: true },
+      { skill_id: 'SK004', skill_name: 'Java', required_level: 4, importance: 0.8, is_core: true },
+      { skill_id: 'SK008', skill_name: 'SQL', required_level: 5, importance: 1.0, is_core: true },
+      { skill_id: 'SK015', skill_name: 'FastAPI', required_level: 4, importance: 0.8, is_core: true },
+      { skill_id: 'SK016', skill_name: 'Node.js & Express', required_level: 4, importance: 0.8, is_core: true },
+      { skill_id: 'SK019', skill_name: 'RESTful API Design', required_level: 5, importance: 1.0, is_core: true },
+      { skill_id: 'SK021', skill_name: 'PostgreSQL', required_level: 5, importance: 1.0, is_core: true },
+      { skill_id: 'SK024', skill_name: 'Redis', required_level: 4, importance: 0.8, is_core: true },
+      { skill_id: 'SK034', skill_name: 'Docker & Containerization', required_level: 4, importance: 0.8, is_core: true },
+      { skill_id: 'SK040', skill_name: 'Data Structures & Algorithms', required_level: 5, importance: 1.0, is_core: true },
+      { skill_id: 'SK041', skill_name: 'System Design & Distributed Systems', required_level: 4, importance: 0.9, is_core: true }
+    ]
+  },
+  {
+    career_id: 'CR004',
+    career_title: 'Machine Learning Engineer',
+    domain: 'Artificial Intelligence',
+    description: 'Translates mathematical ML models into scalable production services, feature stores, and automated training pipelines.',
+    min_exp_years: 1.0,
+    avg_salary_usd: 125000,
+    required_skills: [
+      { skill_id: 'SK001', skill_name: 'Python', required_level: 5, importance: 1.0, is_core: true },
+      { skill_id: 'SK008', skill_name: 'SQL', required_level: 4, importance: 0.8, is_core: true },
+      { skill_id: 'SK015', skill_name: 'FastAPI', required_level: 3, importance: 0.7, is_core: false },
+      { skill_id: 'SK026', skill_name: 'Pandas & NumPy', required_level: 5, importance: 1.0, is_core: true },
+      { skill_id: 'SK027', skill_name: 'Scikit-Learn', required_level: 5, importance: 1.0, is_core: true },
+      { skill_id: 'SK028', skill_name: 'PyTorch', required_level: 4, importance: 0.9, is_core: true },
+      { skill_id: 'SK029', skill_name: 'TensorFlow / Keras', required_level: 4, importance: 0.8, is_core: true },
+      { skill_id: 'SK033', skill_name: 'MLOps & Model Deployment', required_level: 4, importance: 0.9, is_core: true },
+      { skill_id: 'SK034', skill_name: 'Docker & Containerization', required_level: 4, importance: 0.8, is_core: true },
+      { skill_id: 'SK040', skill_name: 'Data Structures & Algorithms', required_level: 4, importance: 0.9, is_core: true },
+      { skill_id: 'SK047', skill_name: 'Problem Solving & Critical Reasoning', required_level: 5, importance: 1.0, is_core: true }
+    ]
+  },
+  {
+    career_id: 'CR005',
+    career_title: 'Data Scientist',
+    domain: 'Data & Analytics',
+    description: 'Applies statistical modeling, exploratory data analysis, and predictive algorithms to discover business insights and build models.',
+    min_exp_years: 0.5,
+    avg_salary_usd: 115000,
+    required_skills: [
+      { skill_id: 'SK001', skill_name: 'Python', required_level: 5, importance: 1.0, is_core: true },
+      { skill_id: 'SK008', skill_name: 'SQL', required_level: 5, importance: 1.0, is_core: true },
+      { skill_id: 'SK021', skill_name: 'PostgreSQL', required_level: 4, importance: 0.8, is_core: true },
+      { skill_id: 'SK026', skill_name: 'Pandas & NumPy', required_level: 5, importance: 1.0, is_core: true },
+      { skill_id: 'SK027', skill_name: 'Scikit-Learn', required_level: 5, importance: 1.0, is_core: true },
+      { skill_id: 'SK047', skill_name: 'Problem Solving & Critical Reasoning', required_level: 5, importance: 1.0, is_core: true },
+      { skill_id: 'SK048', skill_name: 'Technical Communication & Documentation', required_level: 5, importance: 1.0, is_core: true }
+    ]
+  },
+  {
+    career_id: 'CR006',
+    career_title: 'DevOps & Cloud Engineer',
+    domain: 'Infrastructure & Cloud',
+    description: 'Automates cloud deployments, manages container orchestration, implements CI/CD, and ensures high availability of systems.',
+    min_exp_years: 1.0,
+    avg_salary_usd: 118000,
+    required_skills: [
+      { skill_id: 'SK001', skill_name: 'Python', required_level: 3, importance: 0.7, is_core: false },
+      { skill_id: 'SK034', skill_name: 'Docker & Containerization', required_level: 5, importance: 1.0, is_core: true },
+      { skill_id: 'SK035', skill_name: 'Kubernetes', required_level: 5, importance: 1.0, is_core: true },
+      { skill_id: 'SK036', skill_name: 'AWS / Cloud Architecture', required_level: 5, importance: 1.0, is_core: true },
+      { skill_id: 'SK037', skill_name: 'Terraform (IaC)', required_level: 4, importance: 0.8, is_core: true },
+      { skill_id: 'SK038', skill_name: 'CI/CD Pipelines (GitHub Actions)', required_level: 5, importance: 1.0, is_core: true },
+      { skill_id: 'SK039', skill_name: 'Linux / Unix CLI & Shell Scripting', required_level: 5, importance: 1.0, is_core: true }
+    ]
+  },
+  {
+    career_id: 'CR007',
+    career_title: 'AI & GenAI Solutions Engineer',
+    domain: 'Artificial Intelligence',
+    description: 'Architects enterprise generative AI workflows, RAG pipelines, LLM fine-tuning, and semantic search systems.',
+    min_exp_years: 0.5,
+    avg_salary_usd: 130000,
+    required_skills: [
+      { skill_id: 'SK001', skill_name: 'Python', required_level: 5, importance: 1.0, is_core: true },
+      { skill_id: 'SK015', skill_name: 'FastAPI', required_level: 4, importance: 0.8, is_core: true },
+      { skill_id: 'SK025', skill_name: 'Vector Databases (Pinecone/Milvus)', required_level: 4, importance: 0.8, is_core: true },
+      { skill_id: 'SK027', skill_name: 'Scikit-Learn', required_level: 4, importance: 0.8, is_core: true },
+      { skill_id: 'SK030', skill_name: 'Natural Language Processing (NLP)', required_level: 5, importance: 1.0, is_core: true },
+      { skill_id: 'SK032', skill_name: 'Generative AI & LLMs (LangChain/RAG)', required_level: 5, importance: 1.0, is_core: true }
+    ]
+  },
+  {
+    career_id: 'CR008',
+    career_title: 'Cybersecurity Analyst & Engineer',
+    domain: 'Security',
+    description: 'Protects organizational assets by identifying vulnerabilities, conducting threat modeling, and securing networks and software.',
+    min_exp_years: 1.0,
+    avg_salary_usd: 112000,
+    required_skills: [
+      { skill_id: 'SK001', skill_name: 'Python', required_level: 3, importance: 0.7, is_core: false },
+      { skill_id: 'SK039', skill_name: 'Linux / Unix CLI & Shell Scripting', required_level: 5, importance: 1.0, is_core: true },
+      { skill_id: 'SK042', skill_name: 'Computer Networks (TCP/IP, HTTP/3)', required_level: 5, importance: 1.0, is_core: true },
+      { skill_id: 'SK045', skill_name: 'Network Security & Cryptography', required_level: 5, importance: 1.0, is_core: true },
+      { skill_id: 'SK046', skill_name: 'Penetration Testing & Vulnerability Assessment', required_level: 5, importance: 1.0, is_core: true }
+    ]
+  }
+];
+
+export const ASSESSMENT_DATA = [
+  {
+    skill_id: 'SK001',
+    title: 'Python Core Proficiency Assessment',
+    difficulty: 'Intermediate',
+    time_limit_minutes: 10,
+    pass_score: 70.0,
+    is_active: true,
+    questions: [
+      {
+        id: 'Q_PY_01',
+        question_text: 'What is the time complexity of searching a key in a standard Python dictionary in average case?',
+        options_json: ['O(1)', 'O(n)', 'O(log n)', 'O(n log n)'],
+        correct_option_index: 0,
+        explanation: 'Python dictionaries use hash tables under the hood, yielding O(1) average lookup time.'
+      },
+      {
+        id: 'Q_PY_02',
+        question_text: 'How do Python list comprehensions compare with traditional for-loops?',
+        options_json: [
+          'They are slower due to extra memory allocation',
+          'They are generally faster as they execute in optimized C bytecode',
+          'They can only operate on strings',
+          'They do not return a new list'
+        ],
+        correct_option_index: 1,
+        explanation: 'List comprehensions run optimized bytecode loops in CPython, often outperforming manual append loops.'
+      },
+      {
+        id: 'Q_PY_03',
+        question_text: 'What does the Python `*args` syntax inside a function definition denote?',
+        options_json: [
+          'Keyword arguments as a dict',
+          'Variable positional arguments packed as a tuple',
+          'Memory pointer to the arguments',
+          'Mandatory keyword-only arguments'
+        ],
+        correct_option_index: 1,
+        explanation: '`*args` allows passing an arbitrary number of positional arguments which are packed into a tuple.'
+      }
+    ]
+  },
+  {
+    skill_id: 'SK009',
+    title: 'React Architecture & Hooks Assessment',
+    difficulty: 'Intermediate',
+    time_limit_minutes: 10,
+    pass_score: 70.0,
+    is_active: true,
+    questions: [
+      {
+        id: 'Q_RCT_01',
+        question_text: 'What is the main purpose of the useEffect hook with an empty dependency array []?',
+        options_json: [
+          'Runs after every render',
+          'Runs only once when the component mounts',
+          'Runs whenever any state changes',
+          'Prevents the component from rendering'
+        ],
+        correct_option_index: 1,
+        explanation: 'An empty dependency array specifies that the effect does not depend on any props or state, running only on mount.'
+      },
+      {
+        id: 'Q_RCT_02',
+        question_text: 'Why should React state not be mutated directly (e.g. state.count = 5)?',
+        options_json: [
+          'It will cause syntax errors',
+          'React relies on reference equality to trigger re-renders; mutating state directly bypasses reactivity',
+          'Direct mutation slows down JavaScript',
+          'Browsers do not support object mutation'
+        ],
+        correct_option_index: 1,
+        explanation: 'React uses shallow comparison of state references. Direct mutation prevents React from detecting changes.'
+      }
+    ]
+  },
+  {
+    skill_id: 'SK027',
+    title: 'Machine Learning & Scikit-Learn Assessment',
+    difficulty: 'Intermediate',
+    time_limit_minutes: 12,
+    pass_score: 75.0,
+    is_active: true,
+    questions: [
+      {
+        id: 'Q_ML_01',
+        question_text: 'Why must feature scaling transformers (e.g. StandardScaler) be fitted only on training data?',
+        options_json: [
+          'To save CPU time',
+          'To prevent data leakage from the validation/test set into model training',
+          'Because test data cannot be converted to floats',
+          'Scikit-learn errors if fitted on test data'
+        ],
+        correct_option_index: 1,
+        explanation: 'Fitting scalers on validation or test sets leaks distribution statistics (mean/variance) into the model.'
+      },
+      {
+        id: 'Q_ML_02',
+        question_text: 'Which metric is most appropriate for evaluating a regression model on continuous target predictions?',
+        options_json: [
+          'F1 Score and Precision',
+          'Mean Absolute Error (MAE) and R-squared (R2)',
+          'Confusion Matrix',
+          'ROC-AUC curve'
+        ],
+        correct_option_index: 1,
+        explanation: 'Continuous targets in regression are evaluated using MAE, RMSE, and R2 coefficients.'
+      }
+    ]
+  }
+];
+
+export const ACADEMIC_PROGRAMS = [
+  { program_code: 'BTECH', name: 'Bachelor of Technology (B.Tech)', duration_years: 4, description: 'Undergraduate engineering and technology degree program spanning 8 semesters.' },
+  { program_code: 'BS', name: 'Bachelor of Science (B.S.)', duration_years: 4, description: 'Undergraduate scientific and computational degree program.' },
+  { program_code: 'BCA', name: 'Bachelor of Computer Applications (BCA)', duration_years: 3, description: 'Undergraduate software and computer applications degree program.' }
+];
+
+export const BRANCHES = [
+  { branch_code: 'CSE', program_id: 'BTECH', name: 'Computer Science & Engineering', category: 'Engineering', description: 'Core computer systems, software engineering, algorithms, architectures, and data platforms.' },
+  { branch_code: 'CSE_AIML', program_id: 'BTECH', name: 'CSE (Artificial Intelligence & Machine Learning)', category: 'Engineering', description: 'Specialized curriculum focusing on intelligent systems, neural networks, deep learning, and NLP.' },
+  { branch_code: 'IT', program_id: 'BTECH', name: 'Information Technology', category: 'Engineering', description: 'Enterprise software applications, web engineering, cloud infrastructure, and network administration.' }
+];
+
+export const SUBJECTS = [
+  { id: 'SUB_CS201', branch_id: 'CSE', subject_code: 'CS201', name: 'Data Structures and Algorithms', semester: 3, credits: 4, category: 'Core', description: 'Analysis of linear and non-linear data structures, trees, graphs, sorting, searching, and algorithmic complexity.', learning_outcomes: ['Implement balanced trees', 'Analyze time and space complexity with Big-O', 'Design graph traversal algorithms (BFS, DFS)'] },
+  { id: 'SUB_CS202', branch_id: 'CSE', subject_code: 'CS202', name: 'Database Management Systems', semester: 4, credits: 4, category: 'Core', description: 'Relational database model, SQL, normalization, concurrency control, transaction processing, and indexing.', learning_outcomes: ['Write complex SQL queries', 'Normalize database schemas up to BCNF', 'Understand ACID properties and transactions'] },
+  { id: 'SUB_CS301', branch_id: 'CSE', subject_code: 'CS301', name: 'Operating Systems & Concurrency', semester: 5, credits: 4, category: 'Core', description: 'Process synchronization, thread scheduling, memory virtualization, paging, and file systems.', learning_outcomes: ['Solve mutual exclusion problems using semaphores', 'Understand virtual memory and TLB paging', 'Write multi-threaded programs'] },
+  { id: 'SUB_CS302', branch_id: 'CSE', subject_code: 'CS302', name: 'Computer Networks & Protocols', semester: 5, credits: 4, category: 'Core', description: 'TCP/IP stack, socket programming, HTTP protocols, DNS, congestion control, and routing algorithms.', learning_outcomes: ['Implement socket client-server architectures', 'Analyze Wireshark packet captures', 'Understand TLS handshake and encryption'] },
+  { id: 'SUB_CS401', branch_id: 'CSE', subject_code: 'CS401', name: 'Machine Learning & Predictive Modeling', semester: 7, credits: 4, category: 'Core', description: 'Supervised and unsupervised learning, gradient descent, regularized regression, decision trees, and model evaluation.', learning_outcomes: ['Train predictive models using scikit-learn', 'Evaluate bias-variance tradeoff', 'Build cross-validated feature pipelines'] }
+];
+
+export const PRACTICE_PROBLEMS = [
+  {
+    id: 'PRB_001',
+    title: 'Two Sum Problem',
+    difficulty: 'Easy',
+    category: 'Algorithms',
+    skill_id: 'SK040',
+    description: 'Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target. You may assume each input would have exactly one solution.',
+    starter_code: 'def two_sum(nums, target):\n    # Write your solution here\n    pass',
+    sample_input: 'nums = [2, 7, 11, 15], target = 9',
+    sample_output: '[0, 1]'
+  },
+  {
+    id: 'PRB_002',
+    title: 'Reverse Linked List',
+    difficulty: 'Easy',
+    category: 'Data Structures',
+    skill_id: 'SK040',
+    description: 'Given the head of a singly linked list, reverse the list, and return the reversed list.',
+    starter_code: 'def reverse_list(head):\n    # Write your solution here\n    pass',
+    sample_input: 'head = [1, 2, 3, 4, 5]',
+    sample_output: '[5, 4, 3, 2, 1]'
+  },
+  {
+    id: 'PRB_003',
+    title: 'Validate Binary Search Tree',
+    difficulty: 'Medium',
+    category: 'Trees & Graphs',
+    skill_id: 'SK040',
+    description: 'Given the root of a binary tree, determine if it is a valid binary search tree (BST).',
+    starter_code: 'def is_valid_bst(root):\n    # Write your solution here\n    pass',
+    sample_input: 'root = [2, 1, 3]',
+    sample_output: 'True'
+  }
+];

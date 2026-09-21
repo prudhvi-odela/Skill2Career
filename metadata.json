@@ -1,0 +1,6 @@
+{
+  "name": "Skill2Career",
+  "description": "AI & ML Skill-to-Career Mapping, Job-Readiness Prediction, and Learning Trajectory Forecasting Platform",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
