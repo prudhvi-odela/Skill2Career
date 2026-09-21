@@ -112,7 +112,18 @@ app.put('/api/v1/student/profile', (req, res) => {
 app.get('/api/v1/student/skills', (req, res) => {
   const userId = getUserIdFromReq(req);
   const profile = store.getProfile(userId);
-  res.json(profile.skills || []);
+  const skills = (profile.skills || []).map((s: any) => ({
+    ...s,
+    skill_id: s.skill_id,
+    id: s.skill_id,
+    skill_name: s.skill_name || s.name || 'Skill',
+    name: s.name || s.skill_name || 'Skill',
+    proficiency_level: s.proficiency_level ?? s.level ?? 3.0,
+    level: s.level ?? s.proficiency_level ?? 3.0,
+    years_experience: s.years_experience ?? 1.0,
+    category: s.category || 'General'
+  }));
+  res.json(skills);
 });
 
 app.post('/api/v1/student/skills', (req, res) => {
@@ -121,25 +132,29 @@ app.post('/api/v1/student/skills', (req, res) => {
   const { skill_id, proficiency_level, years_experience } = req.body;
 
   const catalogSkill = SKILLS_CATALOG.find(s => s.skill_id === skill_id);
+  const skillName = catalogSkill ? catalogSkill.skill_name : (req.body.name || skill_id);
   const newSkill = {
     skill_id,
-    name: catalogSkill ? catalogSkill.skill_name : skill_id,
+    id: skill_id,
+    skill_name: skillName,
+    name: skillName,
     category: catalogSkill ? catalogSkill.category : 'General',
     domain: catalogSkill ? catalogSkill.domain : 'General',
     level: Number(proficiency_level) || 3.0,
+    proficiency_level: Number(proficiency_level) || 3.0,
     verified: false,
     verification_source: 'Self-Reported',
     years_experience: Number(years_experience) || 1.0
   };
 
-  const existingIndex = profile.skills.findIndex((s: any) => s.skill_id === skill_id);
+  const existingIndex = profile.skills.findIndex((s: any) => s.skill_id === skill_id || s.name?.toLowerCase() === skillName.toLowerCase());
   if (existingIndex >= 0) {
     profile.skills[existingIndex] = newSkill;
   } else {
     profile.skills.push(newSkill);
   }
   store.updateProfile(userId, { skills: profile.skills });
-  res.json(newSkill);
+  res.json(profile.skills);
 });
 
 app.delete('/api/v1/student/skills/:skillId', (req, res) => {
@@ -351,7 +366,12 @@ app.get('/api/v1/careers/matching/recommendations', (req, res) => {
 });
 
 app.get('/api/v1/careers/:careerId', (req, res) => {
-  const career = CAREER_ROLES.find(c => c.career_id === req.params.careerId || (c as any).id === req.params.careerId);
+  const reqId = req.params.careerId;
+  const career = CAREER_ROLES.find(c =>
+    c.career_id === reqId ||
+    (c as any).id === reqId ||
+    c.career_title?.toLowerCase() === reqId.toLowerCase()
+  );
   if (career) {
     res.json({
       ...career,
@@ -359,7 +379,13 @@ app.get('/api/v1/careers/:careerId', (req, res) => {
       title: career.career_title
     });
   } else {
-    res.status(404).json({ error: 'Career role not found' });
+    // If not found, return first matching or default role
+    const fallback = CAREER_ROLES[0];
+    res.json({
+      ...fallback,
+      id: fallback.career_id,
+      title: fallback.career_title
+    });
   }
 });
 
@@ -393,7 +419,7 @@ app.post('/api/v1/analysis/readiness', (req, res) => {
       { factor: 'Certifications Count', impact_pct: 4.3, score: 80.0 },
       { factor: 'Project Complexity', impact_pct: 3.0, score: 90.0 }
     ],
-    recommendation_summary: `Your readiness for ${gap.career_title} is currently ${gap.readiness_score}%. Closing key gaps in ${gap.critical_gaps.slice(0, 2).join(' and ')} will push readiness past 85%.`
+    recommendation_summary: `Your readiness for ${gap.career_title} is currently ${gap.readiness_score}%. Closing key gaps in ${gap.critical_gaps.slice(0, 2).join(' and ') || 'core competency areas'} will push readiness past 85%.`
   });
 });
 
@@ -404,10 +430,13 @@ app.post('/api/v1/analysis/trajectory', (req, res) => {
 });
 
 app.get('/api/v1/analysis/history', (req, res) => {
+  const userId = getUserIdFromReq(req);
+  const profile = store.getProfile(userId);
+  const careerId = profile.target_career_id || 'CG_CSE_1_software_engineer';
   res.json([
-    { recorded_at: new Date(Date.now() - 86400000 * 28).toISOString(), score: 58.0, career_id: 'CR004' },
-    { recorded_at: new Date(Date.now() - 86400000 * 14).toISOString(), score: 67.5, career_id: 'CR004' },
-    { recorded_at: new Date().toISOString(), score: 78.4, career_id: 'CR004' }
+    { recorded_at: new Date(Date.now() - 86400000 * 28).toISOString(), score: 58.0, career_id: careerId },
+    { recorded_at: new Date(Date.now() - 86400000 * 14).toISOString(), score: 67.5, career_id: careerId },
+    { recorded_at: new Date().toISOString(), score: 78.4, career_id: careerId }
   ]);
 });
 
@@ -416,19 +445,21 @@ app.get('/api/v1/analysis/history', (req, res) => {
 // -------------------------------------------------------------
 app.get('/api/v1/roadmap', (req, res) => {
   const userId = getUserIdFromReq(req);
+  const profile = store.getProfile(userId);
   res.json({
-    career_id: 'CR004',
-    career_title: 'Machine Learning Engineer',
+    career_id: profile.target_career_id || 'CG_CSE_1_software_engineer',
+    career_title: profile.target_career_title || 'Software Engineer',
     milestones: store.roadmaps.get(userId) || []
   });
 });
 
 app.get('/api/v1/roadmap/current', (req, res) => {
   const userId = getUserIdFromReq(req);
+  const profile = store.getProfile(userId);
   const items = store.roadmaps.get(userId) || [];
   res.json({
-    career_id: 'CR004',
-    career_title: 'Machine Learning Engineer',
+    career_id: profile.target_career_id || 'CG_CSE_1_software_engineer',
+    career_title: profile.target_career_title || 'Software Engineer',
     milestones: items,
     completion_percentage: Math.round((items.filter(i => i.is_completed).length / Math.max(1, items.length)) * 100)
   });
@@ -448,7 +479,8 @@ app.put('/api/v1/roadmap/items/:itemId', (req, res) => {
 
 app.post('/api/v1/roadmap/regenerate', (req, res) => {
   const userId = getUserIdFromReq(req);
-  const careerId = (req.query.target_career_id as string) || 'CR004';
+  const profile = store.getProfile(userId);
+  const careerId = (req.query.target_career_id as string) || profile.target_career_id || 'CG_CSE_1_software_engineer';
   const gap = store.calculateSkillGap(userId, careerId);
 
   const newItems = gap.missing_skills.slice(0, 5).map((s: any, idx: number) => ({

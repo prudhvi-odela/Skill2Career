@@ -14,7 +14,7 @@ export const TrajectoryPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const targetCareerId = profile?.target_career_id || 'CR004';
+  const targetCareerId = profile?.target_career_id || 'CG_CSE_1_software_engineer';
 
   useEffect(() => {
     runForecast();

@@ -59,8 +59,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<StudentProfileData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  const refreshProfile = async () => {
-    if (!token) return;
+  const refreshProfile = async (currentToken?: string) => {
+    const activeToken = currentToken || token || localStorage.getItem('token');
+    if (!activeToken) return;
     try {
       const res = await studentApi.getProfile();
       setProfile(res.data);
@@ -76,7 +77,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         try {
           const res = await authApi.getMe();
           setUser(res.data);
-          await refreshProfile();
+          await refreshProfile(storedToken);
         } catch (err) {
           console.error('Session expired:', err);
           logout();
@@ -96,7 +97,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('placement_ops_current_user', JSON.stringify({ ...userData, name: userData.full_name }));
     setToken(access_token);
     setUser(userData);
-    await refreshProfile();
+    await refreshProfile(access_token);
   };
 
   const register = async (data: any) => {
@@ -108,7 +109,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('placement_ops_current_user', JSON.stringify({ ...userData, name: userData.full_name }));
     setToken(access_token);
     setUser(userData);
-    await refreshProfile();
+    await refreshProfile(access_token);
   };
 
   const updateProfile = async (data: any) => {

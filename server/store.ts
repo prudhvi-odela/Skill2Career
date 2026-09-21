@@ -124,8 +124,8 @@ class DataStore {
       institution_tier: 1,
       graduation_year: 2026,
       gpa: 8.8,
-      target_career_id: 'CR004',
-      target_career_title: 'Machine Learning Engineer',
+      target_career_id: 'CG_CSE_1_software_engineer',
+      target_career_title: 'Software Engineer',
       skills: initialSkills,
       statistics: {
         weekly_study_hours: 16.0,
@@ -246,8 +246,8 @@ class DataStore {
         institution_tier: 2,
         graduation_year: 2026,
         gpa: 8.0,
-        target_career_id: 'CR001',
-        target_career_title: 'Full-Stack Software Engineer',
+        target_career_id: 'CG_CSE_1_software_engineer',
+        target_career_title: 'Software Engineer',
         skills: [
           { skill_id: 'SK001', name: 'Python', category: 'Languages', domain: 'General', level: 3.0, verified: false, verification_source: 'Self-Reported' },
           { skill_id: 'SK002', name: 'JavaScript', category: 'Languages', domain: 'Web Development', level: 3.0, verified: false, verification_source: 'Self-Reported' }
@@ -293,7 +293,11 @@ class DataStore {
       updated_at: new Date().toISOString()
     };
     if (data.target_career_id) {
-      const career = CAREER_ROLES.find(c => c.career_id === data.target_career_id);
+      const career = CAREER_ROLES.find(c =>
+        c.career_id === data.target_career_id ||
+        (c as any).id === data.target_career_id ||
+        c.career_title?.toLowerCase() === data.target_career_id.toLowerCase()
+      );
       if (career) {
         updated.target_career_title = career.career_title;
       }
@@ -305,8 +309,12 @@ class DataStore {
   // Skill Gap Analysis Engine
   calculateSkillGap(userId: string, targetCareerId?: string) {
     const profile = this.getProfile(userId);
-    const careerId = (targetCareerId && targetCareerId.trim() !== '') ? targetCareerId : (profile.target_career_id || 'CR001');
-    const career = CAREER_ROLES.find(c => c.career_id === careerId) || CAREER_ROLES[0];
+    const careerId = (targetCareerId && targetCareerId.trim() !== '') ? targetCareerId : (profile.target_career_id || 'CG_CSE_1_software_engineer');
+    const career = CAREER_ROLES.find(c =>
+      c.career_id === careerId ||
+      (c as any).id === careerId ||
+      c.career_title?.toLowerCase() === careerId.toLowerCase()
+    ) || CAREER_ROLES[0];
 
     const studentSkills: StudentSkill[] = profile.skills || [];
     const skillMap = new Map<string, StudentSkill>();
@@ -321,7 +329,8 @@ class DataStore {
     let weightedScoreTotal = 0;
     let weightTotal = 0;
 
-    career.required_skills.forEach(req => {
+    const reqSkills = career?.required_skills || [];
+    reqSkills.forEach(req => {
       weightTotal += req.importance;
       const reqNameLower = (req.skill_name || '').toLowerCase().trim();
       
@@ -333,6 +342,8 @@ class DataStore {
           return sName && (sName === reqNameLower || reqNameLower.includes(sName) || sName.includes(reqNameLower));
         });
       }
+
+      const priority = req.importance >= 0.9 ? 'Critical' : req.importance >= 0.7 ? 'High' : 'Medium';
 
       if (studentSkill) {
         const currentLevel = Number(studentSkill.level) || 3.0;
@@ -350,6 +361,7 @@ class DataStore {
           match_percentage: matchPct,
           importance: req.importance,
           is_core: req.is_core,
+          priority: gap === 0 ? 'Mastered' : priority,
           status: gap === 0 ? 'Mastered' : 'In Progress'
         });
       } else {
@@ -362,7 +374,7 @@ class DataStore {
           match_percentage: 0,
           importance: req.importance,
           is_core: req.is_core,
-          priority: req.importance >= 0.9 ? 'Critical' : req.importance >= 0.7 ? 'High' : 'Medium'
+          priority: priority
         });
       }
     });

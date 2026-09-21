@@ -17,7 +17,7 @@ export const DashboardPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const targetCareerId = profile?.target_career_id || 'CR004';
+  const targetCareerId = profile?.target_career_id || 'CG_CSE_1_software_engineer';
   const userBranch = profile?.branch || profile?.major_or_branch || 'CSE';
 
   useEffect(() => {

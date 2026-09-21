@@ -93,7 +93,14 @@ export const SkillsPage: React.FC = () => {
 
   const categories = ['All', ...Array.from(new Set(catalog.map((s) => s.category)))];
 
-  const filteredStudentSkills = studentSkills.filter((s) => {
+  const filteredStudentSkills = studentSkills.map(s => ({
+    ...s,
+    skill_id: s.skill_id || s.id,
+    skill_name: s.skill_name || s.name || 'Unnamed Skill',
+    proficiency_level: s.proficiency_level ?? s.level ?? 3.0,
+    years_experience: s.years_experience ?? 1.0,
+    category: s.category || 'General'
+  })).filter((s) => {
     const matchesCat = selectedCategory === 'All' || s.category === selectedCategory;
     const matchesSearch = s.skill_name.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCat && matchesSearch;
