@@ -2,18 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { careersApi, studentApi } from '../api/client';
 import { useAuth } from '../context/AuthContext';
-import {
-  Compass,
-  Search,
-  DollarSign,
-  Briefcase,
-  Target,
-  ArrowRight,
-  Sparkles,
-  GitPullRequest,
-  CheckCircle2,
-  Filter
-} from 'lucide-react';
 import { SkeletonLoader, EmptyState, ErrorState } from '../components/StateFeedback';
 
 export const CareerExplorerPage: React.FC = () => {
@@ -58,7 +46,7 @@ export const CareerExplorerPage: React.FC = () => {
     }
   };
 
-  const recMap = new Map(recommendations.map((r) => [r.career_id, r.match_percentage]));
+  const recMap = new Map(recommendations.map((r) => [r.career_id, r.match_score ?? r.match_percentage]));
 
   const domains = ['All', ...Array.from(new Set(careers.map((c) => c.domain)))];
 
@@ -71,44 +59,47 @@ export const CareerExplorerPage: React.FC = () => {
   });
 
   return (
-    <div style={{ padding: '28px', maxWidth: '1400px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div style={{ padding: '24px', maxWidth: '1400px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
       <div>
-        <h1 style={{ fontSize: '1.85rem', marginBottom: '6px' }}>Industry Career Explorer</h1>
-        <p style={{ color: '#9ca3af', fontSize: '0.95rem' }}>
-          Explore technical roles, market salaries, required skill profiles, and live compatibility matches based on your verified skills.
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+          <span className="badge badge-primary">ED-05 ENGINE</span>
+          <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Suitable Career Path Recommendations</span>
+        </div>
+        <h1 style={{ fontSize: '1.45rem', color: '#0f172a', marginBottom: '4px' }}>
+          Career Path Matching Catalog
+        </h1>
+        <p style={{ color: '#475569', fontSize: '0.85rem' }}>
+          Explore technical career paths, market compensation benchmarks, required competencies, and live compatibility scores evaluated against your evolving skill profile.
         </p>
       </div>
 
       {/* Search & Domain Filter Toolbar */}
-      <div className="glass-card" style={{ padding: '16px 20px', display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
-        <div style={{ position: 'relative', flex: 1, minWidth: '240px' }}>
-          <Search size={18} color="#9ca3af" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+      <div className="panel-card" style={{ padding: '14px 18px', display: 'flex', gap: '14px', alignItems: 'center', flexWrap: 'wrap' }}>
+        <div style={{ flex: 1, minWidth: '240px' }}>
           <input
             type="text"
             className="input-field"
-            style={{ paddingLeft: '38px' }}
-            placeholder="Search roles e.g. Machine Learning, Cloud Architect, Full-Stack..."
+            placeholder="Search career paths (e.g. Machine Learning, Cloud Architect, Full-Stack)..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
 
-        <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
+        <div style={{ display: 'flex', gap: '6px', overflowX: 'auto' }}>
           {domains.map((dom) => (
             <button
               key={dom}
               onClick={() => setSelectedDomain(dom)}
               style={{
-                background: selectedDomain === dom ? '#6366f1' : 'rgba(255, 255, 255, 0.05)',
-                color: selectedDomain === dom ? '#ffffff' : '#d1d5db',
-                border: selectedDomain === dom ? 'none' : '1px solid rgba(255, 255, 255, 0.1)',
-                padding: '6px 14px',
-                borderRadius: '8px',
-                fontSize: '0.825rem',
+                background: selectedDomain === dom ? '#1e3a8a' : '#e2e8f0',
+                color: selectedDomain === dom ? '#f8f9fa' : '#334155',
+                border: selectedDomain === dom ? '1px solid #1e3a8a' : '1px solid #cbd5e1',
+                padding: '6px 12px',
+                borderRadius: '3px',
+                fontSize: '0.8rem',
                 fontWeight: 600,
                 cursor: 'pointer',
                 whiteSpace: 'nowrap',
-                transition: 'all 0.15s ease',
               }}
             >
               {dom}
@@ -132,7 +123,7 @@ export const CareerExplorerPage: React.FC = () => {
           style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))',
-            gap: '24px',
+            gap: '18px',
           }}
         >
           {filteredCareers.map((c) => {
@@ -142,69 +133,63 @@ export const CareerExplorerPage: React.FC = () => {
             return (
               <div
                 key={c.id}
-                className="glass-card glass-card-interactive"
+                className="panel-card"
                 style={{
-                  padding: '24px',
+                  padding: '20px',
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
-                  gap: '18px',
-                  border: isTarget ? '1px solid #6366f1' : '1px solid var(--border-color)',
-                  background: isTarget
-                    ? 'linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(17, 24, 39, 0.9) 100%)'
-                    : 'var(--card-bg)',
+                  gap: '14px',
+                  border: isTarget ? '2px solid #1e3a8a' : '1px solid #cbd5e1',
+                  background: isTarget ? '#eff6ff' : '#f8f9fa',
                 }}
               >
                 <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-                    <span className="badge badge-indigo">{c.domain}</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <span className="badge badge-neutral">{c.domain}</span>
                     {matchPct !== undefined && (
                       <span
-                        style={{
-                          fontSize: '0.85rem',
-                          fontWeight: 700,
-                          color: matchPct >= 70 ? '#34d399' : (matchPct >= 50 ? '#fbbf24' : '#f87171'),
-                        }}
+                        className={matchPct >= 70 ? 'badge badge-success' : (matchPct >= 50 ? 'badge badge-warning' : 'badge badge-danger')}
                       >
-                        {matchPct}% Skill Match
+                        {matchPct}% Skill Fit
                       </span>
                     )}
                   </div>
 
-                  <h3 style={{ fontSize: '1.25rem', marginBottom: '8px', color: '#ffffff' }}>{c.title}</h3>
-                  <p style={{ color: '#9ca3af', fontSize: '0.875rem', lineHeight: 1.5, marginBottom: '16px' }}>
+                  <h3 style={{ fontSize: '1.15rem', marginBottom: '6px', color: '#0f172a' }}>
+                    {c.title}
+                  </h3>
+                  <p style={{ color: '#475569', fontSize: '0.85rem', lineHeight: 1.5, marginBottom: '14px' }}>
                     {c.description}
                   </p>
 
-                  <div style={{ display: 'flex', gap: '20px', fontSize: '0.85rem', color: '#d1d5db', borderTop: '1px solid rgba(255, 255, 255, 0.06)', paddingTop: '14px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <DollarSign size={15} color="#34d399" />
-                      <span>${c.avg_salary_usd.toLocaleString()} / yr</span>
+                  <div style={{ display: 'flex', gap: '16px', fontSize: '0.8rem', color: '#475569', borderTop: '1px solid #cbd5e1', paddingTop: '10px' }}>
+                    <div>
+                      <span style={{ color: '#64748b' }}>Benchmark: </span>
+                      <strong style={{ color: '#15803d' }}>${c.avg_salary_usd.toLocaleString()} / yr</strong>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <Briefcase size={15} color="#818cf8" />
-                      <span>{c.min_exp_years === 0 ? 'Entry Level' : `${c.min_exp_years}+ yrs exp`}</span>
+                    <div>
+                      <span style={{ color: '#64748b' }}>Experience: </span>
+                      <strong>{c.min_exp_years === 0 ? 'Entry Level' : `${c.min_exp_years}+ yrs`}</strong>
                     </div>
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>
+                <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
                   <button
                     onClick={() => handleSetTarget(c.id)}
                     className={isTarget ? 'btn-secondary' : 'btn-primary'}
-                    style={{ flex: 1, padding: '9px 12px', fontSize: '0.825rem' }}
+                    style={{ flex: 1, padding: '7px 10px', fontSize: '0.8rem' }}
                   >
-                    <Target size={14} />
-                    <span>{isTarget ? 'Active Target' : 'Set as Target'}</span>
+                    {isTarget ? '[ACTIVE TARGET]' : 'Set as Target'}
                   </button>
 
                   <Link
                     to={`/app/careers/${c.id}`}
                     className="btn-secondary"
-                    style={{ padding: '9px 14px', fontSize: '0.825rem' }}
+                    style={{ padding: '7px 12px', fontSize: '0.8rem' }}
                   >
-                    <span>View Role</span>
-                    <ArrowRight size={14} />
+                    View Role →
                   </Link>
                 </div>
               </div>

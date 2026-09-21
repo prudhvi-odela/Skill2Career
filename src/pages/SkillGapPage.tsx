@@ -2,21 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { analysisApi, careersApi } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
-import {
-  GitPullRequest,
-  AlertTriangle,
-  CheckCircle2,
-  Clock,
-  Layers,
-  ArrowRight,
-  Filter,
-  TrendingUp,
-  Target,
-  Sparkles,
-  BookOpen
-} from 'lucide-react';
 import { KPICard } from '../components/KPICard';
-import { SkeletonLoader, EmptyState, ErrorState, IncompleteProfileBanner } from '../components/StateFeedback';
+import { SkeletonLoader, EmptyState, ErrorState } from '../components/StateFeedback';
 
 export const SkillGapPage: React.FC = () => {
   const { profile } = useAuth();
@@ -77,32 +64,35 @@ export const SkillGapPage: React.FC = () => {
   }) || [];
 
   const criticalCount = gapData?.gaps?.filter((g: any) => g.priority === 'Critical').length || 0;
-  const highCount = gapData?.gaps?.filter((g: any) => g.priority === 'High').length || 0;
 
   return (
-    <div style={{ padding: '28px', maxWidth: '1400px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px' }}>
-      <IncompleteProfileBanner />
-
+    <div style={{ padding: '24px', maxWidth: '1400px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
       {/* Header & Career Selector */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px' }}>
         <div>
-          <h1 style={{ fontSize: '1.85rem', marginBottom: '6px' }}>Skill Gap Analysis Engine</h1>
-          <p style={{ color: '#9ca3af', fontSize: '0.95rem' }}>
-            Vectorized comparison of your verified & self-reported skill proficiency against target industry requirements.
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+            <span className="badge badge-primary">ED-05 ENGINE</span>
+            <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Missing Skills & Gap Analysis</span>
+          </div>
+          <h1 style={{ fontSize: '1.45rem', color: '#0f172a', marginBottom: '4px' }}>
+            Skill Gap to Career Engine
+          </h1>
+          <p style={{ color: '#475569', fontSize: '0.85rem' }}>
+            Rigorous comparison of your current competencies against required industry benchmarks to pinpoint exactly what you need to learn.
           </p>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span style={{ fontSize: '0.875rem', color: '#9ca3af' }}>Target Role:</span>
+          <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#475569' }}>Evaluate Against Role:</span>
           <select
-            className="input-field"
+            className="select-field"
             style={{ width: '280px' }}
             value={selectedCareerId}
             onChange={handleCareerChange}
           >
             {careers.map((c) => (
               <option key={c.id} value={c.id}>
-                {c.title}
+                {c.title} ({c.domain})
               </option>
             ))}
           </select>
@@ -126,70 +116,50 @@ export const SkillGapPage: React.FC = () => {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-              gap: '20px',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+              gap: '14px',
             }}
           >
             <KPICard
-              title="Skill Coverage"
+              title="SKILL COVERAGE"
               value={`${gapData.coverage_percentage}%`}
-              subtitle={`Against ${gapData.total_skills_required} Required Competencies`}
-              icon={<Target size={20} />}
-              badge={{
-                text: gapData.coverage_percentage >= 70 ? 'High Alignment' : 'Gap Detected',
-                variant: gapData.coverage_percentage >= 70 ? 'emerald' : 'amber'
-              }}
+              subtitle={`Matching ${gapData.total_skills_required} role competencies`}
             />
 
             <KPICard
-              title="Critical Gaps"
+              title="CRITICAL DEFICITS"
               value={`${criticalCount} Skills`}
-              subtitle="Requires immediate remediation focus"
-              icon={<AlertTriangle size={20} />}
-              badge={{
-                text: criticalCount === 0 ? 'Optimal' : 'Needs Action',
-                variant: criticalCount === 0 ? 'emerald' : 'rose'
-              }}
+              subtitle="Highest impact gaps to bridge"
             />
 
             <KPICard
-              title="Proficient / Mastered"
+              title="MASTERED SKILLS"
               value={`${gapData.proficient_count} Skills`}
-              subtitle="Meet or exceed role target"
-              icon={<CheckCircle2 size={20} />}
-              badge={{
-                text: 'Validated',
-                variant: 'emerald'
-              }}
+              subtitle="Meets or exceeds requirements"
             />
 
             <KPICard
-              title="Remediation Effort"
+              title="ESTIMATED REMEDIATION"
               value={`~${gapData.estimated_remediation_hours} Hours`}
-              subtitle="Estimated total guided study time"
-              icon={<Clock size={20} />}
-              badge={{
-                text: `${gapData.gaps.length} Target Skills`,
-                variant: 'indigo'
-              }}
+              subtitle="Guided learning time needed"
             />
           </div>
 
           {/* Action Callout & Filter Toolbar */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-              <Filter size={16} color="#9ca3af" />
+            <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+              <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600, marginRight: '4px' }}>Filter Priority:</span>
               {['All', 'Critical', 'High', 'Medium', 'Mastered'].map((p) => (
                 <button
                   key={p}
                   onClick={() => setPriorityFilter(p)}
                   style={{
-                    background: priorityFilter === p ? '#6366f1' : 'rgba(255, 255, 255, 0.05)',
-                    color: priorityFilter === p ? '#ffffff' : '#9ca3af',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    padding: '6px 14px',
-                    borderRadius: '8px',
-                    fontSize: '0.825rem',
+                    background: priorityFilter === p ? '#1e3a8a' : '#e2e8f0',
+                    color: priorityFilter === p ? '#f8f9fa' : '#334155',
+                    border: priorityFilter === p ? '1px solid #1e3a8a' : '1px solid #cbd5e1',
+                    padding: '5px 11px',
+                    borderRadius: '3px',
+                    fontSize: '0.78rem',
                     fontWeight: 600,
                     cursor: 'pointer',
                     transition: 'all 0.15s ease',
@@ -200,81 +170,69 @@ export const SkillGapPage: React.FC = () => {
               ))}
             </div>
 
-            <Link to="/app/roadmap" className="btn-primary" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
-              <Sparkles size={14} />
-              <span>Generate Step-by-Step Remediation Roadmap</span>
-              <ArrowRight size={14} />
+            <Link to="/app/trajectory" className="btn-primary" style={{ padding: '7px 14px', fontSize: '0.825rem' }}>
+              Simulate Learning Trajectory →
             </Link>
           </div>
 
           {/* Granular Gap Matrix */}
-          <div className="glass-card" style={{ overflowX: 'auto', padding: '0' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+          <div className="panel-card" style={{ overflowX: 'auto', padding: '0' }}>
+            <table className="data-table">
               <thead>
-                <tr style={{ background: 'rgba(255, 255, 255, 0.03)', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
-                  <th style={{ padding: '16px 20px', fontSize: '0.8rem', color: '#9ca3af', textTransform: 'uppercase' }}>Skill Name</th>
-                  <th style={{ padding: '16px 20px', fontSize: '0.8rem', color: '#9ca3af', textTransform: 'uppercase' }}>Domain Category</th>
-                  <th style={{ padding: '16px 20px', fontSize: '0.8rem', color: '#9ca3af', textTransform: 'uppercase' }}>Current vs Required</th>
-                  <th style={{ padding: '16px 20px', fontSize: '0.8rem', color: '#9ca3af', textTransform: 'uppercase' }}>Gap Delta</th>
-                  <th style={{ padding: '16px 20px', fontSize: '0.8rem', color: '#9ca3af', textTransform: 'uppercase' }}>Priority Level</th>
-                  <th style={{ padding: '16px 20px', fontSize: '0.8rem', color: '#9ca3af', textTransform: 'uppercase' }}>Estimated Remediation</th>
+                <tr>
+                  <th>Required Skill Name</th>
+                  <th>Domain Category</th>
+                  <th>Current vs Benchmark</th>
+                  <th>Deficit Delta</th>
+                  <th>Priority Level</th>
+                  <th>Remediation Time</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredGaps.length === 0 ? (
                   <tr>
-                    <td colSpan={6} style={{ textAlign: 'center', padding: '32px', color: '#9ca3af' }}>
+                    <td colSpan={6} style={{ textAlign: 'center', padding: '24px', color: '#64748b' }}>
                       No skills found matching priority filter "{priorityFilter}".
                     </td>
                   </tr>
                 ) : (
                   filteredGaps.map((g: any) => {
-                    let badgeClass = 'badge-indigo';
-                    if (g.priority === 'Critical') badgeClass = 'badge-rose';
-                    else if (g.priority === 'High') badgeClass = 'badge-amber';
-                    else if (g.priority === 'Mastered') badgeClass = 'badge-emerald';
+                    let badgeClass = 'badge-primary';
+                    if (g.priority === 'Critical') badgeClass = 'badge-danger';
+                    else if (g.priority === 'High') badgeClass = 'badge-warning';
+                    else if (g.priority === 'Mastered') badgeClass = 'badge-success';
 
                     const pct = Math.min(100, Math.round((g.current_level / (g.required_level || 1)) * 100));
 
                     return (
-                      <tr
-                        key={g.skill_id}
-                        style={{
-                          borderBottom: '1px solid rgba(255, 255, 255, 0.04)',
-                          transition: 'background 0.15s ease',
-                        }}
-                      >
-                        <td style={{ padding: '16px 20px', fontWeight: 600, color: '#ffffff' }}>
+                      <tr key={g.skill_id}>
+                        <td style={{ fontWeight: 600, color: '#0f172a' }}>
                           {g.skill_name}
                         </td>
-                        <td style={{ padding: '16px 20px', color: '#9ca3af', fontSize: '0.875rem' }}>
+                        <td style={{ color: '#475569' }}>
                           {g.category}
                         </td>
-                        <td style={{ padding: '16px 20px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <span style={{ fontSize: '0.85rem', color: '#d1d5db', width: '56px' }}>
-                              {g.current_level} / {g.required_level}
+                        <td>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontSize: '0.8rem', color: '#0f172a', width: '52px', fontWeight: 600 }}>
+                              {g.current_level}.0 / {g.required_level}.0
                             </span>
-                            <div style={{ flex: 1, maxWidth: '140px', height: '6px', background: 'rgba(255, 255, 255, 0.1)', borderRadius: '3px' }}>
+                            <div className="progress-bar-container" style={{ width: '80px' }}>
                               <div
-                                style={{
-                                  width: `${pct}%`,
-                                  height: '100%',
-                                  background: g.current_level >= g.required_level ? '#10b981' : (g.current_level > 0 ? '#f59e0b' : '#f43f5e'),
-                                  borderRadius: '3px',
-                                }}
+                                className={g.current_level >= g.required_level ? 'progress-bar-fill-emerald' : (g.current_level > 0 ? 'progress-bar-fill-amber' : 'progress-bar-fill-rose')}
+                                style={{ width: `${pct}%` }}
                               />
                             </div>
                           </div>
                         </td>
-                        <td style={{ padding: '16px 20px', fontWeight: 700, color: g.gap > 0 ? '#b91c1c' : '#15803d' }}>
-                          {g.gap > 0 ? `-${g.gap.toFixed(1)}` : '[Met]'}
+                        <td style={{ fontWeight: 700, color: g.gap > 0 ? '#b91c1c' : '#15803d' }}>
+                          {g.gap > 0 ? `-${g.gap.toFixed(1)}` : '[MET]'}
                         </td>
-                        <td style={{ padding: '16px 20px' }}>
+                        <td>
                           <span className={`badge ${badgeClass}`}>{g.priority}</span>
                         </td>
-                        <td style={{ padding: '16px 20px', color: '#9ca3af', fontSize: '0.875rem' }}>
-                          {g.estimated_hours > 0 ? `~${g.estimated_hours} hrs` : '0 hrs (Ready)'}
+                        <td style={{ color: '#475569' }}>
+                          {g.estimated_hours > 0 ? `~${g.estimated_hours} hrs` : '0 hrs (Acquired)'}
                         </td>
                       </tr>
                     );

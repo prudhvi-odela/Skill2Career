@@ -16,20 +16,6 @@ import { CareerDetailPage } from './pages/CareerDetailPage';
 import { SkillGapPage } from './pages/SkillGapPage';
 import { JobReadinessPage } from './pages/JobReadinessPage';
 import { TrajectoryPage } from './pages/TrajectoryPage';
-import { RoadmapPage } from './pages/RoadmapPage';
-import { AssessmentsPage } from './pages/AssessmentsPage';
-import { PortfolioPage } from './pages/PortfolioPage';
-import { ModelVersionsPage } from './pages/ModelVersionsPage';
-import { CareerAIPage } from './pages/CareerAIPage';
-import { CareerMarketIntelligencePage } from './pages/CareerMarketIntelligencePage';
-import { LearningEvidencePage } from './pages/LearningEvidencePage';
-import { LearningIntelligencePage } from './pages/LearningIntelligencePage';
-import { CareerReadinessPage } from './pages/CareerReadinessPage';
-import { CareerForecastPage } from './pages/CareerForecastPage';
-import { CareerTransitionPage } from './pages/CareerTransitionPage';
-import { OnboardingPage } from './pages/OnboardingPage';
-import { SubjectsPage } from './pages/SubjectsPage';
-import { PracticeLabPage } from './pages/PracticeLabPage';
 import { TermsPage } from './pages/TermsPage';
 import { PrivacyPage } from './pages/PrivacyPage';
 
@@ -72,31 +58,19 @@ export const App: React.FC = () => {
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
 
-            {/* Protected Student Portal */}
+            {/* Protected Student Portal - Core ED-05 Engine */}
             <Route path="/app" element={<ProtectedLayout />}>
               <Route index element={<Navigate to="/app/dashboard" replace />} />
               <Route path="dashboard" element={<DashboardPage />} />
-              <Route path="onboarding" element={<OnboardingPage />} />
-              <Route path="subjects" element={<SubjectsPage />} />
-              <Route path="practice" element={<PracticeLabPage />} />
-              <Route path="ai-advisor" element={<CareerAIPage />} />
-              <Route path="profile" element={<ProfilePage />} />
-              <Route path="skills" element={<SkillsPage />} />
               <Route path="careers" element={<CareerExplorerPage />} />
               <Route path="careers/:careerId" element={<CareerDetailPage />} />
               <Route path="skill-gap" element={<SkillGapPage />} />
-              <Route path="market-intelligence" element={<CareerMarketIntelligencePage />} />
-              <Route path="job-readiness" element={<JobReadinessPage />} />
-              <Route path="career-readiness" element={<CareerReadinessPage />} />
-              <Route path="career-forecast" element={<CareerForecastPage />} />
-              <Route path="career-transition" element={<CareerTransitionPage />} />
               <Route path="trajectory" element={<TrajectoryPage />} />
-              <Route path="roadmap" element={<RoadmapPage />} />
-              <Route path="evidence" element={<LearningEvidencePage />} />
-              <Route path="learning-intelligence" element={<LearningIntelligencePage />} />
-              <Route path="assessments" element={<AssessmentsPage />} />
-              <Route path="portfolio" element={<PortfolioPage />} />
-              <Route path="ml-models" element={<ModelVersionsPage />} />
+              <Route path="roadmap" element={<Navigate to="/app/trajectory" replace />} />
+              <Route path="job-readiness" element={<JobReadinessPage />} />
+              <Route path="skills" element={<SkillsPage />} />
+              <Route path="profile" element={<ProfilePage />} />
+              <Route path="*" element={<Navigate to="/app/dashboard" replace />} />
             </Route>
 
             {/* Fallback */}

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LogIn, Compass, AlertCircle, Sparkles } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -35,63 +34,61 @@ export const LoginPage: React.FC = () => {
   return (
     <div
       style={{
-        minHeight: 'calc(100vh - 70px)',
+        minHeight: 'calc(100vh - 64px)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         padding: '24px',
+        background: '#f0f2f5',
       }}
     >
-      <div className="glass-card" style={{ width: '100%', maxWidth: '440px', padding: '36px' }}>
-        <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+      <div className="panel-card" style={{ width: '100%', maxWidth: '420px', padding: '32px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
           <div
             style={{
-              width: '48px',
-              height: '48px',
-              borderRadius: '12px',
-              background: 'linear-gradient(135deg, #6366f1 0%, #06b6d4 100%)',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginBottom: '16px',
+              display: 'inline-block',
+              padding: '4px 10px',
+              background: '#e2e8f0',
+              border: '1px solid #cbd5e1',
+              borderRadius: '3px',
+              fontSize: '0.75rem',
+              fontWeight: 700,
+              color: '#1e3a8a',
+              marginBottom: '10px',
             }}
           >
-            <Compass size={28} color="#ffffff" />
+            ED-05 PORTAL
           </div>
-          <h2 style={{ fontSize: '1.75rem', marginBottom: '6px' }}>Welcome Back</h2>
-          <p style={{ color: '#9ca3af', fontSize: '0.9rem' }}>
-            Sign in to track your skill gap and career readiness.
+          <h2 style={{ fontSize: '1.4rem', color: '#0f172a', marginBottom: '4px' }}>Student Sign In</h2>
+          <p style={{ color: '#475569', fontSize: '0.85rem' }}>
+            Access your skill-to-career gap engine and readiness forecasts.
           </p>
         </div>
 
         {error && (
           <div
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              background: 'rgba(244, 63, 94, 0.12)',
-              border: '1px solid rgba(244, 63, 94, 0.3)',
-              color: '#fb7185',
-              padding: '10px 14px',
-              borderRadius: '8px',
-              fontSize: '0.875rem',
-              marginBottom: '20px',
+              background: '#fef2f2',
+              border: '1px solid #fecaca',
+              color: '#991b1b',
+              padding: '10px 12px',
+              borderRadius: '3px',
+              fontSize: '0.85rem',
+              marginBottom: '16px',
             }}
           >
-            <AlertCircle size={16} />
-            <span>{error}</span>
+            [ERROR] {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
           <div>
             <label className="input-label">Email Address</label>
             <input
               type="email"
               required
               className="input-field"
-              placeholder="you@example.com"
+              placeholder="you@university.edu"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
@@ -109,25 +106,23 @@ export const LoginPage: React.FC = () => {
             />
           </div>
 
-          <button type="submit" disabled={loading} className="btn-primary" style={{ padding: '12px', marginTop: '6px' }}>
-            <LogIn size={18} />
-            <span>{loading ? 'Authenticating...' : 'Sign In'}</span>
+          <button type="submit" disabled={loading} className="btn-primary" style={{ padding: '10px', marginTop: '4px' }}>
+            {loading ? 'Authenticating...' : 'Sign In to Portal'}
           </button>
 
           <button
             type="button"
             onClick={handleDemoFill}
             className="btn-secondary"
-            style={{ padding: '10px', fontSize: '0.85rem' }}
+            style={{ padding: '8px', fontSize: '0.825rem' }}
           >
-            <Sparkles size={16} color="#818cf8" />
-            <span>Use Demo Student Account</span>
+            Fill Demo Student Credentials
           </button>
         </form>
 
-        <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '0.875rem', color: '#9ca3af' }}>
+        <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '0.85rem', color: '#475569' }}>
           Don't have an account?{' '}
-          <Link to="/register" style={{ color: '#818cf8', fontWeight: 600 }}>
+          <Link to="/register" style={{ color: '#1e3a8a', fontWeight: 600 }}>
             Create one free
           </Link>
         </p>

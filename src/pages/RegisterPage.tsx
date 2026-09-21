@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { UserPlus, Compass, AlertCircle } from 'lucide-react';
 
 export const RegisterPage: React.FC = () => {
   const [fullName, setFullName] = useState('');
@@ -31,31 +30,33 @@ export const RegisterPage: React.FC = () => {
   return (
     <div
       style={{
-        minHeight: 'calc(100vh - 70px)',
+        minHeight: 'calc(100vh - 64px)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         padding: '24px',
+        background: '#f0f2f5',
       }}
     >
-      <div className="glass-card" style={{ width: '100%', maxWidth: '440px', padding: '36px' }}>
-        <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+      <div className="panel-card" style={{ width: '100%', maxWidth: '420px', padding: '32px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
           <div
             style={{
-              width: '48px',
-              height: '48px',
-              borderRadius: '12px',
-              background: 'linear-gradient(135deg, #6366f1 0%, #06b6d4 100%)',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginBottom: '16px',
+              display: 'inline-block',
+              padding: '4px 10px',
+              background: '#e2e8f0',
+              border: '1px solid #cbd5e1',
+              borderRadius: '3px',
+              fontSize: '0.75rem',
+              fontWeight: 700,
+              color: '#1e3a8a',
+              marginBottom: '10px',
             }}
           >
-            <Compass size={28} color="#ffffff" />
+            ED-05 ONBOARDING
           </div>
-          <h2 style={{ fontSize: '1.75rem', marginBottom: '6px' }}>Create Student Profile</h2>
-          <p style={{ color: '#9ca3af', fontSize: '0.9rem' }}>
+          <h2 style={{ fontSize: '1.4rem', color: '#0f172a', marginBottom: '4px' }}>Create Student Profile</h2>
+          <p style={{ color: '#475569', fontSize: '0.85rem' }}>
             Start mapping your skills to industry career roles today.
           </p>
         </div>
@@ -63,24 +64,20 @@ export const RegisterPage: React.FC = () => {
         {error && (
           <div
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              background: 'rgba(244, 63, 94, 0.12)',
-              border: '1px solid rgba(244, 63, 94, 0.3)',
-              color: '#fb7185',
-              padding: '10px 14px',
-              borderRadius: '8px',
-              fontSize: '0.875rem',
-              marginBottom: '20px',
+              background: '#fef2f2',
+              border: '1px solid #fecaca',
+              color: '#991b1b',
+              padding: '10px 12px',
+              borderRadius: '3px',
+              fontSize: '0.85rem',
+              marginBottom: '16px',
             }}
           >
-            <AlertCircle size={16} />
-            <span>{error}</span>
+            [ERROR] {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
           <div>
             <label className="input-label">Full Name</label>
             <input
@@ -106,11 +103,10 @@ export const RegisterPage: React.FC = () => {
           </div>
 
           <div>
-            <label className="input-label">Password (Min 6 chars)</label>
+            <label className="input-label">Password</label>
             <input
               type="password"
               required
-              minLength={6}
               className="input-field"
               placeholder="••••••••"
               value={password}
@@ -118,16 +114,15 @@ export const RegisterPage: React.FC = () => {
             />
           </div>
 
-          <button type="submit" disabled={loading} className="btn-primary" style={{ padding: '12px', marginTop: '6px' }}>
-            <UserPlus size={18} />
-            <span>{loading ? 'Creating Account...' : 'Get Started Free'}</span>
+          <button type="submit" disabled={loading} className="btn-primary" style={{ padding: '10px', marginTop: '4px' }}>
+            {loading ? 'Registering...' : 'Create Account'}
           </button>
         </form>
 
-        <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '0.875rem', color: '#9ca3af' }}>
+        <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '0.85rem', color: '#475569' }}>
           Already have an account?{' '}
-          <Link to="/login" style={{ color: '#818cf8', fontWeight: 600 }}>
-            Sign in
+          <Link to="/login" style={{ color: '#1e3a8a', fontWeight: 600 }}>
+            Sign In
           </Link>
         </p>
       </div>

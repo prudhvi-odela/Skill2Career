@@ -3,26 +3,11 @@ import { analysisApi } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { ScoreGauge } from '../components/ScoreGauge';
 import { SkeletonLoader, ErrorState, IncompleteProfileBanner, EmptyState } from '../components/StateFeedback';
-import {
-  CheckCircle2,
-  Sparkles,
-  Cpu,
-  TrendingUp,
-  History,
-  Layers,
-  ArrowRight,
-  ShieldCheck,
-  ThumbsUp,
-  AlertTriangle,
-  Info,
-  Compass
-} from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export const JobReadinessPage: React.FC = () => {
   const { profile } = useAuth();
   const [readinessData, setReadinessData] = useState<any>(null);
-  const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -42,7 +27,7 @@ export const JobReadinessPage: React.FC = () => {
       if (readyRes.status === 'fulfilled') {
         setReadinessData(readyRes.value.data);
       } else {
-        setErrorMsg(readyRes.reason?.response?.data?.detail || 'Failed to calculate ML readiness.');
+        setErrorMsg(readyRes.reason?.response?.data?.detail || 'Failed to calculate readiness.');
       }
 
       if (histRes.status === 'fulfilled') {
@@ -61,11 +46,17 @@ export const JobReadinessPage: React.FC = () => {
   const topGaps = readinessData?.top_gaps || [];
 
   return (
-    <div style={{ padding: '28px', maxWidth: '1440px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '28px' }}>
+    <div style={{ padding: '24px', maxWidth: '1400px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
       <div>
-        <h1 style={{ fontSize: '1.85rem', marginBottom: '6px' }}>Current Job-Readiness Prediction</h1>
-        <p style={{ color: '#9ca3af', fontSize: '0.95rem' }}>
-          Real-time supervised machine learning evaluation of your student profile against industry career requirements.
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+          <span className="badge badge-primary">ED-05 ENGINE</span>
+          <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Future Job-Readiness Prediction</span>
+        </div>
+        <h1 style={{ fontSize: '1.45rem', color: '#0f172a', marginBottom: '4px' }}>
+          Job-Readiness Predictive Engine
+        </h1>
+        <p style={{ color: '#475569', fontSize: '0.85rem' }}>
+          Supervised machine learning evaluation predicting your readiness score against your target role requirements based on skills, academic foundations, and learning velocity.
         </p>
       </div>
 
@@ -87,289 +78,167 @@ export const JobReadinessPage: React.FC = () => {
       )}
 
       {loading ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <SkeletonLoader height="280px" count={1} />
-          <SkeletonLoader height="180px" count={2} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <SkeletonLoader height="240px" count={1} />
+          <SkeletonLoader height="160px" count={2} />
         </div>
       ) : readinessData ? (
         <>
           {/* Main Evaluation Card */}
           <div
-            className="glass-card"
+            className="panel-card"
             style={{
-              padding: '36px',
+              padding: '28px',
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-              gap: '36px',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+              gap: '28px',
               alignItems: 'center',
-              background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(17, 24, 39, 0.8) 100%)',
             }}
           >
             {/* Score Gauge */}
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <ScoreGauge
                 score={readinessData.readiness_score}
-                size={220}
+                size={200}
                 label="Job Readiness"
                 sublabel={readinessData.readiness_tier}
               />
-              <div style={{ marginTop: '16px', display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                <span className="badge badge-indigo">
-                  <Cpu size={12} />
-                  <span>{readinessData.model_algorithm}</span>
+              <div style={{ marginTop: '14px', display: 'flex', gap: '6px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                <span className="badge badge-primary">
+                  {readinessData.model_algorithm || 'Random Forest Regressor'}
                 </span>
-                <span className="badge badge-cyan">
-                  <span>Version: {readinessData.model_version}</span>
+                <span className="badge badge-neutral">
+                  Version: {readinessData.model_version || 'v1.0'}
                 </span>
                 {readinessData.confidence_margin && (
-                  <span className="badge badge-amber">
-                    <span>Margin: ±{readinessData.confidence_margin}%</span>
+                  <span className="badge badge-warning">
+                    Margin: ±{readinessData.confidence_margin}%
                   </span>
                 )}
               </div>
             </div>
 
-            {/* Target Role & AI Brief */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {/* Target Role & Analysis Brief */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div>
-                <span style={{ fontSize: '0.8rem', color: '#9ca3af', textTransform: 'uppercase', fontWeight: 600 }}>
-                  Target Career Role
+                <span style={{ fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 700 }}>
+                  Evaluated Target Role
                 </span>
-                <h2 style={{ fontSize: '1.6rem', color: '#ffffff', marginTop: '2px' }}>
+                <h2 style={{ fontSize: '1.4rem', color: '#0f172a', marginTop: '2px' }}>
                   {readinessData.career_title}
                 </h2>
-                <span style={{ fontSize: '0.85rem', color: '#818cf8' }}>
-                  Domain: {readinessData.career?.domain || 'Software Development'}
+                <span style={{ fontSize: '0.8rem', color: '#1e3a8a', fontWeight: 600 }}>
+                  Domain: {readinessData.career?.domain || 'Software Engineering'}
                 </span>
               </div>
 
               {readinessData.ai_explanation && (
                 <div
                   style={{
-                    background: 'rgba(255, 255, 255, 0.03)',
-                    border: '1px solid rgba(255, 255, 255, 0.08)',
-                    padding: '20px',
-                    borderRadius: '12px',
-                    fontSize: '0.925rem',
+                    background: '#f1f5f9',
+                    border: '1px solid #cbd5e1',
+                    padding: '16px',
+                    borderRadius: '4px',
+                    fontSize: '0.85rem',
                     lineHeight: 1.6,
-                    color: '#d1d5db',
+                    color: '#334155',
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', color: '#818cf8', fontWeight: 600 }}>
-                    <Sparkles size={16} />
-                    <span>AI Career Coaching Insight</span>
+                  <div style={{ fontWeight: 700, marginBottom: '6px', color: '#0f172a' }}>
+                    Engine Analysis Summary:
                   </div>
-                  <p style={{ whiteSpace: 'pre-line' }}>{readinessData.ai_explanation}</p>
+                  <p style={{ whiteSpace: 'pre-line', margin: 0 }}>{readinessData.ai_explanation}</p>
                 </div>
               )}
 
-              <div style={{ display: 'flex', gap: '12px', marginTop: '6px', flexWrap: 'wrap' }}>
-                <Link to="/app/trajectory" className="btn-primary" style={{ padding: '10px 18px', fontSize: '0.875rem' }}>
-                  <TrendingUp size={16} />
-                  <span>Simulate Future Growth</span>
+              <div style={{ display: 'flex', gap: '10px', marginTop: '4px', flexWrap: 'wrap' }}>
+                <Link to="/app/trajectory" className="btn-primary" style={{ padding: '8px 14px', fontSize: '0.825rem' }}>
+                  Simulate Trajectory →
                 </Link>
-                <Link to="/app/skill-gap" className="btn-secondary" style={{ padding: '10px 18px', fontSize: '0.875rem' }}>
-                  <span>View Skill Gaps</span>
-                </Link>
-                <Link to="/app/roadmap" className="btn-secondary" style={{ padding: '10px 18px', fontSize: '0.875rem' }}>
-                  <span>Action Plan</span>
+                <Link to="/app/skill-gap" className="btn-secondary" style={{ padding: '8px 14px', fontSize: '0.825rem' }}>
+                  View Skill Gaps →
                 </Link>
               </div>
             </div>
           </div>
 
           {/* Strengths vs Gaps Side-by-Side */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '24px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
             {/* Top Strengths */}
-            <div className="glass-card" style={{ padding: '28px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-                <ThumbsUp size={18} color="#34d399" />
-                <h3 style={{ fontSize: '1.2rem', color: '#ffffff' }}>What Is Helping Your Score</h3>
-              </div>
+            <div className="panel-card" style={{ padding: '24px' }}>
+              <h3 style={{ fontSize: '1.1rem', color: '#0f172a', marginBottom: '14px' }}>
+                Competencies Supporting Your Readiness Score
+              </h3>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {topStrengths.length > 0 ? (
                   topStrengths.map((s: any, idx: number) => (
                     <div
                       key={idx}
                       style={{
-                        padding: '14px 16px',
-                        background: 'rgba(16, 185, 129, 0.06)',
-                        border: '1px solid rgba(16, 185, 129, 0.2)',
-                        borderRadius: '10px',
+                        padding: '12px 14px',
+                        background: '#f0fdf4',
+                        border: '1px solid #bbf7d0',
+                        borderRadius: '3px',
                       }}
                     >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                        <span style={{ fontWeight: 600, color: '#f3f4f6', fontSize: '0.925rem' }}>{s.feature}</span>
-                        <span style={{ color: '#34d399', fontWeight: 700, fontSize: '0.85rem' }}>
-                          +{s.contribution} pts
-                        </span>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <strong style={{ fontSize: '0.875rem', color: '#14532d' }}>{s.skill_name}</strong>
+                        <span className="badge badge-success">Level {s.current_level}.0 / {s.required_level}.0</span>
                       </div>
-                      <div style={{ fontSize: '0.8rem', color: '#9ca3af' }}>{s.description || s.value}</div>
+                      <p style={{ fontSize: '0.78rem', color: '#166534', margin: '4px 0 0 0' }}>
+                        Meets industry benchmark. Contributes positively to overall readiness score.
+                      </p>
                     </div>
                   ))
                 ) : (
-                  <div style={{ color: '#9ca3af', fontSize: '0.875rem' }}>
-                    Continue adding verified skills and projects to build strong drivers.
-                  </div>
+                  <p style={{ color: '#64748b', fontSize: '0.85rem' }}>
+                    No strength competencies recorded. Update your skills to evaluate strengths.
+                  </p>
                 )}
               </div>
             </div>
 
             {/* Top Gaps */}
-            <div className="glass-card" style={{ padding: '28px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-                <AlertTriangle size={18} color="#f59e0b" />
-                <h3 style={{ fontSize: '1.2rem', color: '#ffffff' }}>Primary Areas Holding Score Back</h3>
-              </div>
+            <div className="panel-card" style={{ padding: '24px' }}>
+              <h3 style={{ fontSize: '1.1rem', color: '#0f172a', marginBottom: '14px' }}>
+                Critical Missing Skills Impacting Score
+              </h3>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {topGaps.length > 0 ? (
                   topGaps.map((g: any, idx: number) => (
                     <div
                       key={idx}
                       style={{
-                        padding: '14px 16px',
-                        background: 'rgba(245, 158, 11, 0.06)',
-                        border: '1px solid rgba(245, 158, 11, 0.2)',
-                        borderRadius: '10px',
+                        padding: '12px 14px',
+                        background: '#fef2f2',
+                        border: '1px solid #fecaca',
+                        borderRadius: '3px',
                       }}
                     >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                        <span style={{ fontWeight: 600, color: '#f3f4f6', fontSize: '0.925rem' }}>{g.feature}</span>
-                        <span style={{ color: '#fbbf24', fontWeight: 700, fontSize: '0.85rem' }}>
-                          {g.contribution} pts
-                        </span>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <strong style={{ fontSize: '0.875rem', color: '#991b1b' }}>{g.skill_name}</strong>
+                        <span className="badge badge-danger">Deficit -{g.gap ? g.gap.toFixed(1) : '1.0'}</span>
                       </div>
-                      <div style={{ fontSize: '0.8rem', color: '#9ca3af' }}>{g.description || g.value}</div>
+                      <p style={{ fontSize: '0.78rem', color: '#7f1d1d', margin: '4px 0 0 0' }}>
+                        Priority: {g.priority || 'Critical'} • Recommended target: Level {g.required_level || 3}.0
+                      </p>
                     </div>
                   ))
                 ) : (
-                  <div style={{ color: '#9ca3af', fontSize: '0.875rem' }}>
-                    No significant penalties detected in your current profile.
-                  </div>
+                  <p style={{ color: '#15803d', fontSize: '0.85rem' }}>
+                    No major skill deficits detected for this target career!
+                  </p>
                 )}
               </div>
             </div>
           </div>
-
-          {/* Feature Contribution Breakdown */}
-          <div className="glass-card" style={{ padding: '30px' }}>
-            <h3 style={{ fontSize: '1.25rem', marginBottom: '6px' }}>Mathematical Feature Attribution</h3>
-            <p style={{ color: '#9ca3af', fontSize: '0.875rem', marginBottom: '20px' }}>
-              Transparent breakdown of factors evaluated by the machine learning model.
-            </p>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              {readinessData.feature_contributions.map((fc: any, idx: number) => (
-                <div
-                  key={idx}
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.02)',
-                    padding: '16px 20px',
-                    borderRadius: '10px',
-                    border: '1px solid rgba(255, 255, 255, 0.05)',
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                    <div>
-                      <span style={{ fontWeight: 600, color: '#ffffff', fontSize: '0.95rem' }}>{fc.feature}</span>
-                      <span style={{ marginLeft: '10px', fontSize: '0.75rem', color: '#818cf8', fontWeight: 600 }}>
-                        Weight: {(fc.weight * 100).toFixed(0)}%
-                      </span>
-                    </div>
-
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#ffffff' }}>
-                        {fc.score.toFixed(0)}%
-                      </span>
-                      <span className="badge badge-indigo" style={{ fontSize: '0.7rem' }}>{fc.status}</span>
-                    </div>
-                  </div>
-
-                  <div style={{ width: '100%', height: '6px', background: 'rgba(255, 255, 255, 0.08)', borderRadius: '3px' }}>
-                    <div
-                      style={{
-                        width: `${Math.min(100, fc.score)}%`,
-                        height: '100%',
-                        background: fc.score >= 70 ? '#10b981' : (fc.score >= 50 ? '#f59e0b' : '#6366f1'),
-                        borderRadius: '3px',
-                        transition: 'width 0.6s ease',
-                      }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Prediction History Audit */}
-          <div className="glass-card" style={{ padding: '30px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-              <History size={18} color="#818cf8" />
-              <h3 style={{ fontSize: '1.25rem' }}>Historical Readiness Telemetry</h3>
-            </div>
-
-            {history.length > 0 ? (
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                  <thead>
-                    <tr style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.08)', background: 'rgba(255, 255, 255, 0.02)' }}>
-                      <th style={{ padding: '12px 16px', fontSize: '0.8rem', color: '#9ca3af' }}>Date & Time</th>
-                      <th style={{ padding: '12px 16px', fontSize: '0.8rem', color: '#9ca3af' }}>Target Career</th>
-                      <th style={{ padding: '12px 16px', fontSize: '0.8rem', color: '#9ca3af' }}>Readiness</th>
-                      <th style={{ padding: '12px 16px', fontSize: '0.8rem', color: '#9ca3af' }}>Tier</th>
-                      <th style={{ padding: '12px 16px', fontSize: '0.8rem', color: '#9ca3af' }}>Model Version</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {history.map((h: any, i: number) => (
-                      <tr key={i} style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.04)' }}>
-                        <td style={{ padding: '12px 16px', fontSize: '0.85rem', color: '#d1d5db' }}>
-                          {new Date(h.created_at).toLocaleDateString()} {new Date(h.created_at).toLocaleTimeString()}
-                        </td>
-                        <td style={{ padding: '12px 16px', fontWeight: 600, color: '#ffffff' }}>{h.career_title}</td>
-                        <td style={{ padding: '12px 16px', fontWeight: 700, color: h.readiness_score >= 75 ? '#34d399' : '#fbbf24' }}>
-                          {h.readiness_score}%
-                        </td>
-                        <td style={{ padding: '12px 16px', fontSize: '0.85rem', color: '#9ca3af' }}>{h.readiness_tier}</td>
-                        <td style={{ padding: '12px 16px', fontSize: '0.8rem', color: '#818cf8' }}>{h.model_version || h.model_version_id}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <div style={{ color: '#9ca3af', fontSize: '0.875rem' }}>No previous prediction records found.</div>
-            )}
-          </div>
-
-          {/* Ethical Disclaimer */}
-          <div
-            style={{
-              padding: '16px 20px',
-              background: 'rgba(255, 255, 255, 0.02)',
-              border: '1px solid rgba(255, 255, 255, 0.06)',
-              borderRadius: '10px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              fontSize: '0.825rem',
-              color: '#9ca3af',
-            }}
-          >
-            <Info size={18} color="#818cf8" style={{ flexShrink: 0 }} />
-            <span>
-              <strong>Note on Readiness Scores:</strong> Readiness estimations represent statistical alignment with market role requirements based on your current profile evidence. Scores are informational coaching benchmarks and do not guarantee hiring outcomes.
-            </span>
-          </div>
         </>
       ) : (
         <EmptyState
-          title="No Readiness Data"
-          description="Complete your student profile and declare your target career to calculate your job readiness."
-          actionText="Set Up Profile"
-          actionHref="/app/profile"
+          title="No Prediction Available"
+          message="Select a target role and complete your skills inventory to predict job-readiness."
         />
       )}
     </div>

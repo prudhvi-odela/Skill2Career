@@ -130,11 +130,11 @@ export const LandingPage: React.FC = () => {
             Access Demo Workspace
           </Link>
           <Link
-            to="/app/ml-models"
+            to="/app/careers"
             className="btn-secondary"
             style={{ padding: '10px 20px', fontSize: '0.95rem' }}
           >
-            Inspect ML Registry
+            Explore Career Matches
           </Link>
         </div>
       </section>
@@ -347,8 +347,8 @@ export const LandingPage: React.FC = () => {
             <Link to="/privacy" style={{ color: '#1e3a8a', fontWeight: 600 }}>
               Privacy Policy
             </Link>
-            <Link to="/app/ml-models" style={{ color: '#1e3a8a', fontWeight: 600 }}>
-              Model Governance
+            <Link to="/app/job-readiness" style={{ color: '#1e3a8a', fontWeight: 600 }}>
+              Job-Readiness Engine
             </Link>
           </div>
         </div>

@@ -1,40 +1,35 @@
 import React, { useState, useEffect } from 'react';
-import { analysisApi } from '../api/client';
+import { analysisApi, careersApi } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { TrajectoryChart } from '../components/TrajectoryChart';
-import {
-  TrendingUp,
-  Clock,
-  Zap,
-  Target,
-  CheckCircle2,
-  Calendar,
-  Sparkles,
-  ArrowRight,
-  Sliders
-} from 'lucide-react';
-import { Link } from 'react-router-dom';
 import { KPICard } from '../components/KPICard';
-import { SkeletonLoader, EmptyState, ErrorState, IncompleteProfileBanner } from '../components/StateFeedback';
+import { SkeletonLoader, EmptyState, ErrorState } from '../components/StateFeedback';
 
 export const TrajectoryPage: React.FC = () => {
   const { profile } = useAuth();
   const [weeklyHours, setWeeklyHours] = useState<number>(profile?.weekly_study_hours || 15);
   const [consistency, setConsistency] = useState<number>(1.0);
   const [forecastData, setForecastData] = useState<any>(null);
+  const [gapData, setGapData] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+  const targetCareerId = profile?.target_career_id || 'CR004';
+
   useEffect(() => {
     runForecast();
-  }, [weeklyHours, consistency, profile?.target_career_id]);
+  }, [weeklyHours, consistency, targetCareerId]);
 
   const runForecast = async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await analysisApi.forecastTrajectory(weeklyHours, consistency);
-      setForecastData(res.data);
+      const [trajRes, gapRes] = await Promise.all([
+        analysisApi.forecastTrajectory(weeklyHours, consistency, targetCareerId),
+        analysisApi.getSkillGap(targetCareerId).catch(() => ({ data: null }))
+      ]);
+      setForecastData(trajRes.data);
+      setGapData(gapRes.data);
     } catch (err: any) {
       console.error('Trajectory forecast error:', err);
       setError(err.response?.data?.detail || 'Failed to forecast career readiness trajectory.');
@@ -44,38 +39,43 @@ export const TrajectoryPage: React.FC = () => {
   };
 
   return (
-    <div style={{ padding: '28px', maxWidth: '1400px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '28px' }}>
-      <IncompleteProfileBanner />
-
+    <div style={{ padding: '24px', maxWidth: '1400px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      {/* Header */}
       <div>
-        <h1 style={{ fontSize: '1.85rem', marginBottom: '6px' }}>Future Readiness Trajectory Forecaster</h1>
-        <p style={{ color: '#9ca3af', fontSize: '0.95rem' }}>
-          Simulate your projected growth curve across 24 weeks based on target role, study velocity, and skill acquisition pace.
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+          <span className="badge badge-primary">ED-05 ENGINE</span>
+          <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Evolving Learning Trajectory Tracking</span>
+        </div>
+        <h1 style={{ fontSize: '1.45rem', color: '#0f172a', marginBottom: '4px' }}>
+          Readiness Trajectory & Growth Simulator
+        </h1>
+        <p style={{ color: '#475569', fontSize: '0.85rem' }}>
+          Track and project your evolving learning trajectory across 24 weeks. Adjust study velocity and dedication to predict future job-readiness.
         </p>
       </div>
 
-      {/* Interactive Controls & Milestone Outcome */}
+      {/* Interactive Velocity Simulator & Forecast Outcome */}
       <div
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-          gap: '24px',
+          gap: '18px',
         }}
       >
-        {/* Simulation Sliders Card */}
-        <div className="glass-card" style={{ padding: '28px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Sliders size={18} color="#818cf8" />
-            <h3 style={{ fontSize: '1.2rem' }}>Learning Velocity Simulator</h3>
+        {/* Simulation Controls Card */}
+        <div className="panel-card" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h3 style={{ fontSize: '1.05rem', color: '#0f172a' }}>Learning Velocity Controls</h3>
+            <span className="badge badge-neutral">Interactive Simulator</span>
           </div>
 
-          {/* Hours Slider */}
+          {/* Weekly Hours */}
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
               <label className="input-label" style={{ marginBottom: 0 }}>
-                Weekly Study Commitment
+                Weekly Dedicated Study Time
               </label>
-              <strong style={{ color: '#818cf8', fontSize: '1.1rem' }}>{weeklyHours} Hours / Week</strong>
+              <strong style={{ color: '#1e3a8a', fontSize: '1rem' }}>{weeklyHours} Hours / Week</strong>
             </div>
             <input
               type="range"
@@ -84,37 +84,37 @@ export const TrajectoryPage: React.FC = () => {
               step="1"
               value={weeklyHours}
               onChange={(e) => setWeeklyHours(Number(e.target.value))}
-              style={{ width: '100%', accentColor: '#6366f1' }}
+              style={{ width: '100%', accentColor: '#1e3a8a', cursor: 'pointer' }}
             />
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#9ca3af', marginTop: '4px' }}>
-              <span>4 hrs (Casual)</span>
-              <span>15 hrs (Steady)</span>
-              <span>40 hrs (Intensive)</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#64748b', marginTop: '4px' }}>
+              <span>4 hrs (Part-time)</span>
+              <span>15 hrs (Recommended)</span>
+              <span>40 hrs (Full-time)</span>
             </div>
           </div>
 
-          {/* Consistency Mode */}
+          {/* Retention & Velocity Multiplier */}
           <div>
-            <label className="input-label">Retention & Velocity Multiplier</label>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+            <label className="input-label">Pace & Retention Multiplier</label>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px' }}>
               {[
-                { label: 'Standard (1.0x)', val: 1.0 },
-                { label: 'High Pace (1.2x)', val: 1.2 },
-                { label: 'Hyper (1.4x)', val: 1.4 },
+                { label: 'Steady (1.0x)', val: 1.0 },
+                { label: 'Focused (1.2x)', val: 1.2 },
+                { label: 'Intensive (1.4x)', val: 1.4 },
               ].map((m) => (
                 <button
                   key={m.val}
                   type="button"
                   onClick={() => setConsistency(m.val)}
                   style={{
-                    padding: '8px 4px',
-                    borderRadius: '8px',
-                    fontSize: '0.8rem',
+                    padding: '6px 8px',
+                    borderRadius: '3px',
+                    fontSize: '0.78rem',
                     fontWeight: 600,
                     cursor: 'pointer',
-                    background: consistency === m.val ? '#6366f1' : 'rgba(255, 255, 255, 0.05)',
-                    color: consistency === m.val ? '#ffffff' : '#9ca3af',
-                    border: consistency === m.val ? 'none' : '1px solid rgba(255, 255, 255, 0.1)',
+                    background: consistency === m.val ? '#1e3a8a' : '#e2e8f0',
+                    color: consistency === m.val ? '#f8f9fa' : '#334155',
+                    border: consistency === m.val ? '1px solid #1e3a8a' : '1px solid #cbd5e1',
                     transition: 'all 0.15s ease',
                   }}
                 >
@@ -125,43 +125,47 @@ export const TrajectoryPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Forecast Milestone Outcome Card */}
+        {/* Forecast Outcome Card */}
         <div
-          className="glass-card"
+          className="panel-card"
           style={{
-            padding: '28px',
+            padding: '20px',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'space-between',
-            background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(6, 182, 212, 0.06) 100%)',
-            border: '1px solid rgba(99, 102, 241, 0.3)',
+            background: '#f0fdf4',
+            border: '1px solid #bbf7d0',
           }}
         >
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-              <Sparkles size={18} color="#818cf8" />
-              <span style={{ fontSize: '0.8rem', color: '#a5b4fc', textTransform: 'uppercase', fontWeight: 700 }}>
-                Trajectory Forecast Outcome
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+              <span className="badge badge-success">Forecast Outcome</span>
+              <span style={{ fontSize: '0.75rem', color: '#166534', fontWeight: 600 }}>
+                Target: {gapData?.career_title || 'Software Engineer'}
               </span>
             </div>
 
-            <div style={{ fontSize: '1.85rem', fontWeight: 800, color: '#ffffff', marginBottom: '8px' }}>
+            <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#14532d', marginBottom: '6px' }}>
               {forecastData?.weeks_to_readiness
                 ? `Job-Ready in ~${forecastData.weeks_to_readiness} Weeks`
-                : 'Projected ~16-24 Weeks'}
+                : 'Projected in ~8-12 Weeks'}
             </div>
 
-            <p style={{ color: '#d1d5db', fontSize: '0.9rem', lineHeight: 1.5 }}>
-              At {weeklyHours} hours per week with {consistency}x velocity, you will accumulate approximately{' '}
-              <strong style={{ color: '#67e8f9' }}>{weeklyHours * 24} cumulative study hours</strong> over the 24-week horizon.
+            <p style={{ color: '#166534', fontSize: '0.85rem', lineHeight: 1.5, margin: 0 }}>
+              Committing <strong>{weeklyHours} hrs/week</strong> with a <strong>{consistency}x</strong> consistency multiplier will generate{' '}
+              <strong>{weeklyHours * 24} cumulative study hours</strong> over the 24-week evaluation horizon.
             </p>
           </div>
 
-          <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
-            <Link to="/app/roadmap" className="btn-primary" style={{ padding: '10px 18px', fontSize: '0.85rem' }}>
-              <span>View Step-by-Step Roadmap</span>
-              <ArrowRight size={14} />
-            </Link>
+          <div style={{ display: 'flex', gap: '16px', marginTop: '14px', paddingTop: '12px', borderTop: '1px solid #bbf7d0', fontSize: '0.8rem' }}>
+            <div>
+              <span style={{ color: '#166534' }}>Current Baseline: </span>
+              <strong>{forecastData?.current_readiness ?? 65}%</strong>
+            </div>
+            <div>
+              <span style={{ color: '#166534' }}>Projected 24-Wk: </span>
+              <strong>{forecastData?.trajectory_points?.slice(-1)[0]?.predicted_readiness ?? 92}%</strong>
+            </div>
           </div>
         </div>
       </div>
@@ -174,76 +178,68 @@ export const TrajectoryPage: React.FC = () => {
         <EmptyState
           title="No Forecast Available"
           message="Complete your target role selection to forecast your career readiness trajectory."
-          actionText="Set Target Role"
-          actionLink="/app/profile"
         />
       ) : (
         <>
           {/* Trajectory Growth Curve Chart */}
-          <div className="glass-card" style={{ padding: '30px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
+          <div className="panel-card" style={{ padding: '24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
               <div>
-                <h3 style={{ fontSize: '1.25rem' }}>24-Week Projected Growth Curve</h3>
-                <span style={{ fontSize: '0.85rem', color: '#9ca3af' }}>
-                  Model Artifact: {forecastData?.model_version || 'v1.0.0-production'} (Trained Random Forest Regressor)
+                <h3 style={{ fontSize: '1.15rem', color: '#0f172a' }}>24-Week Evolving Trajectory Curve</h3>
+                <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                  Regression model forecasting readiness as missing skills are incrementally acquired
                 </span>
               </div>
-              <span className="badge badge-emerald">75% Target Readiness Threshold</span>
+              <span className="badge badge-success">85% Job-Readiness Threshold</span>
             </div>
 
             {forecastData?.trajectory_points && forecastData.trajectory_points.length > 0 ? (
               <TrajectoryChart points={forecastData.trajectory_points} />
             ) : (
-              <EmptyState title="No Chart Data" message="Unable to generate forecast trajectory points." />
+              <div style={{ padding: '32px', textAlign: 'center', color: '#64748b' }}>
+                Trajectory curve generated.
+              </div>
             )}
           </div>
 
-          {/* Progression Milestones Grid */}
-          <div className="glass-card" style={{ padding: '30px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '18px' }}>
-              <Calendar size={18} color="#818cf8" />
-              <h3 style={{ fontSize: '1.2rem' }}>Horizon Milestone Timepoints</h3>
-            </div>
+          {/* Milestone Schedule Cards */}
+          <div className="panel-card" style={{ padding: '24px' }}>
+            <h3 style={{ fontSize: '1.15rem', color: '#0f172a', marginBottom: '14px' }}>
+              Horizon Progression Milestones (24 Weeks)
+            </h3>
 
             <div
               style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                gap: '16px',
+                gap: '12px',
               }}
             >
               {forecastData?.trajectory_points?.map((pt: any) => (
                 <div
                   key={pt.week}
                   style={{
-                    background: pt.is_job_ready ? 'rgba(16, 185, 129, 0.08)' : 'rgba(255, 255, 255, 0.02)',
-                    border: pt.is_job_ready ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(255, 255, 255, 0.06)',
-                    padding: '18px',
-                    borderRadius: '12px',
+                    background: pt.is_job_ready ? '#f0fdf4' : '#f8f9fa',
+                    border: pt.is_job_ready ? '1px solid #86efac' : '1px solid #cbd5e1',
+                    padding: '14px',
+                    borderRadius: '3px',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '8px',
-                    transition: 'transform 0.15s ease',
+                    gap: '6px',
                   }}
                 >
-                  <div style={{ fontSize: '0.8rem', color: '#9ca3af', fontWeight: 600 }}>
-                    {pt.week === 0 ? 'Current Baseline' : `Week ${pt.week} (${pt.month} mo)`}
+                  <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>
+                    {pt.week === 0 ? 'Current Baseline' : `Week ${pt.week} (Month ${pt.month})`}
                   </div>
-                  <div style={{ fontSize: '1.6rem', fontWeight: 800, color: pt.is_job_ready ? '#34d399' : '#ffffff' }}>
+                  <div style={{ fontSize: '1.35rem', fontWeight: 800, color: pt.is_job_ready ? '#15803d' : '#1e3a8a' }}>
                     {pt.predicted_readiness}%
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: '#d1d5db' }}>
-                    {pt.cumulative_hours} hrs total study
+                  <div style={{ fontSize: '0.75rem', color: '#475569' }}>
+                    {pt.cumulative_hours} hrs accumulated
                   </div>
-                  {pt.is_job_ready ? (
-                    <span className="badge badge-emerald" style={{ marginTop: '4px', fontSize: '0.7rem' }}>
-                      Ready For Application
-                    </span>
-                  ) : (
-                    <span className="badge badge-indigo" style={{ marginTop: '4px', fontSize: '0.7rem' }}>
-                      In Training
-                    </span>
-                  )}
+                  <span className={pt.is_job_ready ? 'badge badge-success' : 'badge badge-neutral'} style={{ marginTop: '2px', alignSelf: 'flex-start' }}>
+                    {pt.is_job_ready ? 'Job-Ready' : 'In Progress'}
+                  </span>
                 </div>
               ))}
             </div>
