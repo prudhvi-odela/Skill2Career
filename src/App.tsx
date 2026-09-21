@@ -5,7 +5,7 @@ import { Navbar } from './components/Navbar';
 import { Sidebar } from './components/Sidebar';
 import { AIChatbox } from './components/AIChatbox';
 
-// Core ED-05 Pages
+// Core Skill2Career Pages
 import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
@@ -28,8 +28,11 @@ const ProtectedLayout: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div style={{ padding: '60px', textAlign: 'center', color: '#94a3b8' }}>
-        Verifying secure session...
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: '16px' }}>
+        <div className="spinner spinner-primary" style={{ width: '32px', height: '32px', borderWidth: '3px' }} />
+        <div style={{ color: '#64748b', fontSize: '0.9rem', fontWeight: 600 }} className="animate-pulse-subtle">
+          Authenticating official Skill2Career session...
+        </div>
       </div>
     );
   }

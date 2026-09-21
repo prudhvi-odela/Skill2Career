@@ -39,11 +39,11 @@ export const TrajectoryPage: React.FC = () => {
   };
 
   return (
-    <div style={{ padding: '24px', maxWidth: '1400px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+    <div className="animate-fade-in" style={{ padding: '24px', maxWidth: '1400px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
       {/* Header */}
       <div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-          <span className="badge badge-primary">ED-05 ENGINE</span>
+          <span className="badge badge-primary">SKILL2CAREER ENGINE</span>
           <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Evolving Learning Trajectory Tracking</span>
         </div>
         <h1 style={{ fontSize: '1.45rem', color: '#0f172a', marginBottom: '4px' }}>

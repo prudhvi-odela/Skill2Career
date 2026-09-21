@@ -77,8 +77,8 @@ export const DashboardPage: React.FC = () => {
       >
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-            <span className="badge badge-primary">ED-05 ENGINE</span>
-            <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Skill-to-Career Mapping & Trajectory System</span>
+            <span className="badge badge-primary">SKILL2CAREER ENGINE</span>
+            <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Official Skill-to-Career Mapping & Trajectory System</span>
           </div>
           <h1 style={{ fontSize: '1.45rem', color: '#0f172a', margin: '4px 0' }}>
             Welcome, {user?.full_name || 'Student'}
@@ -104,7 +104,7 @@ export const DashboardPage: React.FC = () => {
         </div>
       )}
 
-      {/* 4 Primary ED-05 Metric KPIs */}
+      {/* 4 Primary Skill2Career Metric KPIs */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px' }}>
         <KPICard
           title="JOB READINESS PREDICTION"

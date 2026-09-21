@@ -39,7 +39,7 @@ export const RegisterPage: React.FC = () => {
       }}
     >
       <div
-        className="panel-card"
+        className="panel-card animate-slide-up"
         style={{
           width: '100%',
           maxWidth: '440px',
@@ -50,27 +50,16 @@ export const RegisterPage: React.FC = () => {
       >
         <div style={{ textAlign: 'center', marginBottom: '28px' }}>
           <div
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              padding: '4px 12px',
-              background: '#eff6ff',
-              border: '1px solid #bfdbfe',
-              borderRadius: '6px',
-              fontSize: '0.75rem',
-              fontWeight: 700,
-              color: '#1e40af',
-              marginBottom: '12px',
-              letterSpacing: '0.04em',
-            }}
+            className="official-badge"
+            style={{ marginBottom: '14px' }}
           >
-            ED-05 ONBOARDING
+            Skill2Career Official Registration
           </div>
           <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a', marginBottom: '6px' }}>
             Create Student Profile
           </h2>
           <p style={{ color: '#475569', fontSize: '0.875rem', margin: 0 }}>
-            Start mapping your competencies to verified career roles today.
+            Enroll in the official career readiness and placement architecture.
           </p>
         </div>
 
@@ -134,9 +123,25 @@ export const RegisterPage: React.FC = () => {
             type="submit"
             disabled={loading}
             className="btn-primary"
-            style={{ padding: '11px', marginTop: '6px', width: '100%', fontSize: '0.9rem' }}
+            style={{
+              padding: '11px',
+              marginTop: '6px',
+              width: '100%',
+              fontSize: '0.9rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+            }}
           >
-            {loading ? 'Registering...' : 'Create Account'}
+            {loading ? (
+              <>
+                <span className="spinner" />
+                <span>Enrolling Student Profile...</span>
+              </>
+            ) : (
+              'Create Account'
+            )}
           </button>
         </form>
 

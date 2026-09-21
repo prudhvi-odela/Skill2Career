@@ -43,7 +43,7 @@ export const LoginPage: React.FC = () => {
       }}
     >
       <div
-        className="panel-card"
+        className="panel-card animate-slide-up"
         style={{
           width: '100%',
           maxWidth: '440px',
@@ -54,27 +54,16 @@ export const LoginPage: React.FC = () => {
       >
         <div style={{ textAlign: 'center', marginBottom: '28px' }}>
           <div
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              padding: '4px 12px',
-              background: '#eff6ff',
-              border: '1px solid #bfdbfe',
-              borderRadius: '6px',
-              fontSize: '0.75rem',
-              fontWeight: 700,
-              color: '#1e40af',
-              marginBottom: '12px',
-              letterSpacing: '0.04em',
-            }}
+            className="official-badge"
+            style={{ marginBottom: '14px' }}
           >
-            ED-05 PORTAL
+            Skill2Career Official Access
           </div>
           <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a', marginBottom: '6px' }}>
-            Student Sign In
+            Institutional Sign In
           </h2>
           <p style={{ color: '#475569', fontSize: '0.875rem', margin: 0 }}>
-            Access your skill-to-career gap engine and readiness forecasts.
+            Access verified competency records, skill-gap diagnostics, and placement pipelines.
           </p>
         </div>
 
@@ -126,9 +115,25 @@ export const LoginPage: React.FC = () => {
             type="submit"
             disabled={loading}
             className="btn-primary"
-            style={{ padding: '11px', marginTop: '6px', width: '100%', fontSize: '0.9rem' }}
+            style={{
+              padding: '11px',
+              marginTop: '6px',
+              width: '100%',
+              fontSize: '0.9rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+            }}
           >
-            {loading ? 'Authenticating...' : 'Sign In to Portal'}
+            {loading ? (
+              <>
+                <span className="spinner" />
+                <span>Authenticating Credentials...</span>
+              </>
+            ) : (
+              'Sign In to Portal'
+            )}
           </button>
 
           <button

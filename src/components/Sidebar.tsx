@@ -19,7 +19,7 @@ interface SidebarSection {
 
 const SIDEBAR_SECTIONS: SidebarSection[] = [
   {
-    title: 'ED-05 CAREER ENGINE',
+    title: 'SKILL-TO-CAREER',
     items: [
       { path: '/app/dashboard', label: 'Dashboard', icon: LayoutDashboard },
       { path: '/app/careers', label: 'Career Explorer', icon: Compass },
@@ -31,9 +31,9 @@ const SIDEBAR_SECTIONS: SidebarSection[] = [
   {
     title: 'PLACEMENT OPERATIONS',
     items: [
-      { path: '/app/placement-ops', label: 'Placement Ops AI Deck', icon: Briefcase },
-      { path: '/app/resume-ai', label: 'Resume AI Studio', icon: Sparkles },
-      { path: '/app/agent-13', label: 'Agent 13 Talent Discovery', icon: Users },
+      { path: '/app/placement-ops', label: 'Placement Operations', icon: Briefcase },
+      { path: '/app/resume-ai', label: 'Resume Studio', icon: Sparkles },
+      { path: '/app/agent-13', label: 'Talent Discovery', icon: Users },
     ],
   },
   {
@@ -123,8 +123,8 @@ export const Sidebar: React.FC = () => {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-          <span style={{ fontSize: '11px', fontWeight: 800, color: '#0f172a' }}>ED-05 Engine</span>
-          <span style={{ fontSize: '10px', background: '#dcfce7', color: '#15803d', padding: '1px 5px', borderRadius: '4px', fontWeight: 700 }}>Active</span>
+          <span style={{ fontSize: '11px', fontWeight: 800, color: '#0f172a' }}>Skill2Career Engine</span>
+          <span style={{ fontSize: '10px', background: '#ecfdf5', color: '#065f46', border: '1px solid #a7f3d0', padding: '1px 6px', borderRadius: '4px', fontWeight: 700 }}>Active</span>
         </div>
         <div style={{ fontSize: '11px', color: '#64748b', lineHeight: 1.4 }}>
           Target: <strong style={{ color: '#006EFF' }}>{profile?.target_career_title || 'Software Engineer'}</strong>

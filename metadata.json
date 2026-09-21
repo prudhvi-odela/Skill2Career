@@ -1,6 +1,6 @@
 {
   "name": "Skill2Career",
-  "description": "ED-05 Skill-to-Career Mapping Engine & Placement Ops AI Multi-Agent Recruitment Platform",
+  "description": "Skill2Career Official Competency Architecture, Career Readiness Forecasting & Placement Platform",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

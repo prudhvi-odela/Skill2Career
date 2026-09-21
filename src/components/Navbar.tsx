@@ -1,16 +1,24 @@
-import React, { useState } from 'react';
-import { NavLink, Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { NavLink, Link, useNavigate, useLocation } from 'react-router-dom';
 import {
-  Briefcase, Sparkles, User, LogOut, Shield, Compass,
-  LayoutDashboard, Menu, X, Users
+  Briefcase, Sparkles, LogOut, Compass,
+  LayoutDashboard, Menu, X, Users, GraduationCap
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export const Navbar: React.FC = () => {
-  const { user, profile, isAuthenticated, logout } = useAuth();
+  const { user, profile, isAuthenticated, logout, isLoading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState<'Student' | 'TPO Cell' | 'Faculty'>('Student');
+  const [navigating, setNavigating] = useState(false);
+
+  useEffect(() => {
+    setNavigating(true);
+    const timer = setTimeout(() => setNavigating(false), 400);
+    return () => clearTimeout(timer);
+  }, [location.pathname]);
 
   const handleLogout = () => {
     logout();
@@ -27,22 +35,39 @@ export const Navbar: React.FC = () => {
   ];
 
   return (
-    <nav
-      id="main-navbar"
-      style={{
-        position: 'sticky',
-        top: 0,
-        zIndex: 50,
-        background: '#ffffff',
-        borderBottom: '1px solid #e2e8f0',
-        padding: '0 24px',
-        height: '60px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
-      }}
-    >
+    <>
+      {(navigating || isLoading) && (
+        <div
+          id="global-top-loader"
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '3px',
+            zIndex: 9999,
+            background: 'linear-gradient(90deg, #1e40af, #3b82f6, #60a5fa, #1e40af)',
+            backgroundSize: '200% 100%',
+            animation: 'shimmerLoader 1s infinite linear',
+          }}
+        />
+      )}
+      <nav
+        id="main-navbar"
+        style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 50,
+          background: '#ffffff',
+          borderBottom: '1px solid #e2e8f0',
+          padding: '0 24px',
+          height: '62px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)',
+        }}
+      >
       {/* Brand */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
         <Link
@@ -52,42 +77,42 @@ export const Navbar: React.FC = () => {
         >
           <div
             style={{
-              width: '32px',
-              height: '32px',
+              width: '36px',
+              height: '36px',
               borderRadius: '8px',
-              background: '#006EFF',
+              background: 'linear-gradient(135deg, #1e40af 0%, #2563eb 100%)',
               color: '#ffffff',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontWeight: 800,
-              fontSize: '13px',
-              letterSpacing: '-0.02em',
-              boxShadow: '0 2px 8px rgba(0, 110, 255, 0.25)',
+              boxShadow: '0 2px 8px rgba(30, 64, 175, 0.25)',
             }}
           >
-            ED
+            <GraduationCap size={20} />
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontSize: '15px', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em' }}>
-                Placement Ops AI
+              <span style={{ fontSize: '16px', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em' }}>
+                Skill2Career
               </span>
               <span
                 style={{
-                  fontSize: '10px',
+                  fontSize: '9px',
                   fontWeight: 700,
-                  background: '#e0f2fe',
-                  color: '#0369a1',
-                  padding: '2px 6px',
+                  background: '#eff6ff',
+                  color: '#1e40af',
+                  border: '1px solid #bfdbfe',
+                  padding: '1px 6px',
                   borderRadius: '4px',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.04em',
                 }}
               >
-                ED-05
+                Official
               </span>
             </div>
             <span style={{ fontSize: '11px', color: '#64748b', display: 'block', marginTop: '-2px' }}>
-              Skill-to-Career & Multi-Agent Operations
+              Career Readiness & Placement Architecture
             </span>
           </div>
         </Link>
@@ -268,13 +293,10 @@ export const Navbar: React.FC = () => {
           <Link
             to="/login"
             id="nav-signin-link"
+            className="btn-secondary"
             style={{
-              padding: '7px 14px',
-              borderRadius: '6px',
-              border: '1px solid #cbd5e1',
-              color: '#334155',
+              padding: '7px 16px',
               fontSize: '13px',
-              fontWeight: 600,
               textDecoration: 'none',
             }}
           >
@@ -283,15 +305,11 @@ export const Navbar: React.FC = () => {
           <Link
             to="/register"
             id="nav-register-link"
+            className="btn-primary"
             style={{
-              padding: '7px 14px',
-              borderRadius: '6px',
-              background: '#006EFF',
-              color: '#ffffff',
+              padding: '7px 18px',
               fontSize: '13px',
-              fontWeight: 600,
               textDecoration: 'none',
-              boxShadow: '0 2px 4px rgba(0, 110, 255, 0.2)',
             }}
           >
             Get Started
@@ -333,7 +351,7 @@ export const Navbar: React.FC = () => {
                   borderRadius: '6px',
                   fontSize: '14px',
                   fontWeight: isActive ? 700 : 500,
-                  color: isActive ? '#006EFF' : '#475569',
+                  color: isActive ? '#1e40af' : '#475569',
                   background: isActive ? '#eff6ff' : 'transparent',
                   textDecoration: 'none',
                 })}
@@ -346,5 +364,6 @@ export const Navbar: React.FC = () => {
         </div>
       )}
     </nav>
+    </>
   );
 };
