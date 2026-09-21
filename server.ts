@@ -16,6 +16,7 @@ import {
   PRACTICE_PROBLEMS
 } from './server/seedData.js';
 import { SERVER_BRANCHES, SERVER_CATEGORIES } from './server/engineeringData.js';
+import { getCareersForBranch } from './src/data/branchCareerRoles.js';
 import vm from 'vm';
 
 const app = express();
@@ -295,20 +296,11 @@ app.get('/api/v1/careers', (req, res) => {
   const domain = req.query.domain as string;
   const branch = req.query.branch as string;
   const category = req.query.category as string;
-  let list = CAREER_ROLES;
+  let list = (branch && branch !== 'All' && branch !== 'All Disciplines')
+    ? getCareersForBranch(branch)
+    : CAREER_ROLES;
 
-  if (branch && branch !== 'All') {
-    const cleanBranch = branch.toUpperCase().trim();
-    list = list.filter(c => 
-      (c.branch_codes || []).some(bc => bc.toUpperCase() === cleanBranch)
-    );
-    // If no exact match, fallback to returning all
-    if (list.length === 0) {
-      list = CAREER_ROLES;
-    }
-  }
-
-  if (category && category !== 'All') {
+  if (category && category !== 'All' && category !== 'All Disciplines') {
     list = list.filter(c => c.category && c.category.toLowerCase() === category.toLowerCase());
   }
 
@@ -336,16 +328,9 @@ app.get('/api/v1/careers/matching/recommendations', (req, res) => {
   const profile = store.getProfile(userId);
   const requestedBranch = (req.query.branch as string) || (profile ? (profile.branch || profile.degree) : '');
   
-  let candidateRoles = CAREER_ROLES;
-  if (requestedBranch && requestedBranch !== 'All') {
-    const cleanBranch = requestedBranch.toUpperCase();
-    const branchSpecific = CAREER_ROLES.filter(c => 
-      (c.branch_codes || []).some(bc => cleanBranch.includes(bc.toUpperCase()))
-    );
-    if (branchSpecific.length > 0) {
-      candidateRoles = branchSpecific;
-    }
-  }
+  const candidateRoles = (requestedBranch && requestedBranch !== 'All' && requestedBranch !== 'All Disciplines')
+    ? getCareersForBranch(requestedBranch)
+    : CAREER_ROLES;
 
   const recommendations = candidateRoles.map(c => {
     const gap = store.calculateSkillGap(userId, c.career_id);

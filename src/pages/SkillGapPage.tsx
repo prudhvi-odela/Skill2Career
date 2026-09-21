@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { KPICard } from '../components/KPICard';
 import { SkeletonLoader, EmptyState, ErrorState } from '../components/StateFeedback';
 import { BranchCareerGoalNavigator } from '../components/BranchCareerGoalNavigator';
+import { getCareersForBranch } from '../data/branchCareerRoles';
 
 export const SkillGapPage: React.FC = () => {
   const { profile } = useAuth();
@@ -15,17 +16,27 @@ export const SkillGapPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [priorityFilter, setPriorityFilter] = useState<string>('All');
 
+  const userBranch = profile?.branch || profile?.major_or_branch;
+
   useEffect(() => {
     loadCareersAndGap();
-  }, [profile?.target_career_id]);
+  }, [profile?.target_career_id, userBranch]);
 
   const loadCareersAndGap = async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await careersApi.getCareers();
-      setCareers(res.data);
-      const initialId = profile?.target_career_id || (res.data.length > 0 ? (res.data[0].career_id || res.data[0].id) : '');
+      const res = await careersApi.getCareers(undefined, userBranch);
+      let list = res.data;
+      if (!list || list.length === 0) {
+        list = getCareersForBranch(userBranch).map(c => ({
+          career_id: c.career_id,
+          career_title: c.career_title,
+          domain: c.domain,
+        }));
+      }
+      setCareers(list);
+      const initialId = profile?.target_career_id || (list.length > 0 ? (list[0].career_id || list[0].id) : '');
       setSelectedCareerId(initialId);
       if (initialId) {
         const gapRes = await analysisApi.getSkillGap(initialId);
@@ -33,6 +44,16 @@ export const SkillGapPage: React.FC = () => {
       }
     } catch (err: any) {
       console.error('Error loading skill gap:', err);
+      // Fallback to local branch careers
+      const localCareers = getCareersForBranch(userBranch).map(c => ({
+        career_id: c.career_id,
+        career_title: c.career_title,
+        domain: c.domain,
+      }));
+      setCareers(localCareers);
+      if (localCareers.length > 0) {
+        setSelectedCareerId(localCareers[0].career_id);
+      }
       setError(err.response?.data?.detail || 'Failed to compute skill gap analysis.');
     } finally {
       setLoading(false);

@@ -7,6 +7,7 @@ import {
   ArrowRight, ArrowLeft, Plus, X, Upload, BookOpen
 } from 'lucide-react';
 import { ENGINEERING_CATEGORIES, ALL_BRANCHES } from '../data/engineeringBranches';
+import { getCareerGoalsForBranch } from '../data/careerGoalsHierarchy';
 
 const COMMON_SKILLS = [
   'Python', 'JavaScript', 'TypeScript', 'React', 'SQL',
@@ -22,43 +23,30 @@ export const OnboardingPage: React.FC = () => {
   const [step, setStep] = useState<number>(1);
   const [loading, setLoading] = useState(false);
   const [analyzingStep, setAnalyzingStep] = useState<string>('');
-  const [careers, setCareers] = useState<any[]>([]);
 
   // Step 1: Academic
   const [fullName, setFullName] = useState(profile?.full_name || user?.full_name || '');
   const [institution, setInstitution] = useState(profile?.institution || 'RV College of Engineering');
   const [degree, setDegree] = useState(profile?.degree || 'B.Tech Computer Science');
-  const [branch, setBranch] = useState(profile?.major_or_branch || 'Computer Science & Engineering');
+  const [branch, setBranch] = useState(profile?.major_or_branch || 'Computer Science and Engineering (CSE)');
   const [cgpa, setCgpa] = useState<number>(profile?.gpa || 8.5);
   const [graduationYear, setGraduationYear] = useState<number>(profile?.graduation_year || 2026);
 
+  // Dynamic career goals strictly for the chosen branch
+  const branchGoals = React.useMemo(() => getCareerGoalsForBranch(branch), [branch]);
+  const [careers, setCareers] = useState<any[]>(branchGoals);
+
   // Step 2: Target Career
-  const [targetCareerId, setTargetCareerId] = useState<string>(profile?.target_career_id || 'CR001');
+  const [targetCareerId, setTargetCareerId] = useState<string>(profile?.target_career_id || branchGoals[0]?.id || 'CG_CSE_1_software_engineer');
 
-  // Step 3: Skills
-  const [selectedSkills, setSelectedSkills] = useState<{ name: string; level: number; category: string }[]>([
-    { name: 'Python', level: 3.5, category: 'Languages' },
-    { name: 'JavaScript', level: 3.0, category: 'Languages' },
-    { name: 'SQL', level: 3.0, category: 'Databases' },
-    { name: 'Git', level: 4.0, category: 'Tools' }
-  ]);
-  const [customSkillInput, setCustomSkillInput] = useState('');
-
-  // Step 4: Study Commitment & Experience
-  const [weeklyHours, setWeeklyHours] = useState<number>(profile?.weekly_study_hours || 15);
-  const [resumeSummary, setResumeSummary] = useState<string>('');
-  const [uploadedFileName, setUploadedFileName] = useState<string>('');
-
+  // Update careers whenever branch changes
   useEffect(() => {
-    careersApi.getCareers().then((res) => {
-      if (res.data && res.data.length > 0) {
-        setCareers(res.data);
-        if (!targetCareerId) {
-          setTargetCareerId(res.data[0].career_id || res.data[0].id);
-        }
-      }
-    }).catch(console.error);
-  }, []);
+    const goals = getCareerGoalsForBranch(branch);
+    setCareers(goals);
+    if (!goals.some(g => (g.id || g.career_id) === targetCareerId) && goals.length > 0) {
+      setTargetCareerId(goals[0].id || goals[0].career_id);
+    }
+  }, [branch]);
 
   const handleAddSkill = (skillName: string) => {
     const trimmed = skillName.trim();
@@ -454,24 +442,27 @@ export const OnboardingPage: React.FC = () => {
                             <div style={{ fontSize: '14px', fontWeight: 700, color: '#0f172a' }}>
                               {title}
                             </div>
-                            <div style={{ fontSize: '12px', color: '#64748b' }}>
-                              Domain: <span style={{ fontWeight: 600 }}>{c.domain}</span> • Core: {c.required_skills?.slice(0, 3).map((s: any) => s.skill_name).join(', ') || 'Modern Engineering'}
+                            <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
+                              Domain: <span style={{ fontWeight: 600 }}>{c.branch_name || c.domain}</span> • Key Skills: {(c.mainly_learn || c.required_skills?.map((s: any) => s.skill_name))?.slice(0, 3).join(', ')}
                             </div>
                           </div>
                         </div>
 
-                        <div style={{ textAlign: 'right' }}>
+                        <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'flex-end' }}>
                           <span
                             style={{
                               fontSize: '11px',
                               fontWeight: 700,
                               background: '#ecfdf5',
                               color: '#065f46',
-                              padding: '3px 8px',
+                              padding: '2px 8px',
                               borderRadius: '4px',
                             }}
                           >
-                            ₹{c.avg_salary_inr_lpa || '12-18'} LPA Avg
+                            ${(c.avg_salary_usd || 115000).toLocaleString()} / yr
+                          </span>
+                          <span style={{ fontSize: '10px', color: '#64748b', fontWeight: 600 }}>
+                            {c.market_demand || 'High Demand'}
                           </span>
                         </div>
                       </div>

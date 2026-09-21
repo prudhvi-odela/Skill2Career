@@ -1327,6 +1327,8 @@ print(f"Probabilities: P(0) = {round(out_a**2, 2)}, P(1) = {round(out_b**2, 2)}"
   }
 ];
 
+import { CAREER_GOALS_DATA } from './careerGoalsHierarchy';
+
 // Merge all additional branches into their corresponding categories
 ADDITIONAL_BRANCHES.forEach(extra => {
   const cat = BASE_ENGINEERING_CATEGORIES.find(c => c.name.toLowerCase() === extra.category.toLowerCase());
@@ -1337,8 +1339,16 @@ ADDITIONAL_BRANCHES.forEach(extra => {
 
 export const ENGINEERING_CATEGORIES: BranchCategory[] = BASE_ENGINEERING_CATEGORIES;
 
-// Helper: flat list of all branches (all 55 branches)
+// Helper: flat list of all branches
 export const ALL_BRANCHES: BranchDefinition[] = ENGINEERING_CATEGORIES.flatMap(cat => cat.branches);
+
+// Synchronize targetRoles strictly to CAREER_GOALS_DATA
+ALL_BRANCHES.forEach(branch => {
+  const code = branch.code.toUpperCase().trim();
+  if (CAREER_GOALS_DATA[code]) {
+    branch.targetRoles = CAREER_GOALS_DATA[code].goals.map(g => g.title);
+  }
+});
 
 export function getBranchByCode(code: string): BranchDefinition | undefined {
   if (!code) return undefined;
@@ -1349,3 +1359,4 @@ export function getBranchByCode(code: string): BranchDefinition | undefined {
     ALL_BRANCHES[0] // fallback to CSE
   );
 }
+

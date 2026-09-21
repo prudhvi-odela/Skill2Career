@@ -392,7 +392,7 @@ export const BranchCareerGoalNavigator: React.FC<Props> = ({ initialBranchCode, 
 
           {/* Quick branch pill toggles for popular branches */}
           <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-            {['CSE', 'IT', 'AI_ML', 'DATA_SCI', 'CYBER', 'ECE', 'EEE', 'MECH', 'CIVIL', 'AERO'].map(code => (
+            {['CSE', 'IT', 'AIML', 'AIDS', 'DS', 'CYBER', 'ECE', 'EEE', 'MECH', 'CIVIL', 'CHEM', 'AERO'].map(code => (
               <button
                 key={code}
                 type="button"
