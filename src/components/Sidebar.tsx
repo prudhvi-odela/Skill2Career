@@ -1,24 +1,48 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
+import {
+  LayoutDashboard, Compass, GitCommit, Target, Trophy,
+  Briefcase, Sparkles, Users, Award, User
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-interface NavItem {
-  path?: string;
-  label?: string;
-  section?: string;
+interface SidebarItem {
+  path: string;
+  label: string;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
 }
 
-const REQUIRED_NAV_ITEMS: NavItem[] = [
-  { section: 'ED-05 ENGINE' },
-  { path: '/app/dashboard', label: 'Dashboard Overview' },
-  { path: '/app/careers', label: 'Career Matching' },
-  { path: '/app/skill-gap', label: 'Skill Gap Analysis' },
-  { path: '/app/trajectory', label: 'Learning Trajectory' },
-  { path: '/app/job-readiness', label: 'Job-Readiness Prediction' },
+interface SidebarSection {
+  title: string;
+  items: SidebarItem[];
+}
 
-  { section: 'STUDENT INVENTORY' },
-  { path: '/app/skills', label: 'Skills & Competencies' },
-  { path: '/app/profile', label: 'Student Profile' },
+const SIDEBAR_SECTIONS: SidebarSection[] = [
+  {
+    title: 'ED-05 CAREER ENGINE',
+    items: [
+      { path: '/app/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { path: '/app/careers', label: 'Career Explorer', icon: Compass },
+      { path: '/app/skill-gap', label: 'Skill Gap Engine', icon: Target },
+      { path: '/app/trajectory', label: 'Learning Trajectory', icon: GitCommit },
+      { path: '/app/job-readiness', label: 'Job Readiness Prediction', icon: Trophy },
+    ],
+  },
+  {
+    title: 'PLACEMENT OPERATIONS',
+    items: [
+      { path: '/app/placement-ops', label: 'Placement Ops AI Deck', icon: Briefcase },
+      { path: '/app/resume-ai', label: 'Resume AI Studio', icon: Sparkles },
+      { path: '/app/agent-13', label: 'Agent 13 Talent Discovery', icon: Users },
+    ],
+  },
+  {
+    title: 'STUDENT RECORD',
+    items: [
+      { path: '/app/skills', label: 'My Skills & Evidence', icon: Award },
+      { path: '/app/profile', label: 'Student Profile', icon: User },
+    ],
+  },
 ];
 
 export const Sidebar: React.FC = () => {
@@ -26,91 +50,87 @@ export const Sidebar: React.FC = () => {
 
   return (
     <aside
+      id="app-sidebar"
       style={{
-        width: '230px',
-        minWidth: '230px',
-        background: '#e9edf2',
-        borderRight: '1px solid #cbd5e1',
-        padding: '16px 12px',
+        width: '240px',
+        minWidth: '240px',
+        background: '#ffffff',
+        borderRight: '1px solid #e2e8f0',
+        padding: '20px 14px',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
-        minHeight: 'calc(100vh - 56px)',
+        minHeight: 'calc(100vh - 60px)',
       }}
     >
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-        {REQUIRED_NAV_ITEMS.map((item, idx) => {
-          if (item.section) {
-            return (
-              <div
-                key={idx}
-                style={{
-                  fontSize: '0.675rem',
-                  fontWeight: 700,
-                  color: '#64748b',
-                  letterSpacing: '0.05em',
-                  padding: '12px 8px 4px',
-                  marginTop: idx > 0 ? '6px' : '0',
-                }}
-              >
-                {item.section}
-              </div>
-            );
-          }
-
-          return (
-            <NavLink
-              key={item.path}
-              to={item.path!}
-              style={({ isActive }) => ({
-                display: 'block',
-                padding: '7px 10px',
-                borderRadius: '3px',
-                fontSize: '0.84rem',
-                fontWeight: isActive ? 700 : 500,
-                color: isActive ? '#1e3a8a' : '#334155',
-                background: isActive ? '#dbeafe' : 'transparent',
-                border: isActive ? '1px solid #bfdbfe' : '1px solid transparent',
-                textDecoration: 'none',
-                transition: 'background-color 0.15s ease',
-              })}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        {SIDEBAR_SECTIONS.map((sec, secIdx) => (
+          <div key={secIdx}>
+            <div
+              style={{
+                fontSize: '10px',
+                fontWeight: 800,
+                color: '#94a3b8',
+                letterSpacing: '0.06em',
+                padding: '0 10px',
+                marginBottom: '6px',
+              }}
             >
-              {item.label}
-            </NavLink>
-          );
-        })}
+              {sec.title}
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+              {sec.items.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    id={`sidebar-link-${item.label.toLowerCase().replace(/[^a-z0-9]/g, '-')}`}
+                    style={({ isActive }) => ({
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      padding: '8px 10px',
+                      borderRadius: '6px',
+                      fontSize: '13px',
+                      fontWeight: isActive ? 700 : 500,
+                      color: isActive ? '#006EFF' : '#475569',
+                      background: isActive ? '#eff6ff' : 'transparent',
+                      textDecoration: 'none',
+                      transition: 'all 0.15s ease',
+                    })}
+                  >
+                    <Icon size={16} />
+                    <span>{item.label}</span>
+                  </NavLink>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </div>
 
-      {/* ED-05 Engine Status Footnote */}
+      {/* Trajectory & Engine Status Box */}
       <div
+        id="sidebar-status-card"
         style={{
-          background: '#f8f9fa',
-          border: '1px solid #cbd5e1',
-          borderRadius: '3px',
-          padding: '10px',
-          fontSize: '0.75rem',
-          color: '#475569',
+          background: '#f8fafc',
+          border: '1px solid #e2e8f0',
+          borderRadius: '8px',
+          padding: '12px',
+          marginTop: '20px',
         }}
       >
-        <div style={{ fontWeight: 700, color: '#0f172a', marginBottom: '3px' }}>
-          ED-05 Mapping Engine
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+          <span style={{ fontSize: '11px', fontWeight: 800, color: '#0f172a' }}>ED-05 Engine</span>
+          <span style={{ fontSize: '10px', background: '#dcfce7', color: '#15803d', padding: '1px 5px', borderRadius: '4px', fontWeight: 700 }}>Active</span>
         </div>
-        <div style={{ fontSize: '0.7rem', color: '#64748b', lineHeight: 1.4 }}>
-          Target: <strong>{profile?.target_career_title || 'Software Engineer'}</strong>
+        <div style={{ fontSize: '11px', color: '#64748b', lineHeight: 1.4 }}>
+          Target: <strong style={{ color: '#006EFF' }}>{profile?.target_career_title || 'Software Engineer'}</strong>
         </div>
-        <div style={{ marginTop: '6px', display: 'flex', alignItems: 'center', gap: '5px' }}>
-          <span
-            style={{
-              width: '6px',
-              height: '6px',
-              borderRadius: '50%',
-              background: '#15803d',
-              display: 'inline-block',
-            }}
-          />
-          <span style={{ fontSize: '0.7rem', color: '#15803d', fontWeight: 600 }}>
-            Dynamic Tracking Active
-          </span>
+        <div style={{ fontSize: '10px', color: '#94a3b8', marginTop: '4px' }}>
+          Multi-Agent Feedback Loop Active
         </div>
       </div>
     </aside>

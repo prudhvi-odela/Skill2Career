@@ -4,6 +4,7 @@ import path from 'path';
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI } from '@google/genai';
 import { store } from './server/store.js';
+import { placementOpsRouter } from './server/placementOpsRoutes.js';
 import {
   SKILLS_CATALOG,
   CAREER_ROLES,
@@ -19,6 +20,9 @@ const PORT = 3000;
 
 app.use(cors());
 app.use(express.json());
+
+// Mount Placement-Ops-AI Multi-Agent router
+app.use(placementOpsRouter);
 
 // Helper for user extraction from Bearer token
 function getUserIdFromReq(req: express.Request): string {
