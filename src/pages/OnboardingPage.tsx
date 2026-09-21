@@ -39,6 +39,19 @@ export const OnboardingPage: React.FC = () => {
   // Step 2: Target Career
   const [targetCareerId, setTargetCareerId] = useState<string>(profile?.target_career_id || branchGoals[0]?.id || 'CG_CSE_1_software_engineer');
 
+  // Step 3: Skills
+  const [selectedSkills, setSelectedSkills] = useState<{ name: string; level: number; category: string }[]>([
+    { name: 'Python', level: 3.5, category: 'Programming' },
+    { name: 'Data Structures & Algorithms', level: 3.0, category: 'Computer Science' },
+    { name: 'SQL', level: 3.0, category: 'Databases' },
+  ]);
+  const [customSkillInput, setCustomSkillInput] = useState<string>('');
+
+  // Step 4: Study Commitment & Resume
+  const [weeklyHours, setWeeklyHours] = useState<number>(profile?.weekly_study_hours || 15);
+  const [uploadedFileName, setUploadedFileName] = useState<string>('');
+  const [resumeSummary, setResumeSummary] = useState<string>('');
+
   // Update careers whenever branch changes
   useEffect(() => {
     const goals = getCareerGoalsForBranch(branch);
