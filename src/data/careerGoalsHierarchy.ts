@@ -1017,7 +1017,7 @@ export const CAREER_GOALS_DATA: Record<string, {
     ]
   },
   BIOINFO: {
-    branch_name: 'Bioinformatics',
+    branch_name: 'Bio Informatics',
     category: 'Chemical & Materials',
     goals: [
       {
@@ -1548,12 +1548,728 @@ export const CAREER_GOALS_DATA: Record<string, {
         exp: 1.5
       }
     ]
+  },
+  // ================= ⚡ Additional Electrical & Electronics =================
+  ELECTRONICS: {
+    branch_name: 'Electronics Engineering',
+    category: 'Electrical & Electronics',
+    goals: [
+      {
+        title: 'Electronics Design Engineer',
+        mainly_learn: ['Analog Circuits', 'Digital Electronics', 'PCB Design (KiCad/Altium)', 'Microcontrollers', 'SPICE Simulation', 'Testing & Debugging'],
+        salary: 114000,
+        demand: 'High',
+        exp: 0.5
+      },
+      {
+        title: 'Consumer Electronics Firmware Engineer',
+        mainly_learn: ['Embedded C', 'RTOS', 'I2C/SPI/UART', 'Circuit Debugging', 'Oscilloscopes & Logic Analyzers', 'Low Power Optimization'],
+        salary: 118000,
+        demand: 'High',
+        exp: 1
+      },
+      {
+        title: 'RF & Wireless Engineer',
+        mainly_learn: ['RF Circuit Design', 'Antennas & Propagation', 'Impedance Matching', 'Spectrum Analyzers', 'Wireless Protocols (Wi-Fi/BT)', 'EMC/EMI Compliance'],
+        salary: 124000,
+        demand: 'High',
+        exp: 1.5
+      },
+      {
+        title: 'Electronics Test & Validation Engineer',
+        mainly_learn: ['Automated Test Equipment (ATE)', 'LabVIEW / Python Automation', 'Oscilloscopes', 'Environmental Stress Testing', 'Root Cause Analysis'],
+        salary: 108000,
+        demand: 'High',
+        exp: 0.5
+      }
+    ]
+  },
+  EE: {
+    branch_name: 'Electrical Engineering',
+    category: 'Electrical & Electronics',
+    goals: [
+      {
+        title: 'Power Systems Engineer',
+        mainly_learn: ['Power Generation & Transmission', 'Load Flow Analysis', 'MATLAB / ETAP', 'Grid Protection & Relays', 'Substation Design', 'Renewable Integration'],
+        salary: 112000,
+        demand: 'High',
+        exp: 1
+      },
+      {
+        title: 'Electrical Design Engineer',
+        mainly_learn: ['AutoCAD Electrical', 'Switchgear & Transformers', 'Panel Design', 'Cable Sizing & Calculations', 'NEC / IEC Standards', 'Power Distribution'],
+        salary: 106000,
+        demand: 'High',
+        exp: 0.5
+      },
+      {
+        title: 'Control & Drives Engineer',
+        mainly_learn: ['AC/DC Motors & Drives', 'Inverters & Converters', 'PLC Programming', 'SCADA', 'Feedback Control Systems', 'Sensor Interfacing'],
+        salary: 110000,
+        demand: 'High',
+        exp: 1
+      },
+      {
+        title: 'Energy Auditor & Consultant',
+        mainly_learn: ['Power Quality Analysis', 'Harmonics Mitigation', 'Energy Efficiency', 'Tariff Analysis', 'ISO 50001 Standards'],
+        salary: 104000,
+        demand: 'Steady',
+        exp: 1
+      }
+    ]
+  },
+  ICE: {
+    branch_name: 'Instrumentation & Control Engineering',
+    category: 'Electrical & Electronics',
+    goals: [
+      {
+        title: 'Instrumentation Engineer',
+        mainly_learn: ['Sensors & Transducers', 'Signal Conditioning', 'Calibration', 'P&ID Diagrams', 'Field Transmitters & Control Valves', 'HART Protocol'],
+        salary: 108000,
+        demand: 'High',
+        exp: 0.5
+      },
+      {
+        title: 'Process Control Automation Engineer',
+        mainly_learn: ['DCS (Distributed Control Systems)', 'PLC & SCADA', 'PID Tuning', 'Industrial Ethernet / Modbus', 'Safety Instrumented Systems (SIS/SIL)'],
+        salary: 115000,
+        demand: 'High',
+        exp: 1
+      },
+      {
+        title: 'Industrial Automation Specialist',
+        mainly_learn: ['Siemens TIA Portal / Rockwell Studio 5000', 'HMI Development', 'Motion Control & VFDs', 'OPC-UA', 'Edge Computing in Manufacturing'],
+        salary: 112000,
+        demand: 'High',
+        exp: 1
+      },
+      {
+        title: 'Measurement & Calibration Specialist',
+        mainly_learn: ['Metrology Standards', 'Precision Measuring Instruments', 'Uncertainty Analysis', 'ISO/IEC 17025', 'Automated Data Acquisition'],
+        salary: 102000,
+        demand: 'Steady',
+        exp: 0.5
+      }
+    ]
+  },
+
+  // ================= ⚙️ Additional Mechanical & Related =================
+  MFG: {
+    branch_name: 'Manufacturing Engineering',
+    category: 'Mechanical & Related',
+    goals: [
+      {
+        title: 'Manufacturing Process Engineer',
+        mainly_learn: ['CNC Machining & G-Code', 'CAD/CAM (Mastercam/Fusion 360)', 'Lean Manufacturing & 5S', 'DFM (Design for Manufacturing)', 'Six Sigma', 'Tooling & Fixtures'],
+        salary: 105000,
+        demand: 'High',
+        exp: 0.5
+      },
+      {
+        title: 'Quality Assurance & Metrology Engineer',
+        mainly_learn: ['CMM (Coordinate Measuring Machines)', 'GD&T', 'Statistical Process Control (SPC)', 'FMEA', 'ISO 9001 Standards', 'Root Cause Analysis'],
+        salary: 102000,
+        demand: 'High',
+        exp: 1
+      },
+      {
+        title: 'Plant & Operations Engineer',
+        mainly_learn: ['Line Balancing', 'Capacity Planning', 'Factory Layout Design', 'OEE (Overall Equipment Effectiveness)', 'OSHA & Industrial Safety', 'Supply Chain Coordination'],
+        salary: 108000,
+        demand: 'High',
+        exp: 1
+      },
+      {
+        title: 'Additive Manufacturing Specialist',
+        mainly_learn: ['3D Printing Technologies (SLS, DMLS, FDM)', 'Slicing Toolpaths', 'Additive Metallurgy', 'Post-Processing', 'Topology Optimization'],
+        salary: 112000,
+        demand: 'Explosive Growth',
+        exp: 1
+      }
+    ]
+  },
+  IE: {
+    branch_name: 'Industrial Engineering',
+    category: 'Mechanical & Related',
+    goals: [
+      {
+        title: 'Industrial Optimization Engineer',
+        mainly_learn: ['Operations Research & Linear Programming', 'Simulation (Arena / AnyLogic)', 'Time & Motion Studies', 'Ergonomics & Workstation Design', 'Python / R Optimization'],
+        salary: 106000,
+        demand: 'High',
+        exp: 0.5
+      },
+      {
+        title: 'Supply Chain & Logistics Analyst',
+        mainly_learn: ['Inventory Management (EOQ, JIT)', 'Warehouse Management Systems (WMS)', 'Demand Forecasting', 'Supply Chain Analytics (SQL/PowerBI)', 'Logistics Network Design'],
+        salary: 108000,
+        demand: 'High',
+        exp: 1
+      },
+      {
+        title: 'Lean Six Sigma Black Belt Specialist',
+        mainly_learn: ['DMAIC Methodology', 'Value Stream Mapping (VSM)', 'Kaizen Events', 'Minitab Statistical Analysis', 'Waste Elimination', 'Change Management'],
+        salary: 115000,
+        demand: 'High',
+        exp: 1.5
+      },
+      {
+        title: 'Production Planning & Scheduling Specialist',
+        mainly_learn: ['ERP Systems (SAP / Oracle)', 'MRP II Calculations', 'Master Production Schedule (MPS)', 'Capacity Requirements Planning (CRP)', 'Agile Operations'],
+        salary: 104000,
+        demand: 'High',
+        exp: 0.5
+      }
+    ]
+  },
+  PROD: {
+    branch_name: 'Production Engineering',
+    category: 'Mechanical & Related',
+    goals: [
+      {
+        title: 'Production Operations Engineer',
+        mainly_learn: ['Machining & Metal Forming Processes', 'Assembly Line Management', 'Tool & Die Design', 'Production Scheduling', 'Yield Optimization', 'Standard Operating Procedures (SOP)'],
+        salary: 102000,
+        demand: 'High',
+        exp: 0.5
+      },
+      {
+        title: 'Tooling & Die Design Specialist',
+        mainly_learn: ['Press Tool Design', 'Injection Mold Design', 'CAD (SolidWorks/CATIA)', 'Die Casting Mechanics', 'Heat Treatment of Tool Steels', 'FEA for Forming'],
+        salary: 108000,
+        demand: 'High',
+        exp: 1
+      },
+      {
+        title: 'Plant Reliability & Maintenance Engineer',
+        mainly_learn: ['Total Productive Maintenance (TPM)', 'Vibration Analysis & Thermography', 'Condition Monitoring', 'Preventive Maintenance', 'RCM (Reliability-Centered Maintenance)'],
+        salary: 106000,
+        demand: 'High',
+        exp: 1
+      },
+      {
+        title: 'Production Quality Supervisor',
+        mainly_learn: ['Inspection & Gauge R&R', 'Control Plans & Process Audits', 'Scrap & Rework Reduction', '8D Problem Solving', 'Worker Safety Compliance'],
+        salary: 98000,
+        demand: 'Steady',
+        exp: 0.5
+      }
+    ]
+  },
+  AUTOROB: {
+    branch_name: 'Automation & Robotics',
+    category: 'Mechanical & Related',
+    goals: [
+      {
+        title: 'Industrial Robotics Integrator',
+        mainly_learn: ['Industrial Robot Arms (ABB, KUKA, FANUC)', 'Robot Kinematics & Trajectories', 'RoboDK & Simulation', 'End-Effector & Gripper Design', 'Safety Interlocks & Fencing'],
+        salary: 116000,
+        demand: 'Extremely High',
+        exp: 1
+      },
+      {
+        title: 'Factory Automation Architect',
+        mainly_learn: ['PLC Programming (Ladder, Structured Text)', 'SCADA & HMI Systems', 'Industrial Networks (EtherNet/IP, Profinet)', 'VFDs & Servo Drives', 'Digital Twins'],
+        salary: 120000,
+        demand: 'Extremely High',
+        exp: 1.5
+      },
+      {
+        title: 'Machine Vision & Inspection Specialist',
+        mainly_learn: ['OpenCV / Cognex VisionPro', '2D/3D Industrial Cameras & Lighting', 'Pattern Matching & Flaw Detection', 'High-Speed Image Processing', 'Industrial Edge AI'],
+        salary: 118000,
+        demand: 'High',
+        exp: 1
+      },
+      {
+        title: 'Automated Guided Vehicle (AGV/AMR) Engineer',
+        mainly_learn: ['Mobile Robot Navigation', 'LiDAR & Ultrasonic Sensors', 'SLAM Algorithms', 'Fleet Management Systems', 'Battery & Power Management'],
+        salary: 114000,
+        demand: 'Explosive Growth',
+        exp: 0.5
+      }
+    ]
+  },
+
+  // ================= 🏗️ Additional Civil & Infrastructure =================
+  CONST: {
+    branch_name: 'Construction Technology',
+    category: 'Civil & Infrastructure',
+    goals: [
+      {
+        title: 'Construction Project Manager',
+        mainly_learn: ['Primavera P6 / MS Project', 'Construction Estimation & Costing', 'Site Logistics & Site Safety', 'Contract Management (FIDIC)', 'Quality Control in Concreting'],
+        salary: 115000,
+        demand: 'High',
+        exp: 1.5
+      },
+      {
+        title: 'BIM (Building Information Modeling) Manager',
+        mainly_learn: ['Revit Architecture & Structure', 'Navisworks Clash Detection', 'BIM 4D Scheduling & 5D Costing', 'IFC & OpenBIM Standards', 'Point Cloud to BIM Modeling'],
+        salary: 118000,
+        demand: 'Extremely High',
+        exp: 1
+      },
+      {
+        title: 'Structural Execution & Field Engineer',
+        mainly_learn: ['Formwork & Scaffolding Design', 'Reinforcement Detailing & BBS', 'Concrete Mix Design & Testing', 'Substructure & Foundation Execution', 'Surveying with Total Station'],
+        salary: 98000,
+        demand: 'High',
+        exp: 0.5
+      },
+      {
+        title: 'Sustainable & Smart Construction Specialist',
+        mainly_learn: ['Precast & Modular Construction', 'LEED / Green Building Certification', 'Construction Automation & Drones', 'Life Cycle Assessment (LCA)', 'Energy Efficient Building Materials'],
+        salary: 106000,
+        demand: 'High',
+        exp: 1
+      }
+    ]
+  },
+
+  // ================= 🧪 Additional Chemical & Materials =================
+  BIOCHEM: {
+    branch_name: 'Biochemical Engineering',
+    category: 'Chemical & Materials',
+    goals: [
+      {
+        title: 'Bioprocess Engineer',
+        mainly_learn: ['Fermentation Technology', 'Bioreactor Design & Scale-up', 'Downstream Processing (Chromatography, Filtration)', 'Mass & Energy Balances in Bioreactions', 'Cell Culture Kinetics'],
+        salary: 114000,
+        demand: 'High',
+        exp: 1
+      },
+      {
+        title: 'Biochemical R&D Scientist',
+        mainly_learn: ['Enzyme Kinetics & Catalysis', 'Protein Purification (HPLC/FPLC)', 'Metabolic Engineering', 'Analytical Biochemistry', 'Spectrophotometry & Mass Spec'],
+        salary: 118000,
+        demand: 'High',
+        exp: 1.5
+      },
+      {
+        title: 'Upstream & Downstream Processing Specialist',
+        mainly_learn: ['Media Formulation & Sterilization', 'Ultrafiltration & Centrifugation', 'Biofuel & Bio-products Synthesis', 'cGMP & Cleanroom Standards', 'Process Analytical Technology (PAT)'],
+        salary: 110000,
+        demand: 'High',
+        exp: 0.5
+      },
+      {
+        title: 'Regulatory Affairs & Biosafety Specialist',
+        mainly_learn: ['FDA / EMA Biosimilar Regulations', 'ICH Guidelines', 'Biosafety Levels (BSL-2/3) Protocols', 'Quality by Design (QbD)', 'Validation & Documentation'],
+        salary: 108000,
+        demand: 'Steady',
+        exp: 1
+      }
+    ]
+  },
+  POLYMER: {
+    branch_name: 'Polymer Engineering',
+    category: 'Chemical & Materials',
+    goals: [
+      {
+        title: 'Polymer Processing Engineer',
+        mainly_learn: ['Injection Molding & Extrusion', 'Moldflow Simulation', 'Polymer Rheology', 'Extrusion Die Design', 'Blow Molding & Thermoforming', 'Process Parameter Tuning'],
+        salary: 106000,
+        demand: 'High',
+        exp: 0.5
+      },
+      {
+        title: 'Polymer Materials Scientist',
+        mainly_learn: ['Polymer Synthesis & Characterization (DSC, TGA, FTIR)', 'Biodegradable & Sustainable Polymers', 'Composite Materials Formulation', 'Mechanical Testing (Tensile, Impact)', 'Nanocomposites'],
+        salary: 112000,
+        demand: 'High',
+        exp: 1
+      },
+      {
+        title: 'Rubber & Elastomer Technologist',
+        mainly_learn: ['Vulcanization & Compounding', 'Viscoelasticity', 'Rubber Testing Standards', 'Tire & Seal Technology', 'Reinforcing Fillers (Carbon Black, Silica)'],
+        salary: 104000,
+        demand: 'Steady',
+        exp: 1
+      },
+      {
+        title: 'Circular Plastics & Recycling Engineer',
+        mainly_learn: ['Mechanical & Chemical Recycling', 'Polymer Sorting & Pyrolysis', 'Life Cycle Assessment (LCA)', 'Plastics Waste Upcycling', 'Regulatory Standards'],
+        salary: 108000,
+        demand: 'Explosive Growth',
+        exp: 0.5
+      }
+    ]
+  },
+
+  // ================= ✈️ Additional Aerospace & Specialized =================
+  AERONAUTICAL: {
+    branch_name: 'Aeronautical Engineering',
+    category: 'Aerospace & Specialized',
+    goals: [
+      {
+        title: 'Aircraft Aerodynamicist',
+        mainly_learn: ['Computational Fluid Dynamics (ANSYS Fluent / OpenFOAM)', 'Subsonic & Supersonic Aerodynamics', 'Airfoil Design & Wind Tunnel Testing', 'Boundary Layer Theory', 'Compressible Flow'],
+        salary: 122000,
+        demand: 'High',
+        exp: 1
+      },
+      {
+        title: 'Flight Dynamics & Stability Engineer',
+        mainly_learn: ['Flight Mechanics', 'Aircraft Stability & Control', 'MATLAB / Simulink Flight Sim', 'Fly-By-Wire Flight Control Laws', 'Handling Qualities'],
+        salary: 125000,
+        demand: 'High',
+        exp: 1.5
+      },
+      {
+        title: 'Aircraft Propulsion Systems Engineer',
+        mainly_learn: ['Turbofan & Turbojet Gas Turbines', 'Combustion Chamber Design', 'Thermodynamic Engine Cycles (Brayton Cycle)', 'Blade Cooling & Aerothermal Analysis', 'Emissions Reduction'],
+        salary: 128000,
+        demand: 'High',
+        exp: 1
+      },
+      {
+        title: 'Aircraft Structural Stress Engineer',
+        mainly_learn: ['Finite Element Analysis (Nastran / Abaqus)', 'Fatigue & Damage Tolerance', 'Airframe Structural Layout', 'Aeroelasticity & Flutter Analysis', 'Metallic & Composite Airframes'],
+        salary: 120000,
+        demand: 'High',
+        exp: 0.5
+      }
+    ]
+  },
+  NAVAL: {
+    branch_name: 'Naval Architecture & Ocean Engineering',
+    category: 'Aerospace & Specialized',
+    goals: [
+      {
+        title: 'Naval Architect (Ship Hull Designer)',
+        mainly_learn: ['Hull Form Hydrodynamics (Maxsurf / Rhino)', 'Ship Stability & Buoyancy Calculations', 'Resistance & Propulsion Estimation', 'Classification Rules (DNV/ABS/LR)', 'Ship General Arrangement'],
+        salary: 116000,
+        demand: 'High',
+        exp: 1
+      },
+      {
+        title: 'Offshore & Marine Structures Engineer',
+        mainly_learn: ['Wave Mechanics & Morison Equation', 'Floating Offshore Platforms (FPSO, Semi-Sub)', 'Structural FEA of Marine Decks', 'Mooring & Riser Analysis (OrcaFlex)', 'Corrosion Protection in Seawater'],
+        salary: 124000,
+        demand: 'High',
+        exp: 1.5
+      },
+      {
+        title: 'Marine Systems & Machinery Engineer',
+        mainly_learn: ['Marine Diesel & Dual-Fuel Propulsion', 'Piping & Bilge/Ballast Systems', 'HVAC & Refrigeration for Ships', 'Electrical Power Generation at Sea', 'IMO & MARPOL Environmental Rules'],
+        salary: 110000,
+        demand: 'Steady',
+        exp: 0.5
+      },
+      {
+        title: 'Subsea & Ocean Robotics Engineer',
+        mainly_learn: ['Autonomous Underwater Vehicles (AUVs/ROVs)', 'Hydroacoustic Positioning', 'Pressure Hull Design', 'Underwater Manipulators', 'Oceanographic Sensor Payloads'],
+        salary: 122000,
+        demand: 'Explosive Growth',
+        exp: 1
+      }
+    ]
+  },
+  METALLURGY: {
+    branch_name: 'Metallurgical Engineering',
+    category: 'Aerospace & Specialized',
+    goals: [
+      {
+        title: 'Physical Metallurgist',
+        mainly_learn: ['Phase Diagrams & TTT Diagrams', 'Heat Treatment of Steels & Alloys', 'Metallography & Optical Microscopy', 'Scanning Electron Microscopy (SEM/EDS)', 'Grain Boundary Engineering'],
+        salary: 110000,
+        demand: 'High',
+        exp: 0.5
+      },
+      {
+        title: 'Extractive & Chemical Metallurgist',
+        mainly_learn: ['Pyrometallurgy & Blast Furnace Operations', 'Hydrometallurgy & Leaching', 'Electrowinning & Refining', 'Slag Chemistry & Thermodynamics', 'Metal Recycling & Smelting'],
+        salary: 112000,
+        demand: 'Steady',
+        exp: 1
+      },
+      {
+        title: 'Failure Analysis & NDT Specialist',
+        mainly_learn: ['Fracture Mechanics & Fatigue', 'Non-Destructive Testing (Ultrasonic, Eddy Current, X-Ray)', 'Corrosion Mechanisms & Cathodic Protection', 'Root Cause Failure Investigation', 'Welding Metallurgy'],
+        salary: 116000,
+        demand: 'High',
+        exp: 1.5
+      },
+      {
+        title: 'Advanced Aerospace Alloys Specialist',
+        mainly_learn: ['Nickel-based Superalloys for Turbines', 'Titanium & Aluminum Aerospace Alloys', 'Powder Metallurgy & Sintering', 'High Entropy Alloys (HEAs)', 'Creep Resistance Optimization'],
+        salary: 122000,
+        demand: 'High',
+        exp: 1
+      }
+    ]
+  },
+  CERAMIC: {
+    branch_name: 'Ceramic Engineering',
+    category: 'Aerospace & Specialized',
+    goals: [
+      {
+        title: 'Advanced Technical Ceramics Engineer',
+        mainly_learn: ['Oxide & Non-Oxide Ceramics (Alumina, Zirconia, SiC)', 'Powder Synthesis & Sintering Science', 'High-Temperature Refractories', 'Thermal Barrier Coatings (TBC)', 'Spark Plasma Sintering (SPS)'],
+        salary: 112000,
+        demand: 'High',
+        exp: 1
+      },
+      {
+        title: 'Electronic & Electroceramics Specialist',
+        mainly_learn: ['Piezoelectric & Ferroelectric Ceramics', 'Dielectric Capacitors & MLCCs', 'Solid Oxide Fuel Cells (SOFC)', 'Ceramic Superconductors', 'Semiconducting Oxides'],
+        salary: 118000,
+        demand: 'High',
+        exp: 1
+      },
+      {
+        title: 'Glass & Optical Materials Engineer',
+        mainly_learn: ['Glass Melting & Annealing Kinetics', 'Optical Fiber Fabrication & Doping', 'Bio-active Glasses', 'Toughened & Borosilicate Glass', 'Laser Glass Characterization'],
+        salary: 110000,
+        demand: 'Steady',
+        exp: 0.5
+      },
+      {
+        title: 'Bioceramics & Medical Implants Specialist',
+        mainly_learn: ['Hydroxyapatite & Bio-compatible Coatings', 'Dental Ceramics & Zirconia Prosthetics', 'Porous Bone Scaffolds', 'In Vitro Degradation Testing', 'ISO 13779 Standards'],
+        salary: 115000,
+        demand: 'High',
+        exp: 1
+      }
+    ]
+  },
+  TEXTILE: {
+    branch_name: 'Textile Engineering',
+    category: 'Aerospace & Specialized',
+    goals: [
+      {
+        title: 'Technical Textiles & Composites Specialist',
+        mainly_learn: ['Carbon Fiber & Aramid Reinforcements', '3D Weaving & Braiding', 'Geotextiles & Agrotextiles', 'Ballistic Protection Fabrics', 'Coated & Laminated Membranes'],
+        salary: 108000,
+        demand: 'High',
+        exp: 1
+      },
+      {
+        title: 'Smart Textiles & Wearable Electronics Engineer',
+        mainly_learn: ['Conductive Yarns & Printed Electronics', 'Textile Sensors (ECG, Respiration, Strain)', 'Flexible Energy Storage on Fabrics', 'Washability & Durability Testing', 'E-Textile Integration'],
+        salary: 115000,
+        demand: 'Explosive Growth',
+        exp: 0.5
+      },
+      {
+        title: 'Textile Processing & Wet Finishing Technologist',
+        mainly_learn: ['Dyeing Chemistry & Spectrophotometry', 'Functional Finishes (Water-repellent, Antimicrobial, Flame-retardant)', 'Eco-friendly Dyeing & Effluent Treatment (ETP)', 'Enzymatic Processing', 'Color Matching'],
+        salary: 102000,
+        demand: 'Steady',
+        exp: 0.5
+      },
+      {
+        title: 'Apparel Production & Quality Manager',
+        mainly_learn: ['Garment Manufacturing Machinery', 'Lean Manufacturing in Apparel', 'Fabric Quality Inspection (4-Point System)', 'Supply Chain Traceability', 'OEKO-TEX & GOTS Certifications'],
+        salary: 98000,
+        demand: 'Steady',
+        exp: 1
+      }
+    ]
+  },
+  AGRI: {
+    branch_name: 'Agricultural Engineering',
+    category: 'Aerospace & Specialized',
+    goals: [
+      {
+        title: 'Farm Machinery & Mechanization Engineer',
+        mainly_learn: ['Tractor Hydraulics & Powertrains', 'Tillage, Sowing & Harvesting Equipment', 'CAD of Agricultural Implements', 'Testing Codes (OECD / BIS)', 'Autonomous Tractor Systems'],
+        salary: 104000,
+        demand: 'High',
+        exp: 0.5
+      },
+      {
+        title: 'Soil & Water Conservation Engineer',
+        mainly_learn: ['Irrigation Engineering (Drip, Sprinkler)', 'Hydrologic Modeling & Watershed Management', 'Drainage Design & Salinity Control', 'GIS & Remote Sensing for Water Resources', 'Groundwater Recharge Methods'],
+        salary: 106000,
+        demand: 'High',
+        exp: 1
+      },
+      {
+        title: 'Post-Harvest & Food Processing Engineer',
+        mainly_learn: ['Grain Drying, Cleaning & Storage Silos', 'Cold Chain Logistics & Cold Storage Design', 'Food Processing Operations (Milling, Extrusion)', 'Controlled Atmosphere Storage', 'Food Safety Standards'],
+        salary: 102000,
+        demand: 'Steady',
+        exp: 0.5
+      },
+      {
+        title: 'Agricultural Automation & Sensor Specialist',
+        mainly_learn: ['Soil Moisture & NPK Sensors', 'IoT Weather Stations', 'Telemetry & Actuators in Farming', 'Greenhouse Climate Control Systems', 'Farm Management Information Systems (FMIS)'],
+        salary: 110000,
+        demand: 'Explosive Growth',
+        exp: 1
+      }
+    ]
+  },
+
+  // ================= 🌱 Additional Emerging / Interdisciplinary =================
+  ENV_ENG: {
+    branch_name: 'Environmental Engineering',
+    category: 'Emerging / Interdisciplinary',
+    goals: [
+      {
+        title: 'Environmental Impact & Sustainability Specialist',
+        mainly_learn: ['EIA (Environmental Impact Assessment)', 'Carbon Footprint Accounting & GHG Protocol', 'Life Cycle Assessment (SimaPro / openLCA)', 'Corporate Sustainability Reporting (GRI / CSRD)', 'ESG Metrics'],
+        salary: 108000,
+        demand: 'High',
+        exp: 1
+      },
+      {
+        title: 'Air Quality & Emission Control Specialist',
+        mainly_learn: ['Air Dispersion Modeling (AERMOD / CALPUFF)', 'Industrial Scrubbers, Cyclones & Baghouses', 'Ambient Air Monitoring (PM2.5, NOx, SO2)', 'Carbon Capture & Storage (CCS)', 'Clean Air Regulations'],
+        salary: 112000,
+        demand: 'High',
+        exp: 1
+      },
+      {
+        title: 'Water & Wastewater Treatment Technologist',
+        mainly_learn: ['Advanced Oxidation Processes (AOP)', 'Membrane Bioreactors (MBR) & Reverse Osmosis', 'Biological Nutrient Removal (BNR)', 'Zero Liquid Discharge (ZLD)', 'Sludge Digestion & Biogas'],
+        salary: 110000,
+        demand: 'High',
+        exp: 0.5
+      },
+      {
+        title: 'Circular Economy & Remediation Specialist',
+        mainly_learn: ['Hazardous Waste Treatment', 'Bioremediation & Phytoremediation', 'Solid Waste Gasification', 'Soil Contaminant Transport Modeling', 'Resource Recovery Systems'],
+        salary: 106000,
+        demand: 'High',
+        exp: 0.5
+      }
+    ]
+  },
+  AGRI_ENG: {
+    branch_name: 'Agricultural Engineering',
+    category: 'Emerging / Interdisciplinary',
+    goals: [
+      {
+        title: 'Precision Agriculture Specialist',
+        mainly_learn: ['Precision Farming GPS / RTK Guidance', 'Variable Rate Application (VRA)', 'Drone Multispectral Imagery (NDVI)', 'Yield Monitoring Systems', 'Satellite Remote Sensing'],
+        salary: 112000,
+        demand: 'Explosive Growth',
+        exp: 1
+      },
+      {
+        title: 'Controlled Environment Agriculture (CEA) Engineer',
+        mainly_learn: ['Hydroponics, Aeroponics & Aquaponics', 'LED Horticultural Lighting Spectra', 'Automated Nutrient Dosing Systems', 'Greenhouse Microclimate Automation', 'Vertical Farming Operations'],
+        salary: 110000,
+        demand: 'High',
+        exp: 0.5
+      },
+      {
+        title: 'Smart Ag-Tech Solutions Architect',
+        mainly_learn: ['Farm IoT Gateways & LoRaWAN', 'AI for Crop Disease Detection', 'Soil Moisture Predictive Analytics', 'Automated Irrigation Controllers', 'Robotic Harvesting & Weeding'],
+        salary: 116000,
+        demand: 'Explosive Growth',
+        exp: 1
+      },
+      {
+        title: 'Climate-Resilient Agro-Systems Consultant',
+        mainly_learn: ['Crop Water Requirement Modeling (CROPWAT)', 'Carbon Sequestration in Agriculture', 'Regenerative Agriculture Practices', 'Agro-Photovoltaic Systems', 'Biochar & Soil Regeneration'],
+        salary: 108000,
+        demand: 'High',
+        exp: 1
+      }
+    ]
+  },
+  ROBOTICS_AI: {
+    branch_name: 'Robotics & Artificial Intelligence',
+    category: 'Emerging / Interdisciplinary',
+    goals: [
+      {
+        title: 'Robotics AI Research Scientist',
+        mainly_learn: ['Reinforcement Learning for Robotics (PPO, SAC)', 'Sim-to-Real Transfer (Isaac Gym, MuJoCo)', 'Visual-Motor Policies', 'End-to-End Deep Learning Navigation', 'Trajectory Optimization'],
+        salary: 140000,
+        demand: 'Explosive Growth',
+        exp: 1.5
+      },
+      {
+        title: 'Embodied AI & Humanoid Robotics Engineer',
+        mainly_learn: ['Bipedal & Quadruped Locomotion', 'Whole-Body Control (WBC)', 'ROS 2 / C++', 'Vision-Language-Action (VLA) Models', 'High-Torque Actuators'],
+        salary: 145000,
+        demand: 'Explosive Growth',
+        exp: 1.5
+      },
+      {
+        title: 'Autonomous Mobile Robots (AMR) Architect',
+        mainly_learn: ['Visual SLAM & LiDAR SLAM', 'Global & Local Path Planning (A*, TEB, DWA)', 'Sensor Fusion (Extended Kalman Filter)', 'Behavior Trees', 'Edge GPU Deployment (Jetson Orin)'],
+        salary: 135000,
+        demand: 'Extremely High',
+        exp: 1
+      },
+      {
+        title: 'AI-Powered Robotic Manipulation Specialist',
+        mainly_learn: ['6D Object Pose Estimation', 'Robotic Grasp Synthesis (GraspNet)', 'Tactile Sensing & Force Feedback', 'Motion Planning (MoveIt 2, OMPL)', 'Real-Time Collision Avoidance'],
+        salary: 138000,
+        demand: 'Explosive Growth',
+        exp: 1
+      }
+    ]
+  },
+  AI_ROBOTICS: {
+    branch_name: 'AI & Robotics',
+    category: 'Emerging / Interdisciplinary',
+    goals: [
+      {
+        title: 'Intelligent Autonomous Systems Engineer',
+        mainly_learn: ['Perception Pipelines (YOLO, PointNet, Transformers)', 'ROS 2 Humble / Iron', 'Kalman Filtering & Bayesian Estimation', 'Obstacle Avoidance & MPC', 'Linux Embedded C++'],
+        salary: 135000,
+        demand: 'Explosive Growth',
+        exp: 1
+      },
+      {
+        title: 'Industrial AI Robot Integrator',
+        mainly_learn: ['Collaborative Robotics (Cobots)', 'Deep Learning Defect Detection', 'Industrial Vision Guidance', 'Digital Twin Simulation (NVIDIA Omniverse)', 'Safety & ISO 15066 Compliance'],
+        salary: 128000,
+        demand: 'Extremely High',
+        exp: 1
+      },
+      {
+        title: 'Drone & UAV AI Engineer',
+        mainly_learn: ['PX4 / ArduPilot Autopilots', 'Optical Flow & Visual Odometry', 'GPS-Denied Autonomous Navigation', 'AI Edge Computer Vision', 'Aerial Swarm Coordination'],
+        salary: 132000,
+        demand: 'Explosive Growth',
+        exp: 1
+      },
+      {
+        title: 'Field & Service Robotics Specialist',
+        mainly_learn: ['Outdoor All-Terrain Mobile Robotics', 'Sensor Fusion (Radar, LiDAR, Cameras)', 'Long-Horizon Mission Planning', 'Remote Teleoperation & Latency Management', 'Robust Field Deployment'],
+        salary: 126000,
+        demand: 'High',
+        exp: 0.5
+      }
+    ]
   }
+
 };
 
 // -------------------------------------------------------------
 // HELPER METHODS TO MAP CAREER GOALS TO REAL-WORLD DATA
 // -------------------------------------------------------------
+
+const BRANCH_ALIASES: Record<string, string> = {
+  BIOINFORMATICS: 'BIOINFO',
+  'BIO INFORMATICS': 'BIOINFO',
+  ELECTRONIC: 'ELECTRONICS',
+  ELEC: 'ELECTRONICS',
+  ELECTRICAL: 'EE',
+  AUTOMOBILE: 'AUTO',
+  STRUCTURAL: 'STRUCT',
+  CTM: 'CONST',
+  CONSTRUCTION: 'CONST',
+  POLY: 'POLYMER',
+  MET: 'METALLURGY',
+  DEFENSE: 'DEFENCE',
+  AUTOMATION: 'AUTOROB',
+  IND: 'IE',
+  INDUSTRIAL: 'IE',
+  AERO: 'AERO',
+  AERONAUTIC: 'AERONAUTICAL',
+  ENV: 'ENV',
+  ENVIRONMENTAL: 'ENV',
+  AGRI: 'AGRI',
+  AGRICULTURAL: 'AGRI'
+};
 
 export function getCareerGoalsForBranch(branchCode: string) {
   const cleanCode = branchCode ? branchCode.toUpperCase().trim() : 'CSE';
@@ -1563,7 +2279,12 @@ export function getCareerGoalsForBranch(branchCode: string) {
     return formatGoals(cleanCode, CAREER_GOALS_DATA[cleanCode]);
   }
 
-  // Check aliases / fuzzy code
+  // Alias match
+  if (BRANCH_ALIASES[cleanCode] && CAREER_GOALS_DATA[BRANCH_ALIASES[cleanCode]]) {
+    return formatGoals(BRANCH_ALIASES[cleanCode], CAREER_GOALS_DATA[BRANCH_ALIASES[cleanCode]]);
+  }
+
+  // Check fuzzy key
   const key = Object.keys(CAREER_GOALS_DATA).find(
     k => cleanCode.includes(k) || k.includes(cleanCode)
   );

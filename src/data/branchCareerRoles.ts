@@ -646,7 +646,7 @@ export const BASE_CAREER_ROLES: BranchCareerRole[] = [
     ]
   },
   {
-    career_id: 'CR_MARINE_01',
+    career_id: 'CR_MARINE_02',
     career_title: 'Naval Architect & Marine Propulsion Specialist',
     domain: 'Marine Engineering & Naval Architecture',
     category: 'Aerospace & Specialized',

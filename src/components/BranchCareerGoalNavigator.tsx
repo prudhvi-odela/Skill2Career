@@ -36,6 +36,27 @@ export const BranchCareerGoalNavigator: React.FC<Props> = ({ initialBranchCode, 
     });
   }
 
+  // Group branches by category for clear navigation
+  const groupedBranches = React.useMemo(() => {
+    const groups: Record<string, { code: string; name: string }[]> = {
+      '💻 Computer & IT': [],
+      '⚡ Electrical & Electronics': [],
+      '⚙️ Mechanical & Related': [],
+      '🏗️ Civil & Infrastructure': [],
+      '🧪 Chemical & Materials': [],
+      '✈️ Aerospace & Specialized': [],
+      '🌱 Emerging / Interdisciplinary': []
+    };
+
+    Object.entries(CAREER_GOALS_DATA).forEach(([code, def]) => {
+      const cat = def.category;
+      const groupKey = Object.keys(groups).find(k => k.toLowerCase().includes(cat.toLowerCase())) || '🌱 Emerging / Interdisciplinary';
+      groups[groupKey].push({ code, name: def.branch_name });
+    });
+
+    return groups;
+  }, []);
+
   const handleSetTarget = async (goal: CareerGoalDefinition) => {
     setSavingTarget(true);
     try {
@@ -89,12 +110,16 @@ export const BranchCareerGoalNavigator: React.FC<Props> = ({ initialBranchCode, 
               }
             }}
             className="input-field"
-            style={{ minWidth: '220px', padding: '6px 10px', fontSize: '0.82rem', fontWeight: 600 }}
+            style={{ minWidth: '280px', padding: '6px 10px', fontSize: '0.82rem', fontWeight: 600 }}
           >
-            {Object.entries(CAREER_GOALS_DATA).map(([code, def]) => (
-              <option key={code} value={code}>
-                {code} - {def.branch_name}
-              </option>
+            {Object.entries(groupedBranches).map(([groupName, branches]) => (
+              <optgroup key={groupName} label={groupName}>
+                {branches.map(b => (
+                  <option key={b.code} value={b.code}>
+                    {b.name} ({b.code})
+                  </option>
+                ))}
+              </optgroup>
             ))}
           </select>
         </div>

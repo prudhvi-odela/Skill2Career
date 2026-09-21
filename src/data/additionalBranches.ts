@@ -995,5 +995,625 @@ print("Anomalies:", find_anomalies(sample))`,
     ],
     schedule: [],
     challenges: []
+  },
+  // ==========================================
+  // EXACT REQUESTED BRANCH ADDITIONS
+  // ==========================================
+  {
+    code: 'BIOINFO',
+    name: 'Bio Informatics',
+    shortName: 'Bio Informatics',
+    category: 'Chemical & Materials',
+    categoryEmoji: '🧪',
+    tagline: 'Genomic sequence pipelines, computational biology algorithms, BLAST & structural bioinformatics',
+    description: 'Bridges computational methods and molecular life sciences, utilizing Python/BioPython, R/Bioconductor, Next-Generation Sequencing (NGS) analysis pipelines, structural modeling, and bioinformatics databases (NCBI, Ensembl, UniProt).',
+    primaryLanguage: 'python',
+    compilerType: 'code_ide',
+    toolsAndTech: ['BioPython', 'R / Bioconductor', 'BLAST', 'Nextflow', 'PyMOL', 'GATK', 'FastQC'],
+    targetRoles: ['Bioinformatics Scientist', 'Computational Biologist', 'Genomics Pipeline Engineer', 'Bio-Data Analyst'],
+    subjects: [
+      {
+        code: 'BIOINFO301',
+        name: 'Computational Genomics & Sequence Alignment',
+        semester: 5,
+        credits: 4,
+        category: 'Core',
+        description: 'Dynamic programming sequence alignment (Needleman-Wunsch, Smith-Waterman), BLAST heuristics, Hidden Markov Models for gene prediction, and NGS variant calling pipelines.',
+        learningOutcomes: ['Implement pairwise and multiple sequence alignment algorithms in Python', 'Process NGS FASTQ and BAM files using GATK and Samtools', 'Construct phylogenetic trees from genomic sequences'],
+        keyTopics: ['Needleman-Wunsch Global Alignment', 'Smith-Waterman Local Alignment', 'BLAST E-Value & Scoring Matrices (BLOSUM62)', 'VCF Variant Calling & Annotation', 'Protein 3D Structure Prediction (AlphaFold, PyMOL)'],
+        recommendedTools: ['BioPython', 'Bioconductor', 'IGV']
+      }
+    ],
+    schedule: [],
+    challenges: []
+  },
+  {
+    code: 'ELECTRONICS',
+    name: 'Electronics Engineering',
+    shortName: 'Electronics Engineering',
+    category: 'Electrical & Electronics',
+    categoryEmoji: '⚡',
+    tagline: 'Solid-state electronics, analog/digital hardware, PCB layout & high-frequency circuits',
+    description: 'Specializes in electronic circuit design, discrete semiconductors, operational amplifiers, mixed-signal layout, and automated hardware testing.',
+    primaryLanguage: 'c',
+    compilerType: 'circuit_logic',
+    toolsAndTech: ['Altium Designer', 'KiCad', 'SPICE', 'MATLAB', 'Oscilloscopes'],
+    targetRoles: ['Electronics Design Engineer', 'Consumer Electronics Firmware Engineer', 'RF & Wireless Engineer', 'Electronics Test & Validation Engineer'],
+    subjects: [
+      {
+        code: 'EC201',
+        name: 'Analog Integrated Circuits & SPICE Simulation',
+        semester: 3,
+        credits: 4,
+        category: 'Core',
+        description: 'BJT and MOSFET small-signal models, differential amplifiers, frequency response, and active filter topologies.',
+        learningOutcomes: ['Design multistage BJT/MOSFET amplifiers', 'Simulate AC frequency response in SPICE', 'Layout low-noise analog PCB subcircuits'],
+        keyTopics: ['Small-Signal Analysis', 'Op-Amp Compensation', 'Active Filters (Butterworth/Chebyshev)', 'Noise Margin & Signal Integrity'],
+        recommendedTools: ['LTspice', 'KiCad']
+      }
+    ],
+    schedule: [],
+    challenges: []
+  },
+  {
+    code: 'AUTO',
+    name: 'Automobile Engineering',
+    shortName: 'Automobile',
+    category: 'Mechanical & Related',
+    categoryEmoji: '⚙️',
+    tagline: 'Chassis dynamics, internal combustion engines, EV powertrains & vehicle aerodynamics',
+    description: 'Covers vehicle suspension kinematics, drivetrain torque transmission, battery pack thermal management, regenerative braking, and automotive crashworthiness.',
+    primaryLanguage: 'python',
+    compilerType: 'kinematics_sim',
+    toolsAndTech: ['MATLAB Simulink', 'CarSim', 'SolidWorks', 'ANSYS Fluent'],
+    targetRoles: ['Automotive Engineer', 'Electric Vehicle Systems Specialist', 'Chassis Design Engineer', 'Powertrain Calibration Specialist'],
+    subjects: [
+      {
+        code: 'AUTO301',
+        name: 'Vehicle Dynamics & EV Powertrain Architecture',
+        semester: 5,
+        credits: 4,
+        category: 'Core',
+        description: 'Tire tractive force models (Pacejka Magic Formula), quarter-car suspension dynamics, and electric motor sizing.',
+        learningOutcomes: ['Model vehicle cornering stability and roll centers', 'Size traction inverters and battery packs for range targets', 'Perform regenerative braking energy recapture simulations'],
+        keyTopics: ['Pacejka Magic Formula', 'Understeer Gradient & Ackermann Geometry', 'BMS SOH/SOC Estimation', 'Regenerative Braking Deceleration'],
+        recommendedTools: ['MATLAB Simulink', 'CarSim']
+      }
+    ],
+    schedule: [],
+    challenges: []
+  },
+  {
+    code: 'IE',
+    name: 'Industrial Engineering',
+    shortName: 'Industrial Engineering',
+    category: 'Mechanical & Related',
+    categoryEmoji: '⚙️',
+    tagline: 'Operations research, factory simulation, supply chain logistics & Lean Six Sigma',
+    description: 'Applies mathematical modeling and systems optimization to human work, factory throughput, inventory control, and enterprise operations.',
+    primaryLanguage: 'python',
+    compilerType: 'code_ide',
+    toolsAndTech: ['Arena', 'AnyLogic', 'Minitab', 'Python', 'SQL', 'SAP ERP'],
+    targetRoles: ['Industrial Optimization Engineer', 'Supply Chain & Logistics Analyst', 'Lean Six Sigma Black Belt Specialist', 'Production Planning Specialist'],
+    subjects: [
+      {
+        code: 'IE301',
+        name: 'Operations Research & Stochastic Factory Simulation',
+        semester: 5,
+        credits: 4,
+        category: 'Core',
+        description: 'Linear programming, Simplex method, queuing theory (M/M/c models), and Monte Carlo simulation of factory lines.',
+        learningOutcomes: ['Formulate constrained linear optimization problems in Python/PuLP', 'Model queuing delays and bottleneck workstation wait times', 'Design ergonomic, high-throughput assembly cell layouts'],
+        keyTopics: ['Simplex Algorithm & Duality', 'M/M/1 & M/M/c Queuing Models', 'Little’s Law & Throughput', 'Markov Decision Processes', 'Value Stream Mapping'],
+        recommendedTools: ['Python PuLP', 'SimPy', 'Minitab']
+      }
+    ],
+    schedule: [],
+    challenges: []
+  },
+  {
+    code: 'PROD',
+    name: 'Production Engineering',
+    shortName: 'Production Engineering',
+    category: 'Mechanical & Related',
+    categoryEmoji: '⚙️',
+    tagline: 'Tooling design, metal forming, CNC production cycles & plant reliability engineering',
+    description: 'Concentrates on mass production methods, injection molding tooling, progressive press dies, casting gating systems, and overall equipment effectiveness (OEE).',
+    primaryLanguage: 'c',
+    compilerType: 'kinematics_sim',
+    toolsAndTech: ['Mastercam', 'SolidWorks', 'ANSYS', 'AutoCAD', 'CNC G-Code'],
+    targetRoles: ['Production Operations Engineer', 'Tooling & Die Design Specialist', 'Plant Reliability & Maintenance Engineer', 'Production Quality Supervisor'],
+    subjects: [
+      {
+        code: 'PROD301',
+        name: 'Advanced Tooling Design & Metal Forming Mechanics',
+        semester: 5,
+        credits: 4,
+        category: 'Core',
+        description: 'Plastic deformation theory, sheet metal bending allowances, progressive stamping die clearances, and injection mold cooling channels.',
+        learningOutcomes: ['Calculate cutting and punch forces for progressive dies', 'Design balanced runner and gate systems for injection molding', 'Analyze tool wear and tool life using Taylor’s equation'],
+        keyTopics: ['Taylor Tool Life Equation', 'Punch & Die Clearance Calculations', 'Bending Allowance & K-Factor', 'Cooling Channel Optimization', 'Total Productive Maintenance (TPM)'],
+        recommendedTools: ['Mastercam', 'SolidWorks Moldflow']
+      }
+    ],
+    schedule: [],
+    challenges: []
+  },
+  {
+    code: 'AUTOROB',
+    name: 'Automation & Robotics',
+    shortName: 'Automation & Robotics',
+    category: 'Mechanical & Related',
+    categoryEmoji: '⚙️',
+    tagline: 'Industrial manipulators, automated workcells, machine vision inspection & cyber-physical systems',
+    description: 'Integrates articulated robot kinematics, programmable logic controllers (PLCs), high-speed camera defect detection, and automated guided vehicles (AGVs).',
+    primaryLanguage: 'python',
+    compilerType: 'kinematics_sim',
+    toolsAndTech: ['ROS 2', 'OpenCV', 'Siemens TIA Portal', 'RoboDK', 'CoppeliaSim'],
+    targetRoles: ['Industrial Robotics Integrator', 'Factory Automation Architect', 'Machine Vision Specialist', 'Automated Guided Vehicle Engineer'],
+    subjects: [
+      {
+        code: 'AUTOROB301',
+        name: 'Industrial Robotics & Cyber-Physical Automation',
+        semester: 5,
+        credits: 4,
+        category: 'Core',
+        description: '6-axis articulated robot kinematics, payload inertia calculations, Profinet/EtherCAT fieldbuses, and real-time machine vision inspection.',
+        learningOutcomes: ['Program pick-and-place trajectories avoiding workspace singularities', 'Implement deterministic industrial Ethernet routines', 'Configure machine vision defect inspection pipelines'],
+        keyTopics: ['DH Parameters & Singularities', 'Profinet & EtherCAT Protocols', 'Camera Calibration & Homography', 'ISO 10218 Cobot Safety Standards', 'OPC UA Interoperability'],
+        recommendedTools: ['RoboDK', 'OpenCV', 'TIA Portal']
+      }
+    ],
+    schedule: [],
+    challenges: []
+  },
+  {
+    code: 'STRUCT',
+    name: 'Structural Engineering',
+    shortName: 'Structural Engineering',
+    category: 'Civil & Infrastructure',
+    categoryEmoji: '🏗️',
+    tagline: 'Seismic hazard mitigation, high-rise concrete/steel frames, FEA & BIM coordination',
+    description: 'Deep specialization in structural mechanics, earthquake-resistant design, non-linear pushover analysis, prestressed concrete, and BIM detailing.',
+    primaryLanguage: 'python',
+    compilerType: 'structural_calc',
+    toolsAndTech: ['ETABS', 'STAAD.Pro', 'Revit Structure', 'SAP2000', 'AutoCAD'],
+    targetRoles: ['Structural Engineer', 'Structural Designer', 'Building Engineer', 'BIM Structural Specialist'],
+    subjects: [
+      {
+        code: 'STR401',
+        name: 'Seismic Analysis & Prestressed Concrete Design',
+        semester: 6,
+        credits: 4,
+        category: 'Core',
+        description: 'Response spectrum method, dynamic base shear calculations, tendon stress loss calculations, and moment distribution.',
+        learningOutcomes: ['Calculate earthquake design base shear using IS 1893 / ASCE 7', 'Design prestressed post-tensioned concrete beams', 'Analyze torsional irregularities in multistory buildings'],
+        keyTopics: ['Dynamic Response Spectrum', 'Prestress Friction & Wobble Losses', 'Ductile Detailing (IS 13920)', 'P-Delta Geometric Non-linearity'],
+        recommendedTools: ['ETABS', 'STAAD.Pro']
+      }
+    ],
+    schedule: [],
+    challenges: []
+  },
+  {
+    code: 'CONST',
+    name: 'Construction Technology',
+    shortName: 'Construction Tech',
+    category: 'Civil & Infrastructure',
+    categoryEmoji: '🏗️',
+    tagline: 'Construction scheduling, BIM clash detection, formwork engineering & smart jobsite monitoring',
+    description: 'Focuses on the engineering and management of construction execution: advanced concrete admixtures, precast modular systems, 4D BIM scheduling, and safety compliance.',
+    primaryLanguage: 'python',
+    compilerType: 'structural_calc',
+    toolsAndTech: ['Primavera P6', 'Navisworks', 'Revit', 'MS Project', 'AutoCAD'],
+    targetRoles: ['Construction Project Manager', 'BIM Manager', 'Structural Execution Engineer', 'Sustainable Construction Specialist'],
+    subjects: [
+      {
+        code: 'CONST301',
+        name: 'Advanced Construction Planning, BIM 4D & Cost Estimation',
+        semester: 5,
+        credits: 4,
+        category: 'Core',
+        description: 'Critical Path Method (CPM), resource leveling, BIM clash matrix workflows, concrete curing thermodynamics, and equipment productivity.',
+        learningOutcomes: ['Build resource-loaded construction project networks in Primavera', 'Execute automated spatial clash detection in Navisworks', 'Design formwork shoring systems for multistory cast-in-place slabs'],
+        keyTopics: ['CPM & Float Calculations', 'Navisworks Hard/Soft Clashes', 'Mass Concrete Hydration Heat', 'Formwork Lateral Pressure (ACI 347)', 'Earned Value Management (EVM)'],
+        recommendedTools: ['Primavera P6', 'Autodesk Navisworks']
+      }
+    ],
+    schedule: [],
+    challenges: []
+  },
+  {
+    code: 'POLYMER',
+    name: 'Polymer Engineering',
+    shortName: 'Polymer Engineering',
+    category: 'Chemical & Materials',
+    categoryEmoji: '🧪',
+    tagline: 'Macromolecular synthesis, extrusion rheology, composite matrix compounding & bioplastics',
+    description: 'Encompasses polymer chemistry, viscoelastic rheology, injection molding simulation, elastomer vulcanization, and advanced recycled plastics formulations.',
+    primaryLanguage: 'python',
+    compilerType: 'reaction_kinetics',
+    toolsAndTech: ['Moldflow', 'DSC / TGA Analyzers', 'MATLAB', 'Python', 'Rheometers'],
+    targetRoles: ['Polymer Processing Engineer', 'Polymer Materials Scientist', 'Rubber & Elastomer Technologist', 'Circular Plastics Specialist'],
+    subjects: [
+      {
+        code: 'POLY301',
+        name: 'Polymer Rheology & Injection Molding Simulation',
+        semester: 5,
+        credits: 4,
+        category: 'Core',
+        description: 'Non-Newtonian power-law fluids, shear thinning behavior, Moldflow filling and packing simulations, and thermal degradation kinetics.',
+        learningOutcomes: ['Calculate polymer melt viscosity at varying shear rates', 'Simulate mold gate freeze times and volumetric shrinkage', 'Analyze glass transition temperatures (Tg) from DSC thermograms'],
+        keyTopics: ['Power-Law & Cross-WLF Viscosity Models', 'Glass Transition (Tg) & Melting (Tm)', 'Moldflow Weld Line Prediction', 'Viscoelastic Storage & Loss Moduli (G’, G”)'],
+        recommendedTools: ['Autodesk Moldflow', 'TA Instruments Universal Analysis']
+      }
+    ],
+    schedule: [],
+    challenges: []
+  },
+  {
+    code: 'PHARMA',
+    name: 'Pharmaceutical Engineering',
+    shortName: 'Pharmaceutical Engineering',
+    category: 'Chemical & Materials',
+    categoryEmoji: '🧪',
+    tagline: 'Drug delivery formulation, aseptic manufacturing, GMP compliance & crystallization unit operations',
+    description: 'Applies chemical and biological engineering to medicine production: tablet compaction mechanics, fluid bed granulation, sterile lyophilization, and FDA validation protocols.',
+    primaryLanguage: 'python',
+    compilerType: 'reaction_kinetics',
+    toolsAndTech: ['MATLAB', 'ChemCAD', 'HPLC', 'Python', 'Excel'],
+    targetRoles: ['Pharmaceutical Process Engineer', 'Formulation Scientist', 'Validation & Quality Assurance Lead', 'Aseptic Manufacturing Specialist'],
+    subjects: [
+      {
+        code: 'PHARMA301',
+        name: 'Pharmaceutical Unit Operations & Solid Dosage Formulation',
+        semester: 5,
+        credits: 4,
+        category: 'Core',
+        description: 'Drug crystallization kinetics, particle size reduction, Heckel equation for powder compaction, tablet dissolution testing, and sterile cleanroom airflow design.',
+        learningOutcomes: ['Model drug dissolution profiles using Noyes-Whitney equation', 'Calculate powder compactibility parameters using Heckel plots', 'Design cleanroom HVAC pressure cascades to prevent cross-contamination'],
+        keyTopics: ['Noyes-Whitney Dissolution Kinetics', 'Heckel Powder Compaction Equation', 'Lyophilization Primary & Secondary Drying', 'cGMP & 21 CFR Part 11 Compliance', 'ICH Q8 Quality by Design (QbD)'],
+        recommendedTools: ['MATLAB', 'ChemCAD']
+      }
+    ],
+    schedule: [],
+    challenges: []
+  },
+  {
+    code: 'AVIONICS',
+    name: 'Avionics Engineering',
+    shortName: 'Avionics Engineering',
+    category: 'Aerospace & Specialized',
+    categoryEmoji: '✈️',
+    tagline: 'Cockpit glass displays, fly-by-wire buses (ARINC 429), INS/GNSS integration & flight management computers',
+    description: 'Specializes in airborne electronic hardware and software: Inertial Navigation Systems (INS), flight control algorithms, DO-178C software compliance, and radar altimeters.',
+    primaryLanguage: 'c',
+    compilerType: 'circuit_logic',
+    toolsAndTech: ['MATLAB Simulink', 'LabVIEW', 'ARINC 429 Analyzers', 'Python', 'C/C++'],
+    targetRoles: ['Avionics Systems Engineer', 'Flight Management Systems (FMS) Architect', 'Navigation & Guidance (GNC) Specialist', 'Avionics Test & Certification Engineer'],
+    subjects: [
+      {
+        code: 'AVIONICS301',
+        name: 'Avionics Bus Architectures & Inertial Navigation Systems',
+        semester: 5,
+        credits: 4,
+        category: 'Core',
+        description: 'ARINC 429 and MIL-STD-1553 message framing, strapdown inertial navigation algorithms, Kalman filter sensor fusion with GNSS, and glass cockpit displays.',
+        learningOutcomes: ['Decode and validate ARINC 429 label protocol frames', 'Implement a complementary or Kalman filter fusing gyroscopes and accelerometers', 'Analyze DO-254 hardware and DO-178C software safety levels'],
+        keyTopics: ['ARINC 429 32-bit Word Format', 'MIL-STD-1553 Command/Response Protocol', 'Strapdown INS Attitude Matrix Update', 'Extended Kalman Filter (EKF) for Navigation', 'DO-178C DAL A through E Standards'],
+        recommendedTools: ['MATLAB Simulink Aerospace Blockset', 'Vector CANoe']
+      }
+    ],
+    schedule: [],
+    challenges: []
+  },
+  {
+    code: 'NAVAL',
+    name: 'Naval Architecture & Ocean Engineering',
+    shortName: 'Naval Architecture',
+    category: 'Aerospace & Specialized',
+    categoryEmoji: '✈️',
+    tagline: 'Hull hydrodynamics, ship intact stability, offshore mooring & subsea robotics',
+    description: 'Encompasses surface vessel hull design, wave-induced hydrodynamic resistance, offshore platform mooring systems (OrcaFlex), and autonomous underwater vehicles (AUVs).',
+    primaryLanguage: 'python',
+    compilerType: 'kinematics_sim',
+    toolsAndTech: ['Maxsurf', 'Rhino', 'OrcaFlex', 'ANSYS AQWA', 'AutoCAD'],
+    targetRoles: ['Naval Architect', 'Offshore Marine Structures Engineer', 'Marine Machinery Systems Engineer', 'Subsea Robotics Engineer'],
+    subjects: [
+      {
+        code: 'NAVAL301',
+        name: 'Ship Hydrodynamics & Intact Stability Calculations',
+        semester: 5,
+        credits: 4,
+        category: 'Core',
+        description: 'Metacentric height (GM) calculations, GZ righting arm stability curves, wave resistance estimation (Holtrop-Mennen method), and propeller cavitation.',
+        learningOutcomes: ['Calculate transverse and longitudinal ship stability curves', 'Estimate vessel effective power requirement and propeller pitch', 'Verify damage stability compliance according to IMO rules'],
+        keyTopics: ['Center of Buoyancy (B) & Metacenter (M)', 'GZ Curve & Dynamic Stability', 'Holtrop-Mennen Resistance Prediction', 'Propeller Open Water Characteristics', 'Morison Wave Force Equation'],
+        recommendedTools: ['Bentley Maxsurf', 'Rhino Marine']
+      }
+    ],
+    schedule: [],
+    challenges: []
+  },
+  {
+    code: 'METALLURGY',
+    name: 'Metallurgical Engineering',
+    shortName: 'Metallurgical Engineering',
+    category: 'Aerospace & Specialized',
+    categoryEmoji: '✈️',
+    tagline: 'Phase transformations, blast furnace extractive chemistry, superalloys & failure analysis',
+    description: 'Focuses on metal extraction from ores, pyrometallurgy, continuous casting, physical metallurgy, heat treatment phase diagrams (TTT/CCT), and turbine superalloys.',
+    primaryLanguage: 'python',
+    compilerType: 'reaction_kinetics',
+    toolsAndTech: ['Thermo-Calc', 'SEM / EDS', 'Optical Microscopy', 'MATLAB', 'AutoCAD'],
+    targetRoles: ['Physical Metallurgist', 'Extractive Metallurgist', 'Failure Analysis & NDT Specialist', 'Aerospace Alloys Specialist'],
+    subjects: [
+      {
+        code: 'MET301',
+        name: 'Physical Metallurgy & Phase Transformation Thermodynamics',
+        semester: 5,
+        credits: 4,
+        category: 'Core',
+        description: 'Iron-Iron Carbide equilibrium phase diagram, austenite decomposition kinetics, TTT/CCT curves, precipitation hardening in aluminum alloys, and fracture mechanics.',
+        learningOutcomes: ['Interpret complex binary and ternary phase diagrams', 'Design quenching and tempering cycles for target alloy hardness', 'Analyze ductile vs brittle fracture surfaces under SEM microscopy'],
+        keyTopics: ['Fe-C Phase Diagram & Invariant Reactions', 'Pearlite, Bainite & Martensite Kinetics', 'Hall-Petch Grain Boundary Strengthening', 'Charpy Impact Energy & Ductile-Brittle Transition', 'Superalloy Gamma-Prime Precipitates'],
+        recommendedTools: ['Thermo-Calc', 'ImageJ']
+      }
+    ],
+    schedule: [],
+    challenges: []
+  },
+  {
+    code: 'CERAMIC',
+    name: 'Ceramic Engineering',
+    shortName: 'Ceramic Engineering',
+    category: 'Aerospace & Specialized',
+    categoryEmoji: '✈️',
+    tagline: 'Technical electroceramics, thermal barrier coatings, optical glasses & bioceramics',
+    description: 'Covers non-metallic inorganic materials: powder consolidation, solid-state sintering, piezoelectric actuators, high-temperature furnace refractories, and optical fiber glasses.',
+    primaryLanguage: 'python',
+    compilerType: 'reaction_kinetics',
+    toolsAndTech: ['Thermo-Calc', 'XRD Analyzers', 'Python', 'SPICE', 'AutoCAD'],
+    targetRoles: ['Technical Ceramics Engineer', 'Electroceramics Specialist', 'Glass & Optical Materials Engineer', 'Bioceramics Specialist'],
+    subjects: [
+      {
+        code: 'CER301',
+        name: 'Ceramic Sintering Science & Electroceramic Devices',
+        semester: 5,
+        credits: 4,
+        category: 'Core',
+        description: 'Diffusion-driven neck growth in solid-state sintering, grain boundary mobility, piezoelectric perovskite structures (BaTiO3, PZT), and Weibull modulus fracture statistics.',
+        learningOutcomes: ['Calculate sintering shrinkage and densification rates', 'Model piezoelectric charge coefficients and dielectric permittivity', 'Apply Weibull distribution to evaluate ceramic brittle fracture reliability'],
+        keyTopics: ['Coble & Kingery Sintering Models', 'Perovskite Crystal Structure & Ferroelectricity', 'Dielectric Breakdown & Curie Temperature', 'Weibull Modulus (m) for Brittle Ceramics', 'Thermal Barrier Zirconia Coatings (TBC)'],
+        recommendedTools: ['Thermo-Calc', 'OriginLab']
+      }
+    ],
+    schedule: [],
+    challenges: []
+  },
+  {
+    code: 'RENEWABLE',
+    name: 'Renewable Energy Engineering',
+    shortName: 'Renewable Energy',
+    category: 'Emerging / Interdisciplinary',
+    categoryEmoji: '🌱',
+    tagline: 'Solar photovoltaic sizing, wind turbine Betz limit, battery storage & microgrids',
+    description: 'Photovoltaic P-N cell modeling, wind turbine aerodynamics (Betz limit), green hydrogen electrolysis, battery energy storage systems, and smart microgrid controls.',
+    primaryLanguage: 'python',
+    compilerType: 'kinematics_sim',
+    toolsAndTech: ['PVsyst', 'HOMER Pro', 'MATLAB Simulink', 'Python'],
+    targetRoles: ['Renewable Energy Systems Designer', 'Solar PV Consultant', 'Grid Storage Architect', 'Clean Energy Project Manager'],
+    subjects: [
+      {
+        code: 'REN301',
+        name: 'Solar Photovoltaics & Wind Power Systems',
+        semester: 5,
+        credits: 4,
+        category: 'Core',
+        description: 'Single-diode PV cell equivalent circuit, Maximum Power Point Tracking (MPPT), wind aerodynamic power coefficient Cp, and Betz limit.',
+        learningOutcomes: ['Extract PV maximum power point (Vmp, Imp)', 'Implement Perturb and Observe (P&O) MPPT algorithm', 'Calculate wind turbine electrical power output'],
+        keyTopics: ['Solar Irradiance & Temperature Derating', 'MPPT Algorithms', 'Betz Limit: Max Cp = 16/27 (59.3%)', 'Inverter Sizing Ratio', 'LCOE (Levelized Cost of Energy)'],
+        recommendedTools: ['PVsyst', 'MATLAB Simulink']
+      }
+    ],
+    schedule: [],
+    challenges: []
+  },
+  {
+    code: 'ENV_ENG',
+    name: 'Environmental Engineering',
+    shortName: 'Environmental Engineering',
+    category: 'Emerging / Interdisciplinary',
+    categoryEmoji: '🌱',
+    tagline: 'Carbon accounting, atmospheric plume modeling, advanced wastewater treatment & ESG compliance',
+    description: 'Engineers holistic planetary solutions: industrial flue gas scrubbers, reverse osmosis zero-liquid-discharge (ZLD) plants, life-cycle greenhouse gas accounting, and corporate ESG sustainability.',
+    primaryLanguage: 'python',
+    compilerType: 'reaction_kinetics',
+    toolsAndTech: ['AERMOD', 'SimaPro', 'openLCA', 'EPANET', 'Python'],
+    targetRoles: ['Environmental Impact Specialist', 'Air Quality & Emission Control Specialist', 'Water & Wastewater Treatment Technologist', 'Circular Economy Specialist'],
+    subjects: [
+      {
+        code: 'ENV301',
+        name: 'Industrial Air Dispersion & Advanced Wastewater Oxidation',
+        semester: 5,
+        credits: 4,
+        category: 'Core',
+        description: 'Gaussian air dispersion plume equations, atmospheric stability classes (Pasquill-Gifford), Fenton oxidation kinetics, and membrane bioreactor (MBR) filtration.',
+        learningOutcomes: ['Calculate ground-level pollutant concentrations from industrial smoke stacks', 'Design biological nutrient removal (BNR) nitrification-denitrification tanks', 'Execute product carbon footprint calculations following GHG Protocol standards'],
+        keyTopics: ['Gaussian Plume Dispersion Model', 'Pasquill-Gifford Atmospheric Stability', 'Biological Nitrogen & Phosphorus Removal', 'Advanced Oxidation Processes (AOP)', 'ISO 14040 Life Cycle Assessment'],
+        recommendedTools: ['AERMOD', 'openLCA']
+      }
+    ],
+    schedule: [],
+    challenges: []
+  },
+  {
+    code: 'AGRI_ENG',
+    name: 'Agricultural Engineering',
+    shortName: 'Agricultural Eng (Emerging)',
+    category: 'Emerging / Interdisciplinary',
+    categoryEmoji: '🌱',
+    tagline: 'Precision RTK satellite farming, vertical aeroponics, multispectral drone NDVI & farm robotics',
+    description: 'Integrates artificial intelligence, remote sensing, automated nutrient injection, and autonomous weeding robotics into high-yield, sustainable agricultural systems.',
+    primaryLanguage: 'python',
+    compilerType: 'code_ide',
+    toolsAndTech: ['QGIS', 'Python', 'OpenCV', 'CROPWAT', 'Arduino / ESP32'],
+    targetRoles: ['Precision Agriculture Specialist', 'Controlled Environment Agriculture Engineer', 'Smart Ag-Tech Solutions Architect', 'Climate-Resilient Agro-Systems Consultant'],
+    subjects: [
+      {
+        code: 'AGRIENG301',
+        name: 'Precision Farming Automation & Multispectral Crop Analytics',
+        semester: 5,
+        credits: 4,
+        category: 'Core',
+        description: 'Normalized Difference Vegetation Index (NDVI) calculations, variable rate fertilizer prescriptions, automated greenhouse climate control, and soil moisture sensor networks.',
+        learningOutcomes: ['Compute NDVI from multispectral drone imagery', 'Implement PID loops for greenhouse humidity and vapor pressure deficit (VPD)', 'Design precision irrigation zones linked to satellite soil moisture data'],
+        keyTopics: ['NDVI & Near-Infrared Reflectance', 'Vapor Pressure Deficit (VPD) Control', 'LoRaWAN Long-Range Farm Sensor Meshes', 'Variable Rate Application (VRA) Maps', 'Soil Water Infiltration Modeling'],
+        recommendedTools: ['QGIS', 'Python OpenCV']
+      }
+    ],
+    schedule: [],
+    challenges: []
+  },
+  {
+    code: 'ROBOTICS_AI',
+    name: 'Robotics & Artificial Intelligence',
+    shortName: 'Robotics & AI',
+    category: 'Emerging / Interdisciplinary',
+    categoryEmoji: '🌱',
+    tagline: 'Reinforcement learning for locomotion, vision-language-action models, SLAM & humanoid robotics',
+    description: 'Unites machine learning with physical embodiment: training deep neural policies in physics simulators (MuJoCo, Isaac Gym), sim-to-real transfer, whole-body humanoid control, and LiDAR/visual SLAM.',
+    primaryLanguage: 'python',
+    compilerType: 'kinematics_sim',
+    toolsAndTech: ['ROS 2', 'NVIDIA Isaac Gym', 'PyTorch', 'MuJoCo', 'C++'],
+    targetRoles: ['Robotics AI Research Scientist', 'Embodied AI & Humanoid Engineer', 'Autonomous Mobile Robots Architect', 'AI-Powered Robotic Manipulation Specialist'],
+    subjects: [
+      {
+        code: 'ROBAI301',
+        name: 'Deep Reinforcement Learning & Embodied Sim-to-Real Transfer',
+        semester: 5,
+        credits: 4,
+        category: 'Core',
+        description: 'Policy gradients (PPO, SAC), domain randomization in physics engines, visual-motor grasping policies, and whole-body control of multi-joint systems.',
+        learningOutcomes: ['Train a quadruped robot walking policy in Isaac Gym with PPO', 'Implement domain randomization parameters for robust physical transfer', 'Build visual SLAM navigation pipelines deploying on edge GPUs (Jetson)'],
+        keyTopics: ['Proximal Policy Optimization (PPO)', 'Domain Randomization in Sim-to-Real', 'Whole-Body Operational Space Control', 'Visual SLAM (ORB-SLAM3)', 'Vision-Language-Action (VLA) Architectures'],
+        recommendedTools: ['NVIDIA Isaac Gym', 'PyTorch', 'ROS 2']
+      }
+    ],
+    schedule: [],
+    challenges: []
+  },
+  {
+    code: 'AI_ROBOTICS',
+    name: 'AI & Robotics',
+    shortName: 'AI & Robotics',
+    category: 'Emerging / Interdisciplinary',
+    categoryEmoji: '🌱',
+    tagline: 'Intelligent autonomy, perception pipelines, UAV swarm coordination & industrial vision guidance',
+    description: 'Focuses on the deployment of state-of-the-art perception networks, real-time edge decision loops, autonomous drones, and collaborative robots operating alongside human workers.',
+    primaryLanguage: 'python',
+    compilerType: 'kinematics_sim',
+    toolsAndTech: ['ROS 2', 'PyTorch', 'PX4 Autopilot', 'OpenCV', 'C++'],
+    targetRoles: ['Intelligent Autonomous Systems Engineer', 'Industrial AI Robot Integrator', 'Drone & UAV AI Engineer', 'Field & Service Robotics Specialist'],
+    subjects: [
+      {
+        code: 'AIROB301',
+        name: 'Real-Time Robotic Perception & Autonomous Flight Control',
+        semester: 5,
+        credits: 4,
+        category: 'Core',
+        description: 'Deep neural object detection and 3D bounding box estimation (YOLO, PointNet), PX4 flight control modes, visual odometry, and obstacle avoidance vectors.',
+        learningOutcomes: ['Deploy tensor-accelerated object detection models on edge devices', 'Tune PID and Model Predictive Control (MPC) loops for quadcopter drones', 'Implement collaborative robot safety interlocks with vision feedback'],
+        keyTopics: ['YOLO TensorRT Optimization', 'Optical Flow & Visual Odometry', 'PX4 Offboard Control with MAVROS', 'Model Predictive Control (MPC)', 'ISO/TS 15066 Cobot Speed Separation'],
+        recommendedTools: ['ROS 2', 'PX4 Autopilot', 'TensorRT']
+      }
+    ],
+    schedule: [],
+    challenges: []
+  },
+  {
+    code: 'DATA_ENG',
+    name: 'Data Engineering',
+    shortName: 'Data Engineering',
+    category: 'Emerging / Interdisciplinary',
+    categoryEmoji: '🌱',
+    tagline: 'Distributed ETL pipelines, streaming architectures (Kafka), lakehouses & data orchestration',
+    description: 'Covers enterprise big data pipelines: Apache Spark batch processing, Apache Kafka event streaming, Delta Lake / Iceberg storage, dbt transformations, and Airflow orchestration.',
+    primaryLanguage: 'python',
+    compilerType: 'code_ide',
+    toolsAndTech: ['Apache Spark', 'Apache Kafka', 'Airflow', 'dbt', 'Snowflake', 'SQL'],
+    targetRoles: ['Data Engineer', 'Big Data Architect', 'Streaming Systems Specialist', 'Data Platform Engineer'],
+    subjects: [
+      {
+        code: 'DE301',
+        name: 'Distributed Lakehouse Architectures & Real-Time Event Streaming',
+        semester: 5,
+        credits: 4,
+        category: 'Core',
+        description: 'Kappa and Lambda architectures, Kafka consumer group rebalancing, Apache Spark Structured Streaming with stateful aggregations, and ACID lakehouse transaction logs.',
+        learningOutcomes: ['Design streaming ETL pipelines processing millions of events per minute', 'Implement Medallion lakehouse schemas (Bronze, Silver, Gold)', 'Orchestrate multi-step DAG workflows in Apache Airflow'],
+        keyTopics: ['Kafka Partitions & Exactly-Once Semantics', 'Spark Structured Streaming & Watermarks', 'Delta Lake ACID Transaction Log', 'dbt Modular Data Modeling', 'Airflow DAG Scheduling'],
+        recommendedTools: ['PySpark', 'Apache Kafka', 'Apache Airflow']
+      }
+    ],
+    schedule: [],
+    challenges: []
+  },
+  {
+    code: 'SPACE',
+    name: 'Space Technology',
+    shortName: 'Space Technology',
+    category: 'Emerging / Interdisciplinary',
+    categoryEmoji: '🌱',
+    tagline: 'Orbital mechanics (Hohmann transfers), CubeSat bus engineering, rocket staging & telemetry',
+    description: 'Encompasses celestial astrodynamics, satellite power and attitude control (ADCS), space environment radiation hardening, rocket propulsion staging, and deep space communication link budgets.',
+    primaryLanguage: 'python',
+    compilerType: 'aerodynamics_sim',
+    toolsAndTech: ['GMAT (NASA)', 'STK', 'Python', 'MATLAB', 'Simulink'],
+    targetRoles: ['Space Systems Engineer', 'Orbital Mechanics Astrodynamicist', 'Satellite Subsystems Specialist', 'Rocket Propulsion Engineer'],
+    subjects: [
+      {
+        code: 'SPACE301',
+        name: 'Astrodynamics & CubeSat Bus Architecture',
+        semester: 5,
+        credits: 4,
+        category: 'Core',
+        description: 'Two-body Keplerian orbits, Hohmann transfer delta-v calculations, satellite thermal vacuum balance, reaction wheel desaturation with magnetorquers, and link budget calculations.',
+        learningOutcomes: ['Calculate delta-v requirements for orbital plane changes and interplanetary insertion', 'Size solar panels and battery storage for low Earth orbit eclipse periods', 'Calculate RF link budget margins for deep space ground station passes'],
+        keyTopics: ['Keplerian Orbital Elements', 'Hohmann & Bi-elliptic Orbital Transfers', 'Tsiolkovsky Rocket Equation & Staging', 'ADCS Reaction Wheels & Magnetorquers', 'Free Space Path Loss & Link Margins'],
+        recommendedTools: ['NASA GMAT', 'Python Poliastro']
+      }
+    ],
+    schedule: [],
+    challenges: []
+  },
+  {
+    code: 'DEFENCE',
+    name: 'Defence Technology',
+    shortName: 'Defence Technology',
+    category: 'Emerging / Interdisciplinary',
+    categoryEmoji: '🌱',
+    tagline: 'Radar signal processing, proportional missile navigation, armor ballistics & electronic warfare',
+    description: 'Covers specialized defense engineering: Pulse-Doppler radar range ambiguity resolution, Proportional Navigation (PN) intercept guidance laws, terminal ballistics armor penetration equations, and electronic counter-countermeasures (ECCM).',
+    primaryLanguage: 'python',
+    compilerType: 'kinematics_sim',
+    toolsAndTech: ['MATLAB / Simulink', 'Python', 'ANSYS Autodyn', 'C++'],
+    targetRoles: ['Defense Systems Engineer', 'Guidance & Navigation (GNC) Specialist', 'Radar Signal Processing Architect', 'Armament Ballistics Analyst'],
+    subjects: [
+      {
+        code: 'DEF301',
+        name: 'Radar Systems & Proportional Missile Guidance',
+        semester: 5,
+        credits: 4,
+        category: 'Core',
+        description: 'Radar range equation, matched filter pulse compression (Chirp waveforms), Constant False Alarm Rate (CFAR) detection, and True Proportional Navigation (TPN) kinematics.',
+        learningOutcomes: ['Calculate maximum radar detection range under thermal noise', 'Simulate missile-target pursuit trajectories with proportional navigation', 'Implement CFAR threshold detectors to isolate low-RCS targets from clutter'],
+        keyTopics: ['Radar Cross Section (RCS) & Swerling Target Models', 'Pulse Doppler & Blind Speeds', 'Cell-Averaging CFAR (CA-CFAR)', 'Proportional Navigation Constant N (3 to 5)', 'Electronic Warfare Jamming-to-Signal (J/S) Ratios'],
+        recommendedTools: ['MATLAB Phased Array System Toolbox', 'Python']
+      }
+    ],
+    schedule: [],
+    challenges: []
   }
+
 ];

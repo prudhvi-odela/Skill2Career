@@ -298,10 +298,10 @@ export const DashboardPage: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {recommendations.slice(0, 5).map((rec: any) => {
+                  {recommendations.slice(0, 5).map((rec: any, idx: number) => {
                     const isTarget = rec.career_id === targetCareerId;
                     return (
-                      <tr key={rec.career_id} style={{ background: isTarget ? '#eff6ff' : undefined }}>
+                      <tr key={`${rec.career_id}_${idx}`} style={{ background: isTarget ? '#eff6ff' : undefined }}>
                         <td>
                           <div style={{ fontWeight: 600, color: '#0f172a' }}>{rec.career_title}</div>
                           {isTarget && <span className="badge badge-primary" style={{ marginTop: '2px' }}>Active Target</span>}

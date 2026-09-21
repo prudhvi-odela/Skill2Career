@@ -112,7 +112,7 @@ export const CareerExplorerPage: React.FC = () => {
       <div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
           <span className="badge badge-primary">BRANCH-SPECIALIZED CAREER ENGINE</span>
-          <span style={{ fontSize: '0.8rem', color: '#64748b' }}>55 Engineering Disciplines • Real-World Industry Roles</span>
+          <span style={{ fontSize: '0.8rem', color: '#64748b' }}>All 66+ Engineering Disciplines • Real-World Industry Roles</span>
         </div>
         <h1 style={{ fontSize: '1.45rem', color: '#0f172a', marginBottom: '4px' }}>
           Career Path Matching Catalog
@@ -266,7 +266,7 @@ export const CareerExplorerPage: React.FC = () => {
               className="input-field"
               style={{ minWidth: '260px', padding: '6px 10px', fontSize: '0.82rem' }}
             >
-              <option value="All">All 55 Engineering Branches</option>
+              <option value="All">All Engineering Branches (66+)</option>
               {ENGINEERING_CATEGORIES.map((cat) => (
                 <optgroup key={cat.name} label={`${cat.emoji} ${cat.name}`}>
                   {cat.branches.map((b) => (
@@ -337,7 +337,7 @@ export const CareerExplorerPage: React.FC = () => {
             gap: '18px',
           }}
         >
-          {filteredCareers.map((c) => {
+          {filteredCareers.map((c, index) => {
             const cid = c.career_id || c.id;
             const ctitle = c.career_title || c.title;
             const matchPct = recMap.get(cid) ?? recMap.get(c.id);
@@ -346,7 +346,7 @@ export const CareerExplorerPage: React.FC = () => {
 
             return (
               <div
-                key={cid}
+                key={`${cid}_${index}`}
                 className="panel-card"
                 style={{
                   padding: '20px',
