@@ -23,90 +23,24 @@
       }
     ],
     [
-      "usr_fp80432",
+      "usr_qrrq2wq",
       {
-        "id": "usr_fp80432",
-        "email": "namithakoduru18@gmail.com",
-        "full_name": "Namitha Koduru",
-        "role": "student",
-        "password": "123456",
-        "provider": "local"
-      }
-    ],
-    [
-      "namithakoduru18@gmail.com",
-      {
-        "id": "usr_fp80432",
-        "email": "namithakoduru18@gmail.com",
-        "full_name": "Namitha Koduru",
-        "role": "student",
-        "password": "123456",
-        "provider": "local"
-      }
-    ],
-    [
-      "usr_mdw8a9b",
-      {
-        "id": "usr_mdw8a9b",
-        "email": "namithakoduru@gmail.com",
-        "full_name": "Namitha Koduru",
+        "id": "usr_qrrq2wq",
+        "email": "john@gmail.com",
+        "full_name": "john",
         "role": "student",
         "password": "112233",
         "provider": "local"
       }
     ],
     [
-      "namithakoduru@gmail.com",
+      "john@gmail.com",
       {
-        "id": "usr_mdw8a9b",
-        "email": "namithakoduru@gmail.com",
-        "full_name": "Namitha Koduru",
+        "id": "usr_qrrq2wq",
+        "email": "john@gmail.com",
+        "full_name": "john",
         "role": "student",
         "password": "112233",
-        "provider": "local"
-      }
-    ],
-    [
-      "usr_0ae717e",
-      {
-        "id": "usr_0ae717e",
-        "email": "namitha@gmail.com",
-        "full_name": "Namitha Koduru",
-        "role": "student",
-        "password": "112233",
-        "provider": "local"
-      }
-    ],
-    [
-      "namitha@gmail.com",
-      {
-        "id": "usr_0ae717e",
-        "email": "namitha@gmail.com",
-        "full_name": "Namitha Koduru",
-        "role": "student",
-        "password": "112233",
-        "provider": "local"
-      }
-    ],
-    [
-      "usr_hutm4ia",
-      {
-        "id": "usr_hutm4ia",
-        "email": "test_user_unique_123@example.com",
-        "full_name": "Test User",
-        "role": "student",
-        "password": "Password123",
-        "provider": "local"
-      }
-    ],
-    [
-      "test_user_unique_123@example.com",
-      {
-        "id": "usr_hutm4ia",
-        "email": "test_user_unique_123@example.com",
-        "full_name": "Test User",
-        "role": "student",
-        "password": "Password123",
         "provider": "local"
       }
     ]
@@ -216,60 +150,15 @@
           "projects_count": 2,
           "certifications_count": 1
         },
-        "updated_at": "2026-09-22T19:45:17.645Z"
+        "updated_at": "2026-09-22T18:34:14.892Z"
       }
     ],
     [
-      "usr_fp80432",
+      "usr_qrrq2wq",
       {
-        "user_id": "usr_fp80432",
-        "full_name": "Namitha Koduru",
-        "email": "namithakoduru18@gmail.com",
-        "headline": "Student / Aspiring Technologist",
-        "bio": "Welcome to Skill2Career. Update your profile to get personalized career insights.",
-        "degree": "B.Tech Computer Science",
-        "institution": "University of Technology",
-        "institution_tier": 2,
-        "graduation_year": 2026,
-        "gpa": 8,
-        "target_career_id": "CG_BIOTECH_2_bioprocess_engineer",
-        "target_career_title": "Bioprocess Engineer",
-        "skills": [
-          {
-            "skill_id": "SK001",
-            "name": "Python",
-            "category": "Languages",
-            "domain": "General",
-            "level": 3,
-            "verified": false,
-            "verification_source": "Self-Reported"
-          },
-          {
-            "skill_id": "SK002",
-            "name": "JavaScript",
-            "category": "Languages",
-            "domain": "Web Development",
-            "level": 3,
-            "verified": false,
-            "verification_source": "Self-Reported"
-          }
-        ],
-        "statistics": {
-          "weekly_study_hours": 10,
-          "learning_velocity_index": 1,
-          "assessments_passed": 0,
-          "projects_count": 0,
-          "certifications_count": 0
-        },
-        "updated_at": "2026-09-22T20:10:41.674Z"
-      }
-    ],
-    [
-      "usr_mdw8a9b",
-      {
-        "user_id": "usr_mdw8a9b",
-        "full_name": "Namitha Koduru",
-        "email": "namithakoduru@gmail.com",
+        "user_id": "usr_qrrq2wq",
+        "full_name": "john",
+        "email": "john@gmail.com",
         "headline": "Student / Aspiring Technologist",
         "bio": "Welcome to Skill2Career. Update your profile to get personalized career insights.",
         "degree": "B.Tech Computer Science",
@@ -306,97 +195,7 @@
           "projects_count": 0,
           "certifications_count": 0
         },
-        "updated_at": "2026-09-22T20:04:21.203Z"
-      }
-    ],
-    [
-      "usr_0ae717e",
-      {
-        "user_id": "usr_0ae717e",
-        "full_name": "Namitha Koduru",
-        "email": "namitha@gmail.com",
-        "headline": "Student / Aspiring Technologist",
-        "bio": "Welcome to Skill2Career. Update your profile to get personalized career insights.",
-        "degree": "B.Tech Computer Science",
-        "institution": "University of Technology",
-        "institution_tier": 2,
-        "graduation_year": 2026,
-        "gpa": 8,
-        "target_career_id": "CG_CSE_1_software_engineer",
-        "target_career_title": "Software Engineer",
-        "skills": [
-          {
-            "skill_id": "SK001",
-            "name": "Python",
-            "category": "Languages",
-            "domain": "General",
-            "level": 3,
-            "verified": false,
-            "verification_source": "Self-Reported"
-          },
-          {
-            "skill_id": "SK002",
-            "name": "JavaScript",
-            "category": "Languages",
-            "domain": "Web Development",
-            "level": 3,
-            "verified": false,
-            "verification_source": "Self-Reported"
-          }
-        ],
-        "statistics": {
-          "weekly_study_hours": 10,
-          "learning_velocity_index": 1,
-          "assessments_passed": 0,
-          "projects_count": 0,
-          "certifications_count": 0
-        },
-        "updated_at": "2026-09-22T20:05:51.405Z"
-      }
-    ],
-    [
-      "usr_hutm4ia",
-      {
-        "user_id": "usr_hutm4ia",
-        "full_name": "Test User",
-        "email": "test_user_unique_123@example.com",
-        "headline": "Student / Aspiring Technologist",
-        "bio": "Welcome to Skill2Career. Update your profile to get personalized career insights.",
-        "degree": "B.Tech Computer Science",
-        "institution": "University of Technology",
-        "institution_tier": 2,
-        "graduation_year": 2026,
-        "gpa": 8,
-        "target_career_id": "CG_CSE_1_software_engineer",
-        "target_career_title": "Software Engineer",
-        "skills": [
-          {
-            "skill_id": "SK001",
-            "name": "Python",
-            "category": "Languages",
-            "domain": "General",
-            "level": 3,
-            "verified": false,
-            "verification_source": "Self-Reported"
-          },
-          {
-            "skill_id": "SK002",
-            "name": "JavaScript",
-            "category": "Languages",
-            "domain": "Web Development",
-            "level": 3,
-            "verified": false,
-            "verification_source": "Self-Reported"
-          }
-        ],
-        "statistics": {
-          "weekly_study_hours": 10,
-          "learning_velocity_index": 1,
-          "assessments_passed": 0,
-          "projects_count": 0,
-          "certifications_count": 0
-        },
-        "updated_at": "2026-09-22T20:11:17.403Z"
+        "updated_at": "2026-09-22T21:36:13.627Z"
       }
     ]
   ],
@@ -413,7 +212,7 @@
           "live_url": "https://skill2career.dev",
           "technologies": "Python, FastAPI, Scikit-Learn, React, TypeScript",
           "complexity_rating": 4.5,
-          "created_at": "2026-09-22T19:45:17.645Z"
+          "created_at": "2026-09-22T18:34:14.893Z"
         },
         {
           "id": "prj_02",
@@ -424,24 +223,12 @@
           "live_url": "https://demo-tasks.io",
           "technologies": "Python, Redis, WebSockets, Docker",
           "complexity_rating": 4,
-          "created_at": "2026-09-22T19:45:17.645Z"
+          "created_at": "2026-09-22T18:34:14.893Z"
         }
       ]
     ],
     [
-      "usr_fp80432",
-      []
-    ],
-    [
-      "usr_mdw8a9b",
-      []
-    ],
-    [
-      "usr_0ae717e",
-      []
-    ],
-    [
-      "usr_hutm4ia",
+      "usr_qrrq2wq",
       []
     ]
   ],
@@ -457,24 +244,12 @@
           "issue_date": "2025-11",
           "credential_url": "https://coursera.org/verify/TF-12345",
           "is_verified": true,
-          "created_at": "2026-09-22T19:45:17.645Z"
+          "created_at": "2026-09-22T18:34:14.893Z"
         }
       ]
     ],
     [
-      "usr_fp80432",
-      []
-    ],
-    [
-      "usr_mdw8a9b",
-      []
-    ],
-    [
-      "usr_0ae717e",
-      []
-    ],
-    [
-      "usr_hutm4ia",
+      "usr_qrrq2wq",
       []
     ]
   ],
@@ -500,19 +275,7 @@
       ]
     ],
     [
-      "usr_fp80432",
-      []
-    ],
-    [
-      "usr_mdw8a9b",
-      []
-    ],
-    [
-      "usr_0ae717e",
-      []
-    ],
-    [
-      "usr_hutm4ia",
+      "usr_qrrq2wq",
       []
     ]
   ],
@@ -553,19 +316,7 @@
       ]
     ],
     [
-      "usr_fp80432",
-      []
-    ],
-    [
-      "usr_mdw8a9b",
-      []
-    ],
-    [
-      "usr_0ae717e",
-      []
-    ],
-    [
-      "usr_hutm4ia",
+      "usr_qrrq2wq",
       []
     ]
   ]

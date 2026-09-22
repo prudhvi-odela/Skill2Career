@@ -698,20 +698,55 @@ app.get('/api/v1/analysis/history', (req, res) => {
 app.get('/api/v1/roadmap', (req, res) => {
   const userId = getUserIdFromReq(req);
   const profile = store.getProfile(userId);
+  const careerId = (req.query.target_career_id as string) || profile.target_career_id || 'CG_CSE_1_software_engineer';
+  const gap = store.calculateSkillGap(userId, careerId);
+  let items = store.roadmaps.get(userId);
+
+  if (!items || items.length === 0) {
+    items = gap.missing_skills.slice(0, 5).map((s: any, idx: number) => ({
+      id: `rd_gen_${idx}`,
+      title: `Master ${s.skill_name}`,
+      description: `Target proficiency level ${s.required_level}.0 to close critical role gap for ${gap.career_title}.`,
+      skill_id: s.skill_id,
+      target_level: s.required_level,
+      estimated_weeks: Math.max(2, Math.round((s.gap || 2) * 1.5)),
+      is_completed: false,
+      category: s.priority === 'Critical' ? 'Critical Foundations' : 'Core Capabilities'
+    }));
+    store.roadmaps.set(userId, items);
+  }
+
   res.json({
-    career_id: profile.target_career_id || 'CG_CSE_1_software_engineer',
-    career_title: profile.target_career_title || 'Software Engineer',
-    milestones: store.roadmaps.get(userId) || []
+    career_id: gap.career_id,
+    career_title: gap.career_title,
+    milestones: items
   });
 });
 
 app.get('/api/v1/roadmap/current', (req, res) => {
   const userId = getUserIdFromReq(req);
   const profile = store.getProfile(userId);
-  const items = store.roadmaps.get(userId) || [];
+  const careerId = (req.query.career_id as string) || profile.target_career_id || 'CG_CSE_1_software_engineer';
+  const gap = store.calculateSkillGap(userId, careerId);
+  let items = store.roadmaps.get(userId) || [];
+
+  if (items.length === 0) {
+    items = gap.missing_skills.slice(0, 5).map((s: any, idx: number) => ({
+      id: `rd_gen_${idx}`,
+      title: `Master ${s.skill_name}`,
+      description: `Target proficiency level ${s.required_level}.0 to close critical role gap for ${gap.career_title}.`,
+      skill_id: s.skill_id,
+      target_level: s.required_level,
+      estimated_weeks: Math.max(2, Math.round((s.gap || 2) * 1.5)),
+      is_completed: false,
+      category: s.priority === 'Critical' ? 'Critical Foundations' : 'Core Capabilities'
+    }));
+    store.roadmaps.set(userId, items);
+  }
+
   res.json({
-    career_id: profile.target_career_id || 'CG_CSE_1_software_engineer',
-    career_title: profile.target_career_title || 'Software Engineer',
+    career_id: gap.career_id,
+    career_title: gap.career_title,
     milestones: items,
     completion_percentage: Math.round((items.filter(i => i.is_completed).length / Math.max(1, items.length)) * 100)
   });

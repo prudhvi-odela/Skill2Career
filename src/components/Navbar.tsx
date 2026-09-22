@@ -155,27 +155,28 @@ export const Navbar: React.FC = () => {
       {isAuthenticated && user ? (
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           {/* Student Target Career Pill */}
-          {profile?.target_career_title && (
-            <Link
-              to="/app/skill-gap"
-              id="nav-target-career-pill"
-              title="Target Career Focus"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '5px',
-                background: '#f8fafc',
-                border: '1px solid #e2e8f0',
-                padding: '5px 10px',
-                borderRadius: '6px',
-                fontSize: '12px',
-                textDecoration: 'none',
-              }}
-            >
-              <span style={{ color: '#64748b', fontSize: '11px' }}>Target:</span>
-              <strong style={{ color: '#006EFF', fontWeight: 700 }}>{profile.target_career_title}</strong>
-            </Link>
-          )}
+          <Link
+            to="/app/skill-gap"
+            id="nav-target-career-pill"
+            title="Click to view or switch your Target Career Goal"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '5px',
+              background: '#f8fafc',
+              border: '1px solid #e2e8f0',
+              padding: '5px 10px',
+              borderRadius: '6px',
+              fontSize: '12px',
+              textDecoration: 'none',
+              transition: 'all 0.15s ease',
+            }}
+          >
+            <span style={{ color: '#64748b', fontSize: '11px' }}>Target:</span>
+            <strong style={{ color: '#006EFF', fontWeight: 700 }}>
+              {profile?.target_career_title || 'Choose Career'}
+            </strong>
+          </Link>
 
           {/* Profile link */}
           <Link

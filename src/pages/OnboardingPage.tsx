@@ -38,13 +38,37 @@ export const OnboardingPage: React.FC = () => {
 
   // Step 2: Target Career
   const [targetCareerId, setTargetCareerId] = useState<string>(profile?.target_career_id || branchGoals[0]?.id || 'CG_CSE_1_software_engineer');
+  const selectedCareer = careers.find(c => (c.career_id || c.id) === targetCareerId) || careers[0];
 
-  // Step 3: Skills
-  const [selectedSkills, setSelectedSkills] = useState<{ name: string; level: number; category: string }[]>([
-    { name: 'Python', level: 3.5, category: 'Programming' },
-    { name: 'Data Structures & Algorithms', level: 3.0, category: 'Computer Science' },
-    { name: 'SQL', level: 3.0, category: 'Databases' },
-  ]);
+  // Dynamic skills derived strictly from the chosen career goal
+  const dynamicSkills = React.useMemo(() => {
+    if (!selectedCareer) return COMMON_SKILLS;
+    const list: string[] = [];
+    if (Array.isArray(selectedCareer.mainly_learn)) {
+      list.push(...selectedCareer.mainly_learn);
+    }
+    if (Array.isArray(selectedCareer.required_skills)) {
+      selectedCareer.required_skills.forEach((s: any) => {
+        const name = s.skill_name || s.name;
+        if (name && !list.includes(name)) list.push(name);
+      });
+    }
+    return list.length > 0 ? list : COMMON_SKILLS;
+  }, [selectedCareer]);
+
+  // Step 3: Skills (dynamically initialized for chosen career)
+  const [selectedSkills, setSelectedSkills] = useState<{ name: string; level: number; category: string }[]>(() => {
+    const defaultCareer = branchGoals[0];
+    const initialList = (defaultCareer?.mainly_learn || []).slice(0, 3);
+    if (initialList.length > 0) {
+      return initialList.map((name, idx) => ({ name, level: idx === 0 ? 3.5 : 3.0, category: 'Core Competency' }));
+    }
+    return [
+      { name: 'Technical Fundamentals', level: 3.5, category: 'Engineering' },
+      { name: 'Domain Systems', level: 3.0, category: 'Engineering' },
+      { name: 'Applied Tooling', level: 3.0, category: 'Tools' },
+    ];
+  });
   const [customSkillInput, setCustomSkillInput] = useState<string>('');
 
   // Step 4: Study Commitment & Resume
@@ -58,14 +82,40 @@ export const OnboardingPage: React.FC = () => {
     }
   }, [user, profile, fullName]);
 
-  // Update careers whenever branch changes
+  // Update careers and initialize target career whenever branch changes
   useEffect(() => {
     const goals = getCareerGoalsForBranch(branch);
     setCareers(goals);
-    if (!goals.some(g => (g.id || (g as any).career_id) === targetCareerId) && goals.length > 0) {
-      setTargetCareerId(goals[0].id || (goals[0] as any).career_id);
+    if (goals.length > 0) {
+      const newGoal = goals[0];
+      const newId = newGoal.id || (newGoal as any).career_id;
+      setTargetCareerId(newId);
+
+      // Auto-populate relevant skills for new branch goal
+      const newSkills = (newGoal.mainly_learn || newGoal.required_skills?.map((s: any) => s.skill_name) || []).slice(0, 4);
+      if (newSkills.length > 0) {
+        setSelectedSkills(newSkills.map((name: string, idx: number) => ({
+          name,
+          level: idx === 0 ? 3.5 : 3.0,
+          category: 'Core Competency'
+        })));
+      }
     }
   }, [branch]);
+
+  // Synchronize skills when targetCareerId changes within same branch
+  useEffect(() => {
+    if (selectedCareer) {
+      const newSkills = (selectedCareer.mainly_learn || selectedCareer.required_skills?.map((s: any) => s.skill_name) || []).slice(0, 4);
+      if (newSkills.length > 0) {
+        setSelectedSkills(newSkills.map((name: string, idx: number) => ({
+          name,
+          level: idx === 0 ? 3.5 : 3.0,
+          category: 'Core Competency'
+        })));
+      }
+    }
+  }, [targetCareerId]);
 
   const handleAddSkill = (skillName: string) => {
     const trimmed = skillName.trim();
@@ -96,8 +146,6 @@ export const OnboardingPage: React.FC = () => {
       }
     }
   };
-
-  const selectedCareer = careers.find(c => (c.career_id || c.id) === targetCareerId) || careers[0];
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -522,13 +570,16 @@ export const OnboardingPage: React.FC = () => {
                   </p>
                 </div>
 
-                {/* Popular badges quick-add */}
+                {/* Dynamic Recommended Skills for chosen career goal */}
                 <div>
                   <label className="input-label" style={{ marginBottom: '8px' }}>
-                    Quick Select Popular Skills
+                    Quick Select Recommended Skills for{' '}
+                    <strong style={{ color: '#006EFF' }}>
+                      {selectedCareer?.career_title || selectedCareer?.title || 'Target Role'}
+                    </strong>
                   </label>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                    {COMMON_SKILLS.map((skill) => {
+                    {dynamicSkills.map((skill) => {
                       const isAdded = selectedSkills.some(s => s.name.toLowerCase() === skill.toLowerCase());
                       return (
                         <button
