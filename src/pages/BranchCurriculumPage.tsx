@@ -330,6 +330,80 @@ export const BranchCurriculumPage: React.FC = () => {
       {/* TAB 1: SUBJECTS & WHAT YOU MUST LEARN */}
       {activeTab === 'subjects' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {/* Career Goal Specific Recommendation Banner */}
+          <div
+            style={{
+              background: '#f0f9ff',
+              border: '1px solid #bae6fd',
+              borderRadius: '12px',
+              padding: '16px 20px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '18px' }}>🎯</span>
+                <div>
+                  <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: '#0369a1' }}>
+                    Recommended Subjects by Career Goal ({activeBranch.shortName})
+                  </h4>
+                  <p style={{ margin: 0, fontSize: '12px', color: '#0284c7' }}>
+                    Select a target career role to filter and prioritize the core academic subjects required by industry.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Career Goals Pill Selector */}
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              {activeBranch.targetRoles.map((role) => (
+                <button
+                  key={role}
+                  type="button"
+                  onClick={() => setSearchQuery(searchQuery === role ? '' : role)}
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                    fontWeight: searchQuery === role ? 700 : 600,
+                    background: searchQuery === role ? '#0284c7' : '#ffffff',
+                    color: searchQuery === role ? '#ffffff' : '#0369a1',
+                    border: '1px solid #7dd3fc',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.04)',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  <span>{role}</span>
+                  {searchQuery === role && <span style={{ fontSize: '10px' }}>&bull; Active Filter</span>}
+                </button>
+              ))}
+              {searchQuery !== '' && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: '8px',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    background: '#f1f5f9',
+                    color: '#64748b',
+                    border: '1px solid #cbd5e1',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Clear Filter
+                </button>
+              )}
+            </div>
+          </div>
+
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#0f172a', margin: 0 }}>
               Curated Academic Subjects for {activeBranch.shortName}
