@@ -6,9 +6,17 @@ declare global {
   }
 }
 
-export const GOOGLE_CLIENT_ID = (import.meta.env.VITE_GOOGLE_CLIENT_ID || '').trim();
-export const GITHUB_CLIENT_ID = (import.meta.env.VITE_GITHUB_CLIENT_ID || '').trim();
-export const LINKEDIN_CLIENT_ID = (import.meta.env.VITE_LINKEDIN_CLIENT_ID || '').trim();
+export const GOOGLE_CLIENT_ID = (
+  import.meta.env.VITE_GOOGLE_CLIENT_ID || '44608290041-qp9f0oj463v7o26eghg9lhma3idusjgg.apps.googleusercontent.com'
+).trim();
+
+export const GITHUB_CLIENT_ID = (
+  import.meta.env.VITE_GITHUB_CLIENT_ID || 'Ov23liJogEUw6Q433jVd'
+).trim();
+
+export const LINKEDIN_CLIENT_ID = (
+  import.meta.env.VITE_LINKEDIN_CLIENT_ID || '77a6xjsdarbcvj'
+).trim();
 
 /**
  * Initiates official Google OAuth 2.0 Sign In
