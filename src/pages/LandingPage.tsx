@@ -80,12 +80,22 @@ export const LandingPage: React.FC = () => {
           width: '100%',
         }}
       >
-        <div
-          className="official-badge"
-          style={{ marginBottom: '18px' }}
-        >
-          <ShieldCheck size={14} />
-          <span>Skill2Career Official Competency & Placement Architecture</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+          <img
+            src="/logo.png"
+            alt="Skill2Career Logo"
+            style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '10px',
+              objectFit: 'contain',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+            }}
+          />
+          <div className="official-badge">
+            <ShieldCheck size={14} />
+            <span>Skill2Career Official Competency & Placement Architecture</span>
+          </div>
         </div>
 
         <h1

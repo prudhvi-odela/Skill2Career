@@ -105,6 +105,18 @@ export const LoginPage: React.FC = () => {
         }}
       >
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+          <img
+            src="/logo.png"
+            alt="Skill2Career Logo"
+            style={{
+              width: '64px',
+              height: '64px',
+              margin: '0 auto 12px',
+              borderRadius: '12px',
+              objectFit: 'contain',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+            }}
+          />
           <div className="official-badge" style={{ marginBottom: '12px' }}>
             Skill2Career Institutional Portal
           </div>

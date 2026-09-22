@@ -75,26 +75,22 @@ export const Navbar: React.FC = () => {
         <Link
           to="/"
           id="nav-brand-logo"
-          style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}
+          style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none' }}
         >
-          <div
+          <img
+            src="/logo.png"
+            alt="Skill2Career Logo"
             style={{
-              width: '36px',
-              height: '36px',
+              width: '38px',
+              height: '38px',
               borderRadius: '8px',
-              background: 'linear-gradient(135deg, #1e40af 0%, #2563eb 100%)',
-              color: '#ffffff',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 2px 8px rgba(30, 64, 175, 0.25)',
+              objectFit: 'contain',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
             }}
-          >
-            <GraduationCap size={20} />
-          </div>
+          />
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontSize: '16px', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em' }}>
+              <span style={{ fontSize: '17px', fontWeight: 900, color: '#0f172a', letterSpacing: '-0.02em' }}>
                 Skill2Career
               </span>
               <span
