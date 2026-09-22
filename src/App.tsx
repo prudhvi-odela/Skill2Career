@@ -68,8 +68,10 @@ export const App: React.FC = () => {
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
-            <Route path="/onboarding" element={<OnboardingPage />} />
             <Route path="/auth/callback" element={<OAuthCallbackPage />} />
+            <Route path="/auth/github/callback" element={<OAuthCallbackPage />} />
+            <Route path="/auth/google/callback" element={<OAuthCallbackPage />} />
+            <Route path="/auth/linkedin/callback" element={<OAuthCallbackPage />} />
 
             {/* Direct alias redirects for top-level paths */}
             <Route path="/profile" element={<Navigate to="/app/profile" replace />} />
