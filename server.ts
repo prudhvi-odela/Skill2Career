@@ -1657,7 +1657,10 @@ app.post('/api/v1/compiler/execute', async (req, res) => {
 async function start() {
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
-      server: { middlewareMode: true },
+      server: {
+        middlewareMode: true,
+        hmr: false,
+      },
       appType: 'custom',
     });
     app.use(vite.middlewares);
