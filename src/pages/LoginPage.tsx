@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { OAuthModal, type OAuthProvider } from '../components/OAuthModal';
-import { ShieldCheck, AlertCircle } from 'lucide-react';
+import { triggerGoogleOAuth, triggerGithubOAuth, triggerLinkedinOAuth } from '../lib/oauth';
+import { AlertCircle, Loader2 } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [oauthModalProvider, setOauthModalProvider] = useState<OAuthProvider | null>(null);
+  const [oauthLoadingProvider, setOauthLoadingProvider] = useState<string | null>(null);
 
   const { login, oauthLogin } = useAuth();
   const navigate = useNavigate();
@@ -48,31 +48,37 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const handleOAuthSuccess = async (oauthData: {
-    provider: string;
-    email: string;
-    full_name: string;
-    avatar_url: string;
-  }) => {
+  const handleGoogleSignIn = async () => {
     setError(null);
-    setLoading(true);
+    setOauthLoadingProvider('google');
     try {
-      await oauthLogin(oauthData);
+      const googleUser = await triggerGoogleOAuth();
+      await oauthLogin(googleUser);
       navigate('/app/dashboard');
     } catch (err: any) {
-      setError(
-        err.response?.data?.detail ||
-          'OAuth authentication failed. Please try again or use direct login.'
-      );
+      console.error('Google Sign In Error:', err);
+      setError(err.message || 'Google sign-in was cancelled or encountered an error.');
     } finally {
-      setLoading(false);
+      setOauthLoadingProvider(null);
     }
   };
 
-  const handleDemoFill = () => {
-    setEmail('demo@skill2career.com');
-    setPassword('Password123!');
+  const handleGithubSignIn = () => {
     setError(null);
+    try {
+      triggerGithubOAuth();
+    } catch (err: any) {
+      setError(err.message || 'Could not redirect to GitHub.');
+    }
+  };
+
+  const handleLinkedinSignIn = () => {
+    setError(null);
+    try {
+      triggerLinkedinOAuth();
+    } catch (err: any) {
+      setError(err.message || 'Could not redirect to LinkedIn.');
+    }
   };
 
   return (
@@ -133,12 +139,13 @@ export const LoginPage: React.FC = () => {
           </div>
         )}
 
-        {/* OAuth Buttons Section */}
+        {/* Official OAuth Buttons Section */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
-          {/* Google */}
+          {/* Official Google Button */}
           <button
             type="button"
-            onClick={() => setOauthModalProvider('google')}
+            disabled={!!oauthLoadingProvider || loading}
+            onClick={handleGoogleSignIn}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -151,45 +158,59 @@ export const LoginPage: React.FC = () => {
               color: '#1e293b',
               fontSize: '0.875rem',
               fontWeight: 600,
-              cursor: 'pointer',
+              cursor: oauthLoadingProvider ? 'not-allowed' : 'pointer',
               transition: 'all 0.15s ease',
               boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = '#f8fafc';
-              e.currentTarget.style.borderColor = '#cbd5e1';
+              if (!oauthLoadingProvider) {
+                e.currentTarget.style.background = '#f8fafc';
+                e.currentTarget.style.borderColor = '#cbd5e1';
+              }
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = '#ffffff';
-              e.currentTarget.style.borderColor = '#e2e8f0';
+              if (!oauthLoadingProvider) {
+                e.currentTarget.style.background = '#ffffff';
+                e.currentTarget.style.borderColor = '#e2e8f0';
+              }
             }}
           >
-            <svg width="18" height="18" viewBox="0 0 24 24">
-              <path
-                fill="#4285F4"
-                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-              />
-              <path
-                fill="#34A853"
-                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-              />
-              <path
-                fill="#FBBC05"
-                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-              />
-              <path
-                fill="#EA4335"
-                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-              />
-            </svg>
-            <span>Continue with Google</span>
+            {oauthLoadingProvider === 'google' ? (
+              <>
+                <Loader2 className="animate-spin" size={18} color="#4285F4" />
+                <span>Connecting to Google...</span>
+              </>
+            ) : (
+              <>
+                <svg width="18" height="18" viewBox="0 0 24 24">
+                  <path
+                    fill="#4285F4"
+                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                  />
+                  <path
+                    fill="#EA4335"
+                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                  />
+                </svg>
+                <span>Continue with Google</span>
+              </>
+            )}
           </button>
 
-          {/* GitHub & LinkedIn in two columns */}
+          {/* GitHub & LinkedIn buttons */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
             <button
               type="button"
-              onClick={() => setOauthModalProvider('github')}
+              disabled={!!oauthLoadingProvider || loading}
+              onClick={handleGithubSignIn}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -216,7 +237,8 @@ export const LoginPage: React.FC = () => {
 
             <button
               type="button"
-              onClick={() => setOauthModalProvider('linkedin')}
+              disabled={!!oauthLoadingProvider || loading}
+              onClick={handleLinkedinSignIn}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -310,15 +332,6 @@ export const LoginPage: React.FC = () => {
               'Sign In to Portal'
             )}
           </button>
-
-          <button
-            type="button"
-            onClick={handleDemoFill}
-            className="btn-secondary"
-            style={{ padding: '9px', fontSize: '0.85rem', width: '100%' }}
-          >
-            Fill Demo Student Credentials
-          </button>
         </form>
 
         <p
@@ -336,14 +349,6 @@ export const LoginPage: React.FC = () => {
           </Link>
         </p>
       </div>
-
-      {/* OAuth Modal */}
-      <OAuthModal
-        isOpen={!!oauthModalProvider}
-        provider={oauthModalProvider}
-        onClose={() => setOauthModalProvider(null)}
-        onSuccess={handleOAuthSuccess}
-      />
     </div>
   );
 };

@@ -693,8 +693,8 @@ export const PlacementOpsPage: React.FC = () => {
                     <span style={{ color: '#b91c1c', fontWeight: 600 }}>Shortage: {gap.gap_pct}%</span>
                   </div>
                   <div style={{ display: 'flex', height: '14px', borderRadius: '4px', overflow: 'hidden', background: 'var(--border)' }}>
-                    <div style={{ width: `${gap.student_supply_pct}%`, background: 'var(--primary)', title: 'Student Supply' }} />
-                    <div style={{ width: `${gap.gap_pct}%`, background: '#fca5a5', title: 'Unmet Demand' }} />
+                    <div style={{ width: `${gap.student_supply_pct}%`, background: 'var(--primary)' }} title="Student Supply" />
+                    <div style={{ width: `${gap.gap_pct}%`, background: '#fca5a5' }} title="Unmet Demand" />
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: 'var(--muted-foreground)', marginTop: '2px' }}>
                     <span>Student Supply: {gap.student_supply_pct}%</span>

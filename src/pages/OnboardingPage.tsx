@@ -56,8 +56,8 @@ export const OnboardingPage: React.FC = () => {
   useEffect(() => {
     const goals = getCareerGoalsForBranch(branch);
     setCareers(goals);
-    if (!goals.some(g => (g.id || g.career_id) === targetCareerId) && goals.length > 0) {
-      setTargetCareerId(goals[0].id || goals[0].career_id);
+    if (!goals.some(g => (g.id || (g as any).career_id) === targetCareerId) && goals.length > 0) {
+      setTargetCareerId(goals[0].id || (goals[0] as any).career_id);
     }
   }, [branch]);
 

@@ -457,7 +457,7 @@ How can I help you prepare today? You can ask for:
                   transition: 'all 0.15s'
                 }}
               >
-                <MessageSquare size={15} style={{ color: activeThreadId === th.id ? '#006EFF' : '#94a3b8', shrink: 0 }} />
+                <MessageSquare size={15} style={{ color: activeThreadId === th.id ? '#006EFF' : '#94a3b8', flexShrink: 0 }} />
                 <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
                   {th.title}
                 </div>
@@ -600,7 +600,7 @@ How can I help you prepare today? You can ask for:
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    shrink: 0,
+                    flexShrink: 0,
                     boxShadow: '0 2px 6px rgba(0, 110, 255, 0.2)'
                   }}
                 >
@@ -658,7 +658,7 @@ How can I help you prepare today? You can ask for:
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    shrink: 0
+                    flexShrink: 0
                   }}
                 >
                   <User size={18} />

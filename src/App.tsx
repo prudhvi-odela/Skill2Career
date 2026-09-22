@@ -19,6 +19,7 @@ import { JobReadinessPage } from './pages/JobReadinessPage';
 import { TrajectoryPage } from './pages/TrajectoryPage';
 import { OnboardingPage } from './pages/OnboardingPage';
 import { BranchCurriculumPage } from './pages/BranchCurriculumPage';
+import { OAuthCallbackPage } from './pages/OAuthCallbackPage';
 
 // Placement-Ops-AI Reference Pages
 import { PlacementOpsPage } from './pages/PlacementOpsPage';
@@ -68,6 +69,7 @@ export const App: React.FC = () => {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/onboarding" element={<OnboardingPage />} />
+            <Route path="/auth/callback" element={<OAuthCallbackPage />} />
 
             {/* Direct alias redirects for top-level paths */}
             <Route path="/profile" element={<Navigate to="/app/profile" replace />} />
