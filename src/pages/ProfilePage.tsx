@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useNavigate } from 'react-router-dom'
 import {
   Loader2, Save, Upload, FileText, CheckCircle2, ArrowLeft, Plus, X, FolderGit2, Link2, Globe,
   ShieldAlert, RotateCcw, Sparkles, ChevronDown, ChevronUp,
@@ -11,6 +11,7 @@ import {
   type StudentProfile, type StudentProfileUpdate, type ExtractedProfileData,
 } from '@/lib/student-api'
 import { ENGINEERING_CATEGORIES } from '../data/engineeringBranches'
+import { LogoLoader } from '@/components/LogoLoader'
 
 // ── small reusable bits (kept local -- page.tsx's helpers aren't exported) ──
 
@@ -60,7 +61,7 @@ function TagListInput({ values, onChange, placeholder }: { values: string[]; onC
 }
 
 export function ProfilePage() {
-  const router = useRouter()
+  const navigate = useNavigate()
   const [profile, setProfile] = useState<StudentProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -75,13 +76,16 @@ export function ProfilePage() {
     let active = true
     const loadProfile = async () => {
       try {
+        setLoading(true)
+        setError('')
         const prof = await getMyProfile()
-        if (active && prof) {
+        if (active && prof && prof.id) {
           setProfile(prof)
+          setLoading(false)
           return
         }
       } catch (e: any) {
-        // Continue to fallback
+        console.warn('API getMyProfile failed, attempting fallback store:', e)
       }
 
       if (active) {
@@ -96,9 +100,9 @@ export function ProfilePage() {
             id: u?.id || 1,
             profile_id: u?.profile_id || 'prof_01',
             email: u?.email || 'demo@skill2career.com',
-            name: u?.name || u?.full_name || 'Alex Chen',
+            name: u?.name || u?.full_name || 'Aditya Sharma',
             branch: u?.branch || 'Computer Science & Engineering',
-            cgpa: u?.cgpa || 8.8,
+            cgpa: u?.cgpa || 9.2,
             tenth_pct: 92.0,
             twelfth_pct: 90.5,
             semester_marks: { 'Sem 1': 8.7, 'Sem 2': 8.9, 'Sem 3': 8.8, 'Sem 4': 9.0 },
@@ -128,11 +132,11 @@ export function ProfilePage() {
             applied_drives: [],
             profile_photo_url: u?.avatar_url || null,
             resume_url: '/resumes/Aditya_Sharma_Resume.pdf',
-            resume_filename: 'Alex_Chen_Resume.pdf',
+            resume_filename: 'Aditya_Sharma_Resume.pdf',
             github_url: 'https://github.com/demo/portfolio',
             linkedin_url: 'https://linkedin.com/in/demo-student',
-            portfolio_url: 'https://alexchen.dev',
-            coding_profiles: { leetcode: 'alex_code', github: 'alexchen-dev' },
+            portfolio_url: 'https://adityasharma.dev',
+            coding_profiles: { leetcode: 'aditya_code', github: 'adityasharma-dev' },
             preferred_roles: ['Software Engineer', 'Full Stack Developer', 'AI/ML Engineer'],
             expected_salary: 14,
             location_preference: ['Bangalore', 'Hyderabad', 'Remote'],
@@ -145,12 +149,14 @@ export function ProfilePage() {
           })
         } catch (_) {
           setError('Could not load your profile. Please refresh or retry.')
+        } finally {
+          setLoading(false)
         }
       }
     }
     loadProfile()
     return () => { active = false }
-  }, [router])
+  }, [])
 
   const patch = (updates: StudentProfileUpdate) => {
     if (!profile) return
@@ -275,8 +281,12 @@ export function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="animate-spin text-primary" size={28} />
+      <div className="min-h-[calc(100vh-100px)] flex items-center justify-center p-6 bg-slate-50/50">
+        <LogoLoader
+          size="lg"
+          text="Loading Student Profile..."
+          subtext="Retrieving verified academic records, competencies & placement analytics"
+        />
       </div>
     )
   }
@@ -299,7 +309,7 @@ export function ProfilePage() {
           <div className="flex flex-col gap-2">
             <button
               className="btn btn-primary w-full"
-              onClick={() => router.push('/app/dashboard')}
+              onClick={() => navigate('/app/dashboard')}
             >
               ← Back to Dashboard
             </button>
@@ -310,7 +320,7 @@ export function ProfilePage() {
                 setError('')
                 try {
                   const prof = await getMyProfile()
-                  setProfile(prof)
+                  if (prof && prof.id) setProfile(prof)
                 } catch (e: any) {
                   setError(e.message || 'Could not load your profile.')
                 } finally {
@@ -333,7 +343,7 @@ export function ProfilePage() {
       <div className="dashboard-main motion-page">
         <div className="section-title">
           <div>
-            <button onClick={() => router.push('/app/dashboard')} className="quiet-link mb-3">
+            <button onClick={() => navigate('/app/dashboard')} className="quiet-link mb-3">
               <ArrowLeft size={13} /> Back to dashboard
             </button>
             <div className="eyebrow">Student Profile</div>
@@ -356,9 +366,9 @@ export function ProfilePage() {
         {/* Auto-fill banner */}
         {(extracting || autofillResult) && (
           <div style={{
-            background: 'linear-gradient(135deg, rgba(99,102,241,0.15) 0%, rgba(168,85,247,0.15) 100%)',
-            border: '1px solid rgba(99,102,241,0.35)',
-            borderRadius: '14px',
+            background: 'linear-gradient(135deg, rgba(238,242,255,0.95) 0%, rgba(245,243,255,0.95) 100%)',
+            border: '1px solid #c7d2fe',
+            borderRadius: '12px',
             padding: '14px 18px',
             marginBottom: '20px',
             display: 'flex',
@@ -367,25 +377,25 @@ export function ProfilePage() {
           }}>
             <div style={{ flexShrink: 0, marginTop: '2px' }}>
               {extracting
-                ? <Loader2 size={18} className="animate-spin" style={{ color: '#818cf8' }} />
-                : <Sparkles size={18} style={{ color: '#818cf8' }} />}
+                ? <Loader2 size={18} className="animate-spin text-indigo-600" />
+                : <Sparkles size={18} className="text-indigo-600" />}
             </div>
             <div style={{ flex: 1 }}>
               {extracting ? (
-                <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: '#c7d2fe' }}>
+                <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: '#1e1b4b' }}>
                   Extracting your details from the resume…
                 </p>
               ) : autofillResult && (
                 <>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'space-between' }}>
-                    <p style={{ margin: 0, fontSize: '13px', fontWeight: 700, color: '#c7d2fe' }}>
+                    <p style={{ margin: 0, fontSize: '13px', fontWeight: 700, color: '#1e1b4b' }}>
                       ✨ Auto-filled {autofillResult.fields.length} field{autofillResult.fields.length !== 1 ? 's' : ''} from your resume
-                      {autofillResult.source === 'huggingface' && <span style={{ fontSize: '10px', background: 'rgba(99,102,241,0.3)', padding: '1px 6px', borderRadius: '4px', marginLeft: '6px' }}>AI</span>}
+                      {autofillResult.source === 'huggingface' && <span style={{ fontSize: '10px', background: '#e0e7ff', color: '#3730a3', padding: '1px 6px', borderRadius: '4px', marginLeft: '6px' }}>AI</span>}
                     </p>
                     <button
                       type="button"
                       onClick={() => setShowAutofillDetails(!showAutofillDetails)}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#818cf8', display: 'flex', alignItems: 'center', gap: '3px', fontSize: '11px' }}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#4338ca', display: 'flex', alignItems: 'center', gap: '3px', fontSize: '11px', fontWeight: 600 }}
                     >
                       {showAutofillDetails ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
                       {showAutofillDetails ? 'Hide' : 'Details'}
@@ -394,13 +404,13 @@ export function ProfilePage() {
                   {showAutofillDetails && (
                     <div style={{ marginTop: '8px', display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
                       {autofillResult.fields.map((f, i) => (
-                        <span key={i} style={{ fontSize: '11px', background: 'rgba(99,102,241,0.25)', color: '#c7d2fe', padding: '2px 8px', borderRadius: '6px', fontWeight: 600 }}>
+                        <span key={i} style={{ fontSize: '11px', background: '#e0e7ff', color: '#312e81', padding: '2px 8px', borderRadius: '6px', fontWeight: 600, border: '1px solid #c7d2fe' }}>
                           {f}
                         </span>
                       ))}
                     </div>
                   )}
-                  <p style={{ margin: '6px 0 0', fontSize: '11px', color: '#818cf8' }}>
+                  <p style={{ margin: '6px 0 0', fontSize: '11px', color: '#4338ca' }}>
                     Review the filled fields below and click <strong>Save changes</strong> to confirm.
                   </p>
                 </>
@@ -410,7 +420,7 @@ export function ProfilePage() {
               <button
                 type="button"
                 onClick={() => setAutofillResult(null)}
-                style={{ flexShrink: 0, background: 'none', border: 'none', cursor: 'pointer', color: '#818cf8', opacity: 0.7 }}
+                style={{ flexShrink: 0, background: 'none', border: 'none', cursor: 'pointer', color: '#4338ca', opacity: 0.7 }}
               >
                 <X size={14} />
               </button>

@@ -74,12 +74,34 @@ function getUserIdFromReq(req: express.Request): string {
 
 // Lazy Gemini AI Client initialization
 let aiClient: GoogleGenAI | null = null;
+let aiClientFailed = false;
+
 function getAI(): GoogleGenAI | null {
-  if (!aiClient && process.env.GEMINI_API_KEY) {
+  if (aiClientFailed) return null;
+  if (!aiClient) {
     try {
-      aiClient = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-    } catch (e) {
-      console.warn('[Gemini AI Init Failed]:', e);
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (apiKey && typeof apiKey === 'string' && apiKey.trim().length > 10 && !apiKey.toLowerCase().includes('placeholder')) {
+        aiClient = new GoogleGenAI({
+          apiKey: apiKey.trim(),
+          httpOptions: {
+            headers: {
+              'User-Agent': 'aistudio-build'
+            }
+          }
+        });
+      } else {
+        aiClient = new GoogleGenAI({
+          httpOptions: {
+            headers: {
+              'User-Agent': 'aistudio-build'
+            }
+          }
+        });
+      }
+    } catch {
+      aiClientFailed = true;
+      aiClient = null;
     }
   }
   return aiClient;
@@ -933,59 +955,120 @@ app.post('/api/v1/ml/train', (req, res) => {
   res.json({ status: 'training_completed', version_tag: 'v1.0.1-auto', duration_seconds: 4.2 });
 });
 
+function withTimeout<T>(promise: Promise<T>, ms = 2000): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) => setTimeout(() => reject(new Error('AI timeout')), ms))
+  ]);
+}
+
 // -------------------------------------------------------------
 // AI Career Advisor & Chat Routes
 // -------------------------------------------------------------
-app.post('/api/v1/ai/chat', async (req, res) => {
+const handleAIChat = async (req: express.Request, res: express.Response) => {
   const userId = getUserIdFromReq(req);
-  const { message, conversation_id, target_career_id } = req.body;
+  const { message, conversation_id, target_career_id, history } = req.body;
+
+  if (!message || typeof message !== 'string' || !message.trim()) {
+    return res.status(400).json({ error: 'Message cannot be empty.' });
+  }
+
   const profile = store.getProfile(userId);
   const gap = store.calculateSkillGap(userId, target_career_id);
 
   let reply = '';
-
   const ai = getAI();
+
   if (ai) {
     try {
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.8-flash',
-        contents: `You are Skill2Career AI, an expert career advisor and technical mentor.
-Student Profile:
-Name: ${profile.full_name}
-Target Career: ${gap.career_title} (${gap.domain})
-Current Readiness: ${gap.readiness_score}%
-Match: ${gap.match_percentage}%
-Top Missing Skills: ${gap.missing_skills.map((s: any) => s.skill_name).slice(0, 3).join(', ')}
+      // Build conversation contents for multi-turn chat
+      const contents: Array<{ role: 'user' | 'model'; parts: Array<{ text: string }> }> = [];
 
-User message: ${message}
+      // Append multi-turn history if provided
+      if (Array.isArray(history) && history.length > 0) {
+        for (const item of history.slice(-10)) {
+          const itemText = item.content || item.message || item.text;
+          if (!itemText) continue;
+          const role = (item.role === 'assistant' || item.role === 'model') ? 'model' : 'user';
+          contents.push({
+            role,
+            parts: [{ text: String(itemText).trim() }]
+          });
+        }
+      }
 
-Provide a concise, encouraging, and highly actionable technical recommendation.`
+      // Append current user message
+      contents.push({
+        role: 'user',
+        parts: [{ text: message.trim() }]
       });
-      reply = response.text || '';
-    } catch (err) {
-      console.warn('[Gemini generation error, falling back]:', err);
+
+      const systemInstruction = `You are Skill2Career AI, an elite conversational AI mentor, computer science tutor, and career copilot powered by Google Gemini (providing rich, helpful, direct, and conversational responses like ChatGPT and Gemini).
+
+Student Profile Context:
+- Name: ${profile?.full_name || 'Student'}
+- Academic Background: ${profile?.degree || 'B.Tech Engineering'} in ${profile?.major_or_branch || 'Engineering'} (${profile?.institution || 'University'})
+- Current Target Career: ${gap?.career_title || profile?.target_career_title || 'Software Engineer'} (${gap?.domain || 'Technology'})
+- Predicted Job Readiness: ${gap?.readiness_score ?? 72}%
+- Documented Skills: ${(profile?.skills || []).map((s: any) => s.name).slice(0, 10).join(', ') || 'Python, SQL, Algorithms'}
+- Top Missing Competencies: ${(gap?.missing_skills || []).map((s: any) => s.skill_name).slice(0, 4).join(', ') || 'Docker, System Design'}
+
+Conversation Guidelines:
+1. Provide real, comprehensive, deep, and conversational answers just like ChatGPT or Gemini. Never answer with dry static templates.
+2. If the user asks a coding or algorithmic question, provide clear, production-grade code examples with explanation, edge case handling, and Big-O time/space complexity analysis.
+3. If the user asks about interview preparation, career transitions, or resume optimization, give actionable, highly relevant industry advice using the Google STAR / X-Y-Z method.
+4. If the user engages in general conversation, greeting, or concept queries, respond naturally, warmly, and thoroughly.
+5. Format responses using clean GitHub Markdown with clear section headers, bullet lists, and syntax-highlighted code fences.`;
+
+      const candidateModels = ['gemini-3.8-flash', 'gemini-3.1-flash-lite'];
+      for (const model of candidateModels) {
+        try {
+          const response = await ai.models.generateContent({
+            model,
+            contents,
+            config: {
+              systemInstruction,
+              temperature: 0.7,
+            }
+          });
+
+          if (response && response.text) {
+            reply = response.text.trim();
+            break;
+          }
+        } catch (mErr: any) {
+          console.warn(`Model ${model} in handleAIChat encountered an error:`, mErr?.message || mErr);
+        }
+      }
+    } catch (err: any) {
+      console.error('Gemini API Error in AI Chat:', err?.message || err);
     }
   }
 
   if (!reply) {
     if (message.toLowerCase().includes('roadmap') || message.toLowerCase().includes('start')) {
-      reply = `To accelerate toward **${gap.career_title}**, your priority should be mastering **${gap.missing_skills[0]?.skill_name || 'core fundamentals'}**. Dedicate 4 hours this week to hands-on implementation and test your knowledge in the Assessments tab.`;
+      reply = `To accelerate toward **${gap.career_title}**, your immediate priority is mastering **${gap.missing_skills[0]?.skill_name || 'core fundamentals'}**. Dedicate focused time this week to hands-on projects and verify your mastery in the Assessments tab.`;
     } else if (message.toLowerCase().includes('ready') || message.toLowerCase().includes('score')) {
-      reply = `Your predicted job-readiness is currently **${gap.readiness_score}%**. With your current study pace of ${profile.statistics?.weekly_study_hours || 16} hrs/week, you are on track to exceed 85% readiness in approximately 6-8 weeks!`;
+      reply = `Your predicted job-readiness is currently **${gap.readiness_score}%**. With your current study pace of ${profile?.statistics?.weekly_study_hours || 16} hrs/week, you are on track to exceed 85% readiness in approximately 6-8 weeks!`;
     } else {
-      reply = `For your goal as a **${gap.career_title}**, focusing on **${gap.critical_gaps.slice(0, 2).join(' & ')}** will provide the highest leverage on your readiness score. Would you like a suggested project breakdown or diagnostic practice question?`;
+      reply = `For your goal as a **${gap.career_title}**, focusing on **${gap.critical_gaps?.slice(0, 2).join(' & ') || 'System Design and DSA'}** will provide the highest leverage on your readiness score. Ask me any coding challenge or interview question to dive in!`;
     }
   }
 
   res.json({
     conversation_id: conversation_id || 'conv_' + Math.random().toString(36).substring(2, 8),
+    reply,
     message: reply,
     suggested_actions: [
-      { label: `Practice ${gap.missing_skills[0]?.skill_name || 'Algorithms'}`, route: '/app/practice' },
+      { label: `Practice ${gap.missing_skills?.[0]?.skill_name || 'Algorithms'}`, route: '/app/practice' },
       { label: 'View Roadmap', route: '/app/roadmap' }
     ]
   });
-});
+};
+
+app.post('/api/v1/ai/chat', handleAIChat);
+app.post('/ai/chat', handleAIChat);
+app.post('/api/ai/chat', handleAIChat);
 
 app.post('/api/v1/ai/explain-readiness', (req, res) => {
   const userId = getUserIdFromReq(req);

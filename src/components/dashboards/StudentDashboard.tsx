@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useNavigate } from 'react-router-dom'
 import {
   Zap, LayoutDashboard, User as UserIcon, Briefcase, ClipboardList, CalendarDays,
   Sparkles, Bell, Settings, LogOut, Moon, Menu, ChevronDown, Loader2, Gauge,
@@ -18,6 +18,7 @@ import { EligibleJobs } from '@/components/jobs/EligibleJobs'
 import { AppliedJobs } from '@/components/jobs/AppliedJobs'
 import { CareerAssistantCard } from '@/components/ai/CareerAssistantCard'
 import { PersonalizedSuggestionsView } from '@/components/ai/PersonalizedSuggestionsView'
+import { LogoLoader } from '@/components/LogoLoader'
 
 const NAV_ITEMS = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -32,7 +33,7 @@ const NAV_ITEMS = [
 ]
 
 export function StudentDashboard({ user, onLogout }: { user: any; onLogout: () => void }) {
-  const router = useRouter()
+  const navigate = useNavigate()
   const [active, setActive] = useState('dashboard')
   const [dark, setDark] = useState(false)
   const [mobileNav, setMobileNav] = useState(false)
@@ -63,23 +64,20 @@ export function StudentDashboard({ user, onLogout }: { user: any; onLogout: () =
 
   const handleNavClick = (id: string, comingSoon?: boolean) => {
     if (comingSoon) return
-    if (id === 'profile') { router.push('/app/profile'); return }
-    if (id === 'resume-ai') { router.push('/app/resume-ai'); return }
+    if (id === 'profile') { navigate('/app/profile'); return }
+    if (id === 'resume-ai') { navigate('/app/resume-ai'); return }
     setActive(id)
     setMobileNav(false)
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 className="animate-spin text-primary" size={28} />
-          {user?.user?.name && (
-            <span className="text-xs font-mono uppercase tracking-wide text-muted-foreground">
-              Loading dashboard for {user.user.name}…
-            </span>
-          )}
-        </div>
+      <div className="min-h-[calc(100vh-100px)] flex items-center justify-center p-6 bg-slate-50/50">
+        <LogoLoader
+          size="lg"
+          text={user?.user?.name ? `Loading Dashboard for ${user.user.name}` : 'Loading Dashboard...'}
+          subtext="Harmonizing placement drives, AI skill diagnostics & active applications"
+        />
       </div>
     )
   }

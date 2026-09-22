@@ -3,5 +3,8 @@
   "description": "Skill2Career Official Competency Architecture, Career Readiness Forecasting & Placement Platform",
   "capabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
   ]
 }

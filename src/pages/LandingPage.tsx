@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   TrendingUp, ArrowRight, Sparkles, Zap,
-  Layers, Terminal, Award
+  Layers, Terminal
 } from 'lucide-react';
 import { Footer } from '../components/Footer';
-import { CourseAwarenessMockTest } from '../components/CourseAwarenessMockTest';
 
 const DEMO_CAREERS = [
   {
@@ -55,18 +54,6 @@ export const LandingPage: React.FC = () => {
   const [skillLevels, setSkillLevels] = useState<number[]>(
     activeCareer.skills.map((s) => s.user)
   );
-  const [showMockTest, setShowMockTest] = useState<boolean>(false);
-  const [awarenessRating, setAwarenessRating] = useState<{ score: number; grade: string } | null>(() => {
-    const saved = localStorage.getItem('skillbridge_course_awareness_rating');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        return null;
-      }
-    }
-    return null;
-  });
 
   const handleCareerChange = (index: number) => {
     setSelectedCareerIndex(index);
@@ -224,32 +211,6 @@ export const LandingPage: React.FC = () => {
               <ArrowRight size={16} />
             </Link>
 
-            <button
-              onClick={() => setShowMockTest(true)}
-              style={{
-                background: '#ffffff',
-                border: '1px solid #2563eb',
-                color: '#2563eb',
-                padding: '12px 22px',
-                borderRadius: '8px',
-                fontSize: '0.95rem',
-                fontWeight: 700,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                boxShadow: '0 2px 6px rgba(37, 99, 235, 0.08)',
-              }}
-            >
-              <Award size={18} />
-              <span>Take Course Awareness Mock Test</span>
-              {awarenessRating && (
-                <span style={{ fontSize: '0.75rem', background: '#dcfce7', color: '#166534', padding: '2px 6px', borderRadius: '4px' }}>
-                  {awarenessRating.grade}
-                </span>
-              )}
-            </button>
-
             <Link
               to="/login"
               className="btn-secondary"
@@ -258,18 +219,6 @@ export const LandingPage: React.FC = () => {
               Official Sign In
             </Link>
           </div>
-
-          {/* Modal / Inline Course Awareness Diagnostic Mock Test */}
-          {showMockTest && (
-            <div className="animate-fade-in" style={{ marginTop: '12px' }}>
-              <CourseAwarenessMockTest
-                onClose={() => setShowMockTest(false)}
-                onRatingUpdated={(score, grade) => {
-                  setAwarenessRating({ score, grade });
-                }}
-              />
-            </div>
-          )}
 
           {/* Live Interactive SkillBridge Simulator */}
           <div

@@ -52,6 +52,12 @@ export const OnboardingPage: React.FC = () => {
   const [uploadedFileName, setUploadedFileName] = useState<string>('');
   const [resumeSummary, setResumeSummary] = useState<string>('');
 
+  useEffect(() => {
+    if (!fullName && (user?.full_name || profile?.full_name)) {
+      setFullName(user?.full_name || profile?.full_name || '');
+    }
+  }, [user, profile, fullName]);
+
   // Update careers whenever branch changes
   useEffect(() => {
     const goals = getCareerGoalsForBranch(branch);

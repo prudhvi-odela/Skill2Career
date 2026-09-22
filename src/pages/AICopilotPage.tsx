@@ -248,20 +248,19 @@ Here are targeted recommendations based on your target role (**${profile?.target
         const aiMessage: ChatMessage = {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
-          content: data.reply || getSmartResponse(query),
+          content: data.reply || data.message || 'I am ready to help you with any questions or code!',
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         };
         setMessages((prev) => [...prev, aiMessage]);
       } else {
-        throw new Error('API fallback');
+        throw new Error(`Server returned HTTP ${res.status}`);
       }
-    } catch (err) {
-      // Dynamic tailored response based on exact query
-      const dynamicReply = getSmartResponse(query);
+    } catch (err: any) {
+      console.error('AI chat error:', err);
       const aiMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: dynamicReply,
+        content: `I encountered a temporary connection issue. Please try sending your message again!`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       setMessages((prev) => [...prev, aiMessage]);

@@ -3,17 +3,40 @@ import { placementOpsStore } from './placementOpsStore.js';
 import { GoogleGenAI } from '@google/genai';
 import { TOPIC_ASSESSMENTS } from './assessmentData.js';
 import { store } from './store.js';
+import { verifyResumeATS } from './resumeAtsEngine.js';
 
 export const placementOpsRouter = Router();
 
 // Gemini Client Lazy Initializer & Multi-Model Resilience
 let aiClient: GoogleGenAI | null = null;
+let aiClientFailed = false;
+
 function getAI(): GoogleGenAI | null {
-  if (!aiClient && process.env.GEMINI_API_KEY) {
+  if (aiClientFailed) return null;
+  if (!aiClient) {
     try {
-      aiClient = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-    } catch (e) {
-      console.warn('[Gemini Init Failed]:', e);
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (apiKey && typeof apiKey === 'string' && apiKey.trim().length > 10 && !apiKey.toLowerCase().includes('placeholder')) {
+        aiClient = new GoogleGenAI({
+          apiKey: apiKey.trim(),
+          httpOptions: {
+            headers: {
+              'User-Agent': 'aistudio-build'
+            }
+          }
+        });
+      } else {
+        aiClient = new GoogleGenAI({
+          httpOptions: {
+            headers: {
+              'User-Agent': 'aistudio-build'
+            }
+          }
+        });
+      }
+    } catch {
+      aiClientFailed = true;
+      aiClient = null;
     }
   }
   return aiClient;
@@ -22,13 +45,13 @@ function getAI(): GoogleGenAI | null {
 async function callGemini(contents: string): Promise<string> {
   const ai = getAI();
   if (!ai) return '';
-  const models = ['gemini-flash-latest', 'gemini-3.8-flash', 'gemini-3.1-flash-lite'];
+  const models = ['gemini-3.6-flash', 'gemini-3.8-flash', 'gemini-3.1-flash-lite'];
   for (const model of models) {
     try {
       const response = await ai.models.generateContent({ model, contents });
       if (response.text) return response.text;
-    } catch (err: any) {
-      console.warn(`[Gemini model ${model} attempt failed]:`, err?.message || err);
+    } catch {
+      // Continue to next model or fallback
     }
   }
   return '';
@@ -142,11 +165,60 @@ placementOpsRouter.get(['/students/:id', '/api/students/:id'], (req, res) => {
   res.json(student);
 });
 
-// ── Resume AI Endpoints ─────────────────────────────────────────
-placementOpsRouter.post(['/students/me/resume/analyze', '/api/students/me/resume/analyze'], (req, res) => {
-  const targetDriveId = req.body?.drive_id ? parseInt(req.body.drive_id, 10) : undefined;
-  const analysis = placementOpsStore.analyzeResume(1, targetDriveId);
-  res.json(analysis);
+// ── Resume AI & Live Enhancv-Grade ATS Endpoints ────────────────
+placementOpsRouter.post([
+  '/students/me/resume/analyze',
+  '/api/students/me/resume/analyze',
+  '/students/me/resume/verify-ats',
+  '/api/students/me/resume/verify-ats',
+  '/api/v1/resume/verify-ats'
+], async (req, res) => {
+  const { resume_text, target_role, job_description, drive_id } = req.body || {};
+  const student = placementOpsStore.students[0];
+
+  const role = target_role || (drive_id ? placementOpsStore.drives.find(d => d.id === Number(drive_id))?.role_title : undefined) || 'Software Engineer';
+  const defaultResume = student?.resume_text || `Alex Chen | alex.chen@rvce.edu.in | github.com/alexchen | linkedin.com/in/alexchen
+Bangalore, India
+
+Professional Summary:
+Aspiring Software Engineer with expertise in Python, FastAPI, React, and PostgreSQL. Experienced in architecting REST microservices, automated testing, and scalable backend workflows.
+
+Technical Skills:
+- Languages: Python, TypeScript, SQL, C++
+- Frameworks & Tools: FastAPI, React 19, Docker, Git, Node.js, Redis
+- Databases: PostgreSQL, SQLite
+
+Projects:
+Skill2Career Placement & Diagnostic Suite
+- Built a web platform using FastAPI and React to analyze technical skill gaps for 2,500+ students.
+- Implemented automated LeetCode/DSA verification engine reducing query response latency by 35%.
+- Containerized service using Docker multi-stage builds.
+
+Work Experience:
+Software Engineering Intern | Acme Labs (Jun 2025 - Aug 2025)
+- Responsible for developing backend APIs and helped with database management.
+- Worked on improving user authentication flows and assisted in bug fixing.
+
+Education:
+B.Tech in Computer Science and Engineering | RV College of Engineering
+CGPA: 8.8 / 10 | Graduation: 2026`;
+
+  const textToVerify = (resume_text && typeof resume_text === 'string' && resume_text.trim().length > 10)
+    ? resume_text
+    : defaultResume;
+
+  try {
+    const analysis = await verifyResumeATS(textToVerify, role, job_description, getAI());
+    if (student) {
+      student.resume_ats_score = analysis.overall_score;
+      (student as any).resume_analysis = analysis;
+      (student as any).resume_text = textToVerify;
+    }
+    res.json(analysis);
+  } catch (err: any) {
+    console.error('Error in ATS verification endpoint:', err);
+    res.status(500).json({ error: 'Failed to complete ATS verification.' });
+  }
 });
 
 placementOpsRouter.get(['/students/me/resume/analysis', '/api/students/me/resume/analysis'], (req, res) => {
@@ -541,38 +613,7 @@ placementOpsRouter.get(['/students/me/resume/analysis', '/api/students/me/resume
   });
 });
 
-placementOpsRouter.post(['/students/me/resume/analyze', '/api/students/me/resume/analyze'], async (req, res) => {
-  const { drive_id } = req.body || {};
-  const student = placementOpsStore.students[0];
-  const drive = drive_id ? placementOpsStore.drives.find(d => d.id === Number(drive_id)) : null;
 
-  const analysis = {
-    ats_score: 91,
-    score_breakdown: {
-      skills: { score: 29, max: 30, detail: `Matches 92% of core competencies required for ${drive?.role_title || 'Software Engineer'}.` },
-      education: { score: 19, max: 20, detail: 'Degree and CGPA benchmarks fully satisfied.' },
-      projects: { score: 23, max: 25, detail: 'Architectural projects reflect production-grade design.' },
-      experience: { score: 12, max: 15, detail: 'Internship contributions validated.' },
-      formatting: { score: 8, max: 10, detail: 'ATS parser parsed all standard sections successfully.' }
-    },
-    extracted_skills: {
-      languages: ['Python', 'SQL', 'TypeScript'],
-      frameworks: ['FastAPI', 'React', 'Docker'],
-      databases: ['PostgreSQL', 'Redis']
-    },
-    missing_skills: ['Kubernetes', 'Distributed Consensus'],
-    suggestions: [
-      'Highlight concrete performance numbers in your primary project description.',
-      'Mention unit test coverage frameworks (pytest/jest) in the Skills section.'
-    ],
-    missing_keywords: ['Kubernetes', 'Microservices', 'Load Balancing'],
-    source: 'huggingface',
-    analyzed_at: new Date().toISOString()
-  };
-
-  student.resume_ats_score = analysis.ats_score;
-  res.json(analysis);
-});
 
 placementOpsRouter.post(['/students/me/resume/bullets', '/api/students/me/resume/bullets'], async (req, res) => {
   const { draft, role } = req.body || {};
@@ -587,7 +628,7 @@ Draft: "${draft}"
 Return ONLY a JSON array of 3 strings, e.g. ["bullet 1", "bullet 2", "bullet 3"].`;
 
       const response = await ai.models.generateContent({
-        model: 'gemini-3.8-flash',
+        model: 'gemini-3.6-flash',
         contents: prompt
       });
 
@@ -597,8 +638,8 @@ Return ONLY a JSON array of 3 strings, e.g. ["bullet 1", "bullet 2", "bullet 3"]
         const bullets = JSON.parse(match[0]);
         return res.json({ bullets, advice: 'gemini' });
       }
-    } catch (e) {
-      console.warn('Gemini bullets generation fallback:', e);
+    } catch {
+      // Fallback silently to structured response
     }
   }
 
@@ -791,34 +832,82 @@ placementOpsRouter.post(['/assessments/submit', '/api/v1/assessments/submit', '/
   });
 });
 
+function withTimeout<T>(promise: Promise<T>, ms = 2000): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) => setTimeout(() => reject(new Error('AI timeout')), ms))
+  ]);
+}
+
 // ── Multi-Agent AI Chat Co-Pilot ────────────────────────────────
-placementOpsRouter.post(['/ai/chat', '/api/ai/chat', '/api/v1/ai/chat'], async (req, res) => {
+placementOpsRouter.post(['/ai/chat', '/api/ai/chat'], async (req, res) => {
   const { message, model, history } = req.body || {};
   const query = (message || '').trim();
 
-  // Try Gemini AI if available
+  if (!query) {
+    return res.status(400).json({ error: 'Message cannot be empty.' });
+  }
+
+  // Real Gemini AI Integration
   const ai = getAI();
-  if (ai && query) {
+  if (ai) {
     try {
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.8-flash',
-        contents: `You are Skill2Career AI, an expert technical career mentor, tutor, and placement advisor modeled after Google Gemini and ChatGPT.
-Your mission is to provide students with authoritative, structured, and actionable guidance for software engineering, AI/ML, data science, cloud/DevOps, and core CS interviews.
+      const contents: Array<{ role: 'user' | 'model'; parts: Array<{ text: string }> }> = [];
 
-GUIDELINES:
-1. When asked "What to prepare today" or "How to prepare today", generate a realistic, structured 4-stage daily preparation schedule with time blocks (e.g. Phase 1: DSA Practice 60m, Phase 2: Core Tech Stack & Projects 90m, Phase 3: System Design / CS Fundamentals 45m, Phase 4: Assessment Diagnostic 15m).
-2. Always provide direct, authoritative Chrome web links in markdown format (e.g. [FastAPI Documentation](https://fastapi.tiangolo.com), [MDN Web Docs](https://developer.mozilla.org), [PyTorch Tutorials](https://pytorch.org/tutorials/), [NeetCode 150](https://neetcode.io/roadmap), [System Design Primer](https://github.com/donnemartin/system-design-primer), [LeetCode Practice](https://leetcode.com)).
-3. Always suggest taking one of the diagnostic assessments available in Skill2Career (Python, JavaScript, TypeScript, SQL, React, FastAPI, Docker, PyTorch, Scikit-Learn, DSA, System Design).
-4. Format your responses with clean Markdown: bold headings, structured bullet points, code snippets where helpful, and step-by-step checklists.
+      // Append multi-turn history
+      if (Array.isArray(history) && history.length > 0) {
+        for (const item of history.slice(-10)) {
+          const itemText = item.content || item.message || item.text;
+          if (!itemText) continue;
+          const role = (item.role === 'assistant' || item.role === 'model') ? 'model' : 'user';
+          contents.push({
+            role,
+            parts: [{ text: String(itemText).trim() }]
+          });
+        }
+      }
 
-Student Prompt: "${query}"`
+      // Append user prompt
+      contents.push({
+        role: 'user',
+        parts: [{ text: query }]
       });
 
-      if (response.text) {
-        return res.json({ reply: response.text });
+      const systemInstruction = `You are Skill2Career AI, a conversational technical mentor, CS tutor, and career copilot powered by Google Gemini (providing deep, real, and helpful responses like ChatGPT and Gemini).
+
+Guidelines:
+1. Provide real, natural, deep, and conversational answers just like ChatGPT and Gemini. Never use repetitive or static template responses.
+2. If asked about programming or technical topics (Python, TypeScript, React, SQL, FastAPI, Docker, Algorithms, System Design), provide clean, production-grade code, clear explanations, and complexity analysis.
+3. If asked about career preparation, daily study routines, or interview prep, provide realistic, actionable advice with structured guidance and official learning resources.
+4. If asked general or open-ended questions, respond warmly, intelligently, and helpfully.
+5. Format with clean GitHub Markdown (headings, bullet points, bolding, syntax-highlighted code blocks).`;
+
+      const candidateModels = ['gemini-3.8-flash', 'gemini-3.1-flash-lite'];
+      for (const model of candidateModels) {
+        try {
+          const response = await withTimeout(
+            ai.models.generateContent({
+              model,
+              contents,
+              config: {
+                systemInstruction,
+                temperature: 0.7,
+              }
+            }),
+            25000
+          );
+
+          if (response && response.text) {
+            const text = response.text.trim();
+            return res.json({ reply: text, message: text });
+          }
+        } catch (mErr: any) {
+          console.warn(`Model ${model} in placementOpsRouter failed:`, mErr?.message || mErr);
+        }
       }
-    } catch (err) {
-      console.warn('Gemini chat fallback triggered:', err);
+    } catch (err: any) {
+      console.error('Gemini Chat in placementOpsRouter encountered an error:', err?.message || err);
+      // Continue to intelligent fallback
     }
   }
 

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, X, Send, Bot, User, RefreshCw, Copy, Check, MessageSquare, Maximize2 } from 'lucide-react';
+import { Sparkles, X, Send, Bot, User, RefreshCw, Copy, Check, MessageSquare, Maximize2, RotateCcw } from 'lucide-react';
 import { apiFetch } from '../lib/api';
 
 interface Message {
@@ -17,14 +17,14 @@ export function AIChatbox() {
   const [loading, setLoading] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 'init',
-      role: 'assistant',
-      content: `Hello! 👋 I am your **Skill2Career AI Mentor**.\n\nAsk me anything about analyzing your skill gaps, technical interview preparation (DSA, System Design), resume optimization, or career roadmap milestones!`,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    }
-  ]);
+  const initialAssistantMessage: Message = {
+    id: 'init',
+    role: 'assistant',
+    content: `Hello! 👋 I am your **Skill2Career AI Mentor** powered by Google Gemini.\n\nAsk me anything: solve & debug code, practice DSA or System Design, write STAR-method resume points, or get personalized placement guidance!`,
+    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  };
+
+  const [messages, setMessages] = useState<Message[]>([initialAssistantMessage]);
 
   const chatEndRef = useRef<HTMLDivElement>(null);
 
@@ -43,6 +43,16 @@ export function AIChatbox() {
     window.addEventListener('placement-ops:ask-ai', listener);
     return () => window.removeEventListener('placement-ops:ask-ai', listener);
   }, []);
+
+  const handleResetChat = () => {
+    setMessages([
+      {
+        ...initialAssistantMessage,
+        id: 'init_' + Date.now(),
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }
+    ]);
+  };
 
   const handleSend = async (textToSend?: string) => {
     const query = textToSend || input;
@@ -65,7 +75,7 @@ export function AIChatbox() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: query.trim(),
-          history: messages.slice(-6).map(m => ({ role: m.role, content: m.content }))
+          history: messages.slice(-8).map(m => ({ role: m.role, content: m.content }))
         })
       });
 
@@ -77,15 +87,16 @@ export function AIChatbox() {
       const aiMsg: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: data.reply || 'Here is what I recommend for your career preparation.',
+        content: data.reply || data.message || 'Here is what I recommend for your preparation.',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       setMessages(prev => [...prev, aiMsg]);
     } catch (err: any) {
+      console.error('Chat error:', err);
       const fallbackMsg: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: `I am your **Skill2Career AI Mentor**. Here is immediate career advice for your question:\n\n• **Core Competency Focus**: Prioritize mastering core languages (Python/JavaScript) and databases (SQL/PostgreSQL).\n• **Projects with Impact**: Build applications with clear system architecture, clean APIs, and test coverage.\n• **Gap Engine**: Check the **Skill Gap Engine** tab in your navigation to view exact deficits against your target role.`,
+        content: `I encountered a temporary connection issue. Please check your network and try sending your message again!`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       setMessages(prev => [...prev, fallbackMsg]);
@@ -101,9 +112,9 @@ export function AIChatbox() {
   };
 
   const quickPrompts = [
-    'How do I close my skill gap?',
-    'Tips for technical interviews',
-    'How to write strong STAR bullets?'
+    'Explain QuickSort in Python',
+    'How to prepare for System Design?',
+    'STAR method resume bullet for React/FastAPI'
   ];
 
   return (
@@ -143,6 +154,13 @@ export function AIChatbox() {
               </div>
             </div>
             <div className="flex items-center gap-1">
+              <button
+                onClick={handleResetChat}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                title="New / Clear chat conversation"
+              >
+                <RotateCcw size={15} />
+              </button>
               <button
                 onClick={() => {
                   setIsOpen(false);

@@ -1,6 +1,6 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import { useNavigate } from 'react-router-dom'
 import { ArrowRight, CheckCircle2 } from 'lucide-react'
 import type { StudentProfile } from '@/lib/student-api'
 
@@ -29,7 +29,7 @@ function isEmpty(value: unknown): boolean {
 }
 
 export function ProfileCompletionCard({ profile }: { profile: StudentProfile }) {
-  const router = useRouter()
+  const navigate = useNavigate()
   const pct = profile.profile_completion_pct
   const missing = FIELD_LABELS.filter((f) => isEmpty(profile[f.key])).map((f) => f.label)
 
@@ -49,7 +49,7 @@ export function ProfileCompletionCard({ profile }: { profile: StudentProfile }) 
           <h2>Complete Your Profile</h2>
           <p>Recruiters and the matching engine rank complete profiles higher.</p>
         </div>
-        <button onClick={() => router.push('/app/profile')} className="btn btn-primary">
+        <button onClick={() => navigate('/app/profile')} className="btn btn-primary">
           Complete Profile <ArrowRight size={13} />
         </button>
       </div>

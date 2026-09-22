@@ -30,17 +30,19 @@ import { ResumeAIPage } from './pages/ResumeAIPage';
 import { AssessmentsPage } from './pages/AssessmentsPage';
 import { AICopilotPage } from './pages/AICopilotPage';
 import FacultyDiscoveryDashboard from './components/dashboards/FacultyDiscoveryDashboard';
+import { LogoLoader } from './components/LogoLoader';
 
 const ProtectedLayout: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: '16px' }}>
-        <div className="spinner spinner-primary" style={{ width: '32px', height: '32px', borderWidth: '3px' }} />
-        <div style={{ color: '#64748b', fontSize: '0.9rem', fontWeight: 600 }} className="animate-pulse-subtle">
-          Authenticating official Skill2Career session...
-        </div>
+      <div className="flex items-center justify-center min-h-screen bg-slate-50/60 p-6">
+        <LogoLoader
+          size="fullscreen"
+          text="Authenticating Skill2Career Session..."
+          subtext="Verifying university placement credentials & competency architecture"
+        />
       </div>
     );
   }
@@ -72,12 +74,14 @@ export const App: React.FC = () => {
             <Route path="/privacy" element={<PrivacyPolicyPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/onboarding" element={<OnboardingPage />} />
             <Route path="/auth/callback" element={<OAuthCallbackPage />} />
             <Route path="/auth/github/callback" element={<OAuthCallbackPage />} />
             <Route path="/auth/google/callback" element={<OAuthCallbackPage />} />
             <Route path="/auth/linkedin/callback" element={<OAuthCallbackPage />} />
 
             {/* Direct alias redirects for top-level paths */}
+            <Route path="/onboard" element={<Navigate to="/onboarding" replace />} />
             <Route path="/profile" element={<Navigate to="/app/profile" replace />} />
             <Route path="/dashboard" element={<Navigate to="/app/dashboard" replace />} />
             <Route path="/resume-ai" element={<Navigate to="/app/resume-ai" replace />} />
@@ -107,6 +111,7 @@ export const App: React.FC = () => {
               <Route path="curriculum" element={<BranchCurriculumPage />} />
               <Route path="compiler" element={<BranchCurriculumPage />} />
               <Route path="profile" element={<ProfilePage />} />
+              <Route path="onboarding" element={<OnboardingPage />} />
 
               {/* Placement Ops AI & Diagnostic Suite */}
               <Route path="ai-copilot" element={<AICopilotPage />} />

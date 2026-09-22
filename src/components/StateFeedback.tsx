@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { LogoLoader } from './LogoLoader';
 
 export interface SkeletonProps {
   height?: string;
@@ -10,6 +11,15 @@ export interface SkeletonProps {
   rows?: number;
   type?: 'cards' | 'table' | 'lines';
 }
+
+// Branded loading state powered by S2C logo animation
+export const LogoLoadingState: React.FC<{
+  title?: string;
+  subtitle?: string;
+  size?: 'sm' | 'md' | 'lg' | 'fullscreen';
+}> = ({ title = 'Loading...', subtitle = 'Skill2Career Placement & Competency Engine', size = 'md' }) => {
+  return <LogoLoader size={size} text={title} subtext={subtitle} />;
+};
 
 // Clean text-based loader without skeleton pulse bars or fake layout boxes
 export const SkeletonLoader: React.FC<SkeletonProps> = () => {

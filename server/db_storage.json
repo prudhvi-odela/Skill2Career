@@ -1,0 +1,572 @@
+{
+  "users": [
+    [
+      "usr_demo_01",
+      {
+        "id": "usr_demo_01",
+        "email": "demo@skill2career.com",
+        "full_name": "Alex Chen",
+        "role": "student",
+        "password": "Password123!",
+        "provider": "local"
+      }
+    ],
+    [
+      "demo@skill2career.com",
+      {
+        "id": "usr_demo_01",
+        "email": "demo@skill2career.com",
+        "full_name": "Alex Chen",
+        "role": "student",
+        "password": "Password123!",
+        "provider": "local"
+      }
+    ],
+    [
+      "usr_fp80432",
+      {
+        "id": "usr_fp80432",
+        "email": "namithakoduru18@gmail.com",
+        "full_name": "Namitha Koduru",
+        "role": "student",
+        "password": "123456",
+        "provider": "local"
+      }
+    ],
+    [
+      "namithakoduru18@gmail.com",
+      {
+        "id": "usr_fp80432",
+        "email": "namithakoduru18@gmail.com",
+        "full_name": "Namitha Koduru",
+        "role": "student",
+        "password": "123456",
+        "provider": "local"
+      }
+    ],
+    [
+      "usr_mdw8a9b",
+      {
+        "id": "usr_mdw8a9b",
+        "email": "namithakoduru@gmail.com",
+        "full_name": "Namitha Koduru",
+        "role": "student",
+        "password": "112233",
+        "provider": "local"
+      }
+    ],
+    [
+      "namithakoduru@gmail.com",
+      {
+        "id": "usr_mdw8a9b",
+        "email": "namithakoduru@gmail.com",
+        "full_name": "Namitha Koduru",
+        "role": "student",
+        "password": "112233",
+        "provider": "local"
+      }
+    ],
+    [
+      "usr_0ae717e",
+      {
+        "id": "usr_0ae717e",
+        "email": "namitha@gmail.com",
+        "full_name": "Namitha Koduru",
+        "role": "student",
+        "password": "112233",
+        "provider": "local"
+      }
+    ],
+    [
+      "namitha@gmail.com",
+      {
+        "id": "usr_0ae717e",
+        "email": "namitha@gmail.com",
+        "full_name": "Namitha Koduru",
+        "role": "student",
+        "password": "112233",
+        "provider": "local"
+      }
+    ],
+    [
+      "usr_hutm4ia",
+      {
+        "id": "usr_hutm4ia",
+        "email": "test_user_unique_123@example.com",
+        "full_name": "Test User",
+        "role": "student",
+        "password": "Password123",
+        "provider": "local"
+      }
+    ],
+    [
+      "test_user_unique_123@example.com",
+      {
+        "id": "usr_hutm4ia",
+        "email": "test_user_unique_123@example.com",
+        "full_name": "Test User",
+        "role": "student",
+        "password": "Password123",
+        "provider": "local"
+      }
+    ]
+  ],
+  "profiles": [
+    [
+      "usr_demo_01",
+      {
+        "user_id": "usr_demo_01",
+        "full_name": "Alex Chen",
+        "email": "demo@skill2career.com",
+        "headline": "Aspiring AI Engineer & Full-Stack Developer",
+        "bio": "Passionate computer science student building intelligent web systems and learning distributed architectures.",
+        "degree": "B.Tech Computer Science",
+        "institution": "National Institute of Technology",
+        "institution_tier": 1,
+        "graduation_year": 2026,
+        "gpa": 8.8,
+        "target_career_id": "CG_CSE_1_software_engineer",
+        "target_career_title": "Software Engineer",
+        "skills": [
+          {
+            "skill_id": "SK001",
+            "name": "Python",
+            "category": "Languages",
+            "domain": "General",
+            "level": 4,
+            "verified": true,
+            "verification_source": "Self-Reported",
+            "years_experience": 2
+          },
+          {
+            "skill_id": "SK008",
+            "name": "SQL",
+            "category": "Languages",
+            "domain": "Databases",
+            "level": 3.5,
+            "verified": true,
+            "verification_source": "Assessment Quiz",
+            "years_experience": 1.5
+          },
+          {
+            "skill_id": "SK009",
+            "name": "React",
+            "category": "Frontend",
+            "domain": "Web Development",
+            "level": 3,
+            "verified": false,
+            "verification_source": "Self-Reported",
+            "years_experience": 1
+          },
+          {
+            "skill_id": "SK015",
+            "name": "FastAPI",
+            "category": "Backend",
+            "domain": "Backend & APIs",
+            "level": 3.5,
+            "verified": true,
+            "verification_source": "Self-Reported",
+            "years_experience": 1
+          },
+          {
+            "skill_id": "SK026",
+            "name": "Pandas & NumPy",
+            "category": "AI & ML",
+            "domain": "Data Analysis",
+            "level": 4,
+            "verified": true,
+            "verification_source": "Assessment Quiz",
+            "years_experience": 2
+          },
+          {
+            "skill_id": "SK027",
+            "name": "Scikit-Learn",
+            "category": "AI & ML",
+            "domain": "Machine Learning",
+            "level": 3.5,
+            "verified": true,
+            "verification_source": "Assessment Quiz",
+            "years_experience": 1.5
+          },
+          {
+            "skill_id": "SK040",
+            "name": "Data Structures & Algorithms",
+            "category": "Core CS",
+            "domain": "Fundamentals",
+            "level": 3.5,
+            "verified": true,
+            "verification_source": "Self-Reported",
+            "years_experience": 2
+          },
+          {
+            "skill_id": "SK043",
+            "name": "Git & Version Control",
+            "category": "Software Tools",
+            "domain": "Collaboration",
+            "level": 4,
+            "verified": true,
+            "verification_source": "Self-Reported",
+            "years_experience": 2
+          }
+        ],
+        "statistics": {
+          "weekly_study_hours": 16,
+          "learning_velocity_index": 1.4,
+          "assessments_passed": 3,
+          "projects_count": 2,
+          "certifications_count": 1
+        },
+        "updated_at": "2026-09-22T19:45:17.645Z"
+      }
+    ],
+    [
+      "usr_fp80432",
+      {
+        "user_id": "usr_fp80432",
+        "full_name": "Namitha Koduru",
+        "email": "namithakoduru18@gmail.com",
+        "headline": "Student / Aspiring Technologist",
+        "bio": "Welcome to Skill2Career. Update your profile to get personalized career insights.",
+        "degree": "B.Tech Computer Science",
+        "institution": "University of Technology",
+        "institution_tier": 2,
+        "graduation_year": 2026,
+        "gpa": 8,
+        "target_career_id": "CG_BIOTECH_2_bioprocess_engineer",
+        "target_career_title": "Bioprocess Engineer",
+        "skills": [
+          {
+            "skill_id": "SK001",
+            "name": "Python",
+            "category": "Languages",
+            "domain": "General",
+            "level": 3,
+            "verified": false,
+            "verification_source": "Self-Reported"
+          },
+          {
+            "skill_id": "SK002",
+            "name": "JavaScript",
+            "category": "Languages",
+            "domain": "Web Development",
+            "level": 3,
+            "verified": false,
+            "verification_source": "Self-Reported"
+          }
+        ],
+        "statistics": {
+          "weekly_study_hours": 10,
+          "learning_velocity_index": 1,
+          "assessments_passed": 0,
+          "projects_count": 0,
+          "certifications_count": 0
+        },
+        "updated_at": "2026-09-22T20:10:41.674Z"
+      }
+    ],
+    [
+      "usr_mdw8a9b",
+      {
+        "user_id": "usr_mdw8a9b",
+        "full_name": "Namitha Koduru",
+        "email": "namithakoduru@gmail.com",
+        "headline": "Student / Aspiring Technologist",
+        "bio": "Welcome to Skill2Career. Update your profile to get personalized career insights.",
+        "degree": "B.Tech Computer Science",
+        "institution": "University of Technology",
+        "institution_tier": 2,
+        "graduation_year": 2026,
+        "gpa": 8,
+        "target_career_id": "CG_CSE_1_software_engineer",
+        "target_career_title": "Software Engineer",
+        "skills": [
+          {
+            "skill_id": "SK001",
+            "name": "Python",
+            "category": "Languages",
+            "domain": "General",
+            "level": 3,
+            "verified": false,
+            "verification_source": "Self-Reported"
+          },
+          {
+            "skill_id": "SK002",
+            "name": "JavaScript",
+            "category": "Languages",
+            "domain": "Web Development",
+            "level": 3,
+            "verified": false,
+            "verification_source": "Self-Reported"
+          }
+        ],
+        "statistics": {
+          "weekly_study_hours": 10,
+          "learning_velocity_index": 1,
+          "assessments_passed": 0,
+          "projects_count": 0,
+          "certifications_count": 0
+        },
+        "updated_at": "2026-09-22T20:04:21.203Z"
+      }
+    ],
+    [
+      "usr_0ae717e",
+      {
+        "user_id": "usr_0ae717e",
+        "full_name": "Namitha Koduru",
+        "email": "namitha@gmail.com",
+        "headline": "Student / Aspiring Technologist",
+        "bio": "Welcome to Skill2Career. Update your profile to get personalized career insights.",
+        "degree": "B.Tech Computer Science",
+        "institution": "University of Technology",
+        "institution_tier": 2,
+        "graduation_year": 2026,
+        "gpa": 8,
+        "target_career_id": "CG_CSE_1_software_engineer",
+        "target_career_title": "Software Engineer",
+        "skills": [
+          {
+            "skill_id": "SK001",
+            "name": "Python",
+            "category": "Languages",
+            "domain": "General",
+            "level": 3,
+            "verified": false,
+            "verification_source": "Self-Reported"
+          },
+          {
+            "skill_id": "SK002",
+            "name": "JavaScript",
+            "category": "Languages",
+            "domain": "Web Development",
+            "level": 3,
+            "verified": false,
+            "verification_source": "Self-Reported"
+          }
+        ],
+        "statistics": {
+          "weekly_study_hours": 10,
+          "learning_velocity_index": 1,
+          "assessments_passed": 0,
+          "projects_count": 0,
+          "certifications_count": 0
+        },
+        "updated_at": "2026-09-22T20:05:51.405Z"
+      }
+    ],
+    [
+      "usr_hutm4ia",
+      {
+        "user_id": "usr_hutm4ia",
+        "full_name": "Test User",
+        "email": "test_user_unique_123@example.com",
+        "headline": "Student / Aspiring Technologist",
+        "bio": "Welcome to Skill2Career. Update your profile to get personalized career insights.",
+        "degree": "B.Tech Computer Science",
+        "institution": "University of Technology",
+        "institution_tier": 2,
+        "graduation_year": 2026,
+        "gpa": 8,
+        "target_career_id": "CG_CSE_1_software_engineer",
+        "target_career_title": "Software Engineer",
+        "skills": [
+          {
+            "skill_id": "SK001",
+            "name": "Python",
+            "category": "Languages",
+            "domain": "General",
+            "level": 3,
+            "verified": false,
+            "verification_source": "Self-Reported"
+          },
+          {
+            "skill_id": "SK002",
+            "name": "JavaScript",
+            "category": "Languages",
+            "domain": "Web Development",
+            "level": 3,
+            "verified": false,
+            "verification_source": "Self-Reported"
+          }
+        ],
+        "statistics": {
+          "weekly_study_hours": 10,
+          "learning_velocity_index": 1,
+          "assessments_passed": 0,
+          "projects_count": 0,
+          "certifications_count": 0
+        },
+        "updated_at": "2026-09-22T20:11:17.403Z"
+      }
+    ]
+  ],
+  "projects": [
+    [
+      "usr_demo_01",
+      [
+        {
+          "id": "prj_01",
+          "student_id": "usr_demo_01",
+          "title": "Skill2Career AI Engine",
+          "description": "Engineered skill-gap mapping and job-readiness forecasting pipeline using FastAPI and Scikit-Learn.",
+          "repository_url": "https://github.com/namitha-koduru/Skill2Career",
+          "live_url": "https://skill2career.dev",
+          "technologies": "Python, FastAPI, Scikit-Learn, React, TypeScript",
+          "complexity_rating": 4.5,
+          "created_at": "2026-09-22T19:45:17.645Z"
+        },
+        {
+          "id": "prj_02",
+          "student_id": "usr_demo_01",
+          "title": "Distributed Task Queue & Caching System",
+          "description": "Constructed an asynchronous worker queue utilizing Redis and Python asyncio with real-time updates.",
+          "repository_url": "https://github.com/demo/distributed-task-queue",
+          "live_url": "https://demo-tasks.io",
+          "technologies": "Python, Redis, WebSockets, Docker",
+          "complexity_rating": 4,
+          "created_at": "2026-09-22T19:45:17.645Z"
+        }
+      ]
+    ],
+    [
+      "usr_fp80432",
+      []
+    ],
+    [
+      "usr_mdw8a9b",
+      []
+    ],
+    [
+      "usr_0ae717e",
+      []
+    ],
+    [
+      "usr_hutm4ia",
+      []
+    ]
+  ],
+  "certifications": [
+    [
+      "usr_demo_01",
+      [
+        {
+          "id": "crt_01",
+          "student_id": "usr_demo_01",
+          "name": "TensorFlow Developer Certificate",
+          "issuer": "DeepLearning.AI / Google",
+          "issue_date": "2025-11",
+          "credential_url": "https://coursera.org/verify/TF-12345",
+          "is_verified": true,
+          "created_at": "2026-09-22T19:45:17.645Z"
+        }
+      ]
+    ],
+    [
+      "usr_fp80432",
+      []
+    ],
+    [
+      "usr_mdw8a9b",
+      []
+    ],
+    [
+      "usr_0ae717e",
+      []
+    ],
+    [
+      "usr_hutm4ia",
+      []
+    ]
+  ],
+  "workExperiences": [
+    [
+      "usr_demo_01",
+      [
+        {
+          "id": "exp_01",
+          "student_id": "usr_demo_01",
+          "company": "Neural Labs Inc.",
+          "role": "Machine Learning Intern",
+          "start_date": "2025-06-01",
+          "end_date": "2025-08-31",
+          "is_current": false,
+          "description": "Assisted in feature engineering and preprocessing pipelines for tabular customer churn models.",
+          "skills_used": [
+            "Python",
+            "Scikit-Learn",
+            "Pandas & NumPy"
+          ]
+        }
+      ]
+    ],
+    [
+      "usr_fp80432",
+      []
+    ],
+    [
+      "usr_mdw8a9b",
+      []
+    ],
+    [
+      "usr_0ae717e",
+      []
+    ],
+    [
+      "usr_hutm4ia",
+      []
+    ]
+  ],
+  "roadmaps": [
+    [
+      "usr_demo_01",
+      [
+        {
+          "id": "rd_01",
+          "title": "Deep Learning with PyTorch",
+          "description": "Complete neural networks and backpropagation fundamentals.",
+          "skill_id": "SK028",
+          "target_level": 4,
+          "estimated_weeks": 4,
+          "is_completed": false,
+          "category": "AI & ML"
+        },
+        {
+          "id": "rd_02",
+          "title": "MLOps Pipeline Deployment",
+          "description": "Containerize machine learning services and setup model registry.",
+          "skill_id": "SK033",
+          "target_level": 4,
+          "estimated_weeks": 3,
+          "is_completed": false,
+          "category": "DevOps & MLOps"
+        },
+        {
+          "id": "rd_03",
+          "title": "System Design for ML",
+          "description": "Design feature store and low-latency inference endpoints.",
+          "skill_id": "SK041",
+          "target_level": 4,
+          "estimated_weeks": 3,
+          "is_completed": true,
+          "category": "Core CS"
+        }
+      ]
+    ],
+    [
+      "usr_fp80432",
+      []
+    ],
+    [
+      "usr_mdw8a9b",
+      []
+    ],
+    [
+      "usr_0ae717e",
+      []
+    ],
+    [
+      "usr_hutm4ia",
+      []
+    ]
+  ]
+}

@@ -60,7 +60,7 @@ export const RegisterPage: React.FC = () => {
     try {
       const googleUser = await triggerGoogleOAuth();
       await oauthLogin(googleUser);
-      navigate('/app/dashboard');
+      navigate('/onboarding');
     } catch (err: any) {
       console.error('Google Sign Up Error:', err);
       setError(err.message || 'Google sign-up was cancelled or encountered an error.');
