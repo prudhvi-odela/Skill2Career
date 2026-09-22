@@ -2,6 +2,29 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import fs from 'fs';
+
+// Load .env variables into process.env if present
+if (fs.existsSync('.env')) {
+  try {
+    const envContent = fs.readFileSync('.env', 'utf-8');
+    envContent.split(/\r?\n/).forEach(line => {
+      const trimmed = line.trim();
+      if (trimmed && !trimmed.startsWith('#')) {
+        const eqIdx = trimmed.indexOf('=');
+        if (eqIdx !== -1) {
+          const key = trimmed.slice(0, eqIdx).trim();
+          const val = trimmed.slice(eqIdx + 1).trim();
+          if (process.env[key] === undefined) {
+            process.env[key] = val;
+          }
+        }
+      }
+    });
+  } catch (err) {
+    console.warn('Could not read .env file:', err);
+  }
+}
+
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI } from '@google/genai';
 import { store } from './server/store.js';
@@ -153,6 +176,117 @@ app.post('/api/v1/auth/oauth', (req, res) => {
     token_type: 'bearer',
     user: result.user
   });
+});
+
+// OAuth code exchange for server-to-server authorization
+app.post('/api/v1/auth/oauth/exchange', async (req, res) => {
+  const { provider, code, redirect_uri } = req.body;
+
+  if (!provider || !code) {
+    return res.status(400).json({ detail: 'Provider and authorization code are required.' });
+  }
+
+  try {
+    const p = String(provider).toLowerCase();
+
+    if (p === 'github') {
+      const clientId = process.env.VITE_GITHUB_CLIENT_ID || process.env.GITHUB_CLIENT_ID;
+      const clientSecret = process.env.VITE_GITHUB_CLIENT_SECRET || process.env.GITHUB_CLIENT_SECRET;
+
+      // Exchange code for access token
+      const tokenRes = await fetch('https://github.com/login/oauth/access_token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({
+          client_id: clientId,
+          client_secret: clientSecret,
+          code,
+        }),
+      });
+
+      const tokenData = await tokenRes.json();
+      if (!tokenData.access_token) {
+        return res.status(400).json({ detail: tokenData.error_description || 'Failed to exchange GitHub authorization code.' });
+      }
+
+      // Fetch user profile from GitHub
+      const userRes = await fetch('https://api.github.com/user', {
+        headers: {
+          Authorization: `Bearer ${tokenData.access_token}`,
+          'User-Agent': 'Skill2Career-App',
+        },
+      });
+      const ghUser = await userRes.json();
+
+      let email = ghUser.email;
+      if (!email) {
+        // Fetch emails list
+        const emailsRes = await fetch('https://api.github.com/user/emails', {
+          headers: {
+            Authorization: `Bearer ${tokenData.access_token}`,
+            'User-Agent': 'Skill2Career-App',
+          },
+        });
+        const emails = await emailsRes.json();
+        const primary = Array.isArray(emails) ? emails.find((e: any) => e.primary && e.verified) || emails[0] : null;
+        email = primary?.email || `${ghUser.login}@github.com`;
+      }
+
+      const result = store.oauthLogin('github', email, ghUser.name || ghUser.login, ghUser.avatar_url);
+      return res.json({
+        access_token: result.user.id,
+        token_type: 'bearer',
+        user: result.user,
+      });
+    }
+
+    if (p === 'linkedin') {
+      const clientId = process.env.VITE_LINKEDIN_CLIENT_ID || process.env.LINKEDIN_CLIENT_ID;
+      const clientSecret = process.env.VITE_LINKEDIN_CLIENT_SECRET || process.env.LINKEDIN_CLIENT_SECRET;
+
+      const params = new URLSearchParams({
+        grant_type: 'authorization_code',
+        code,
+        redirect_uri: redirect_uri || 'http://localhost:3000/auth/callback',
+        client_id: clientId || '',
+        client_secret: clientSecret || '',
+      });
+
+      const tokenRes = await fetch('https://www.linkedin.com/oauth/v2/accessToken', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: params.toString(),
+      });
+
+      const tokenData = await tokenRes.json();
+      if (!tokenData.access_token) {
+        return res.status(400).json({ detail: tokenData.error_description || 'Failed to exchange LinkedIn code.' });
+      }
+
+      // Fetch user profile from LinkedIn OIDC userinfo
+      const userRes = await fetch('https://api.linkedin.com/v2/userinfo', {
+        headers: { Authorization: `Bearer ${tokenData.access_token}` },
+      });
+      const liUser = await userRes.json();
+
+      const email = liUser.email || `${liUser.sub || 'student'}@linkedin.com`;
+      const fullName = liUser.name || `${liUser.given_name || ''} ${liUser.family_name || ''}`.trim() || 'LinkedIn User';
+
+      const result = store.oauthLogin('linkedin', email, fullName, liUser.picture);
+      return res.json({
+        access_token: result.user.id,
+        token_type: 'bearer',
+        user: result.user,
+      });
+    }
+
+    return res.status(400).json({ detail: 'Unsupported exchange provider.' });
+  } catch (err: any) {
+    return res.status(500).json({ detail: err.message || 'OAuth exchange failed.' });
+  }
 });
 
 app.get('/api/v1/auth/me', (req, res) => {

@@ -55,19 +55,30 @@ export const OAuthCallbackPage: React.FC = () => {
         }
 
         if (code) {
-          // Exchange code or process with backend
-          const provider = searchParams.get('provider') || 'github';
-          const email = searchParams.get('email') || `user_${code.substring(0, 8)}@university.edu`;
-          const fullName = searchParams.get('name') || 'Verified Student';
+          // Detect provider from state or fallback to github/linkedin
+          const provider = searchParams.get('provider') || (window.location.search.includes('scope') || searchParams.get('state') === 'linkedin' ? 'linkedin' : 'github');
+          const redirectUri = `${window.location.origin}/auth/callback`;
 
-          await oauthLogin({
-            provider,
-            email,
-            full_name: fullName,
+          const exchangeRes = await fetch('/api/v1/auth/oauth/exchange', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ provider, code, redirect_uri: redirectUri }),
           });
 
+          const data = await exchangeRes.json();
+          if (!exchangeRes.ok || !data.access_token) {
+            throw new Error(data.detail || 'OAuth authorization code exchange failed.');
+          }
+
+          localStorage.setItem('token', data.access_token);
+          localStorage.setItem('user', JSON.stringify(data.user));
+          localStorage.setItem('placement_ops_token', data.access_token);
+          localStorage.setItem('placement_ops_current_user', JSON.stringify({ ...data.user, name: data.user.full_name }));
+
           setStatus('success');
-          setTimeout(() => navigate('/app/dashboard'), 800);
+          setTimeout(() => {
+            window.location.href = '/app/dashboard';
+          }, 600);
           return;
         }
 
