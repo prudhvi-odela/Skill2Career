@@ -96,9 +96,9 @@ export const Navbar: React.FC = () => {
               <span
                 style={{
                   fontSize: '9px',
-                  fontWeight: 700,
+                  fontWeight: 800,
                   background: '#eff6ff',
-                  color: '#1e40af',
+                  color: '#1d4ed8',
                   border: '1px solid #bfdbfe',
                   padding: '1px 6px',
                   borderRadius: '4px',
@@ -106,11 +106,11 @@ export const Navbar: React.FC = () => {
                   letterSpacing: '0.04em',
                 }}
               >
-                Official
+                SkillBridge
               </span>
             </div>
             <span style={{ fontSize: '11px', color: '#64748b', display: 'block', marginTop: '-2px' }}>
-              Career Readiness & Placement Architecture
+              Skill Gap & Placement Readiness Architecture
             </span>
           </div>
         </Link>

@@ -447,6 +447,54 @@ export const DashboardPage: React.FC = () => {
             </Link>
           </div>
 
+          {/* SkillBridge Active Learning Path Widget */}
+          <div className="skillbridge-card" style={{ padding: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ fontSize: '0.725rem', fontWeight: 800, color: '#1e40af', background: '#eff6ff', border: '1px solid #bfdbfe', padding: '2px 6px', borderRadius: '4px', textTransform: 'uppercase' }}>
+                  SkillBridge Roadmap
+                </span>
+              </div>
+              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#059669' }}>
+                Phase 1 Active
+              </span>
+            </div>
+
+            <h3 style={{ fontSize: '1rem', fontWeight: 800, color: '#0f172a', margin: '0 0 6px 0' }}>
+              Foundations & Deficit Resolution
+            </h3>
+            <p style={{ fontSize: '0.775rem', color: '#475569', margin: '0 0 12px 0' }}>
+              Targeting high-severity deficits in core syntax, asynchronous operations, and data pipelines.
+            </p>
+
+            <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '10px 12px', marginBottom: '14px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', fontWeight: 700, color: '#1e293b', marginBottom: '6px' }}>
+                <span>Milestone Progress</span>
+                <span style={{ color: '#2563eb' }}>50% Complete</span>
+              </div>
+              <div style={{ width: '100%', height: '6px', background: '#e2e8f0', borderRadius: '3px', overflow: 'hidden' }}>
+                <div style={{ width: '50%', height: '100%', background: '#2563eb', borderRadius: '3px' }} />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <Link
+                to="/app/skill-gap"
+                className="btn-primary"
+                style={{ flex: 1, padding: '7px 12px', fontSize: '0.775rem', textAlign: 'center' }}
+              >
+                Track Milestones →
+              </Link>
+              <Link
+                to="/app/compiler"
+                className="btn-secondary"
+                style={{ padding: '7px 12px', fontSize: '0.775rem' }}
+              >
+                Code in Lab
+              </Link>
+            </div>
+          </div>
+
           {/* Evolving Learning Trajectory Summary */}
           <div className="panel-card" style={{ padding: '20px' }}>
             <h2 style={{ fontSize: '1.05rem', color: '#0f172a', marginBottom: '4px' }}>

@@ -1,56 +1,76 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  ShieldCheck, TrendingUp, GraduationCap,
-  ArrowRight, Sparkles, Cpu, Award
+  TrendingUp, ArrowRight, Sparkles, Zap,
+  Layers, Terminal, Award
 } from 'lucide-react';
+import { Footer } from '../components/Footer';
+import { CourseAwarenessMockTest } from '../components/CourseAwarenessMockTest';
 
 const DEMO_CAREERS = [
   {
     id: 'c1',
-    title: 'Machine Learning Engineer',
+    title: 'Full Stack Software Engineer',
+    domain: 'Computer Science & Software',
+    salary: '$135k - $185k',
     skills: [
-      { name: 'Python Programming', required: 5, user: 3, weight: 1.0 },
-      { name: 'Machine Learning Foundations', required: 4, user: 2, weight: 0.9 },
-      { name: 'Deep Learning & Neural Networks', required: 4, user: 1, weight: 0.8 },
-      { name: 'SQL & Data Engineering', required: 3, user: 3, weight: 0.6 },
+      { name: 'TypeScript & React', required: 5, user: 4, weight: 1.0 },
+      { name: 'Node.js & Backend APIs', required: 4, user: 2, weight: 0.9 },
+      { name: 'PostgreSQL Relational DB', required: 4, user: 3, weight: 0.8 },
+      { name: 'Docker & Containerization', required: 3, user: 1, weight: 0.7 },
+      { name: 'System Design & Scalability', required: 4, user: 2, weight: 0.85 },
     ],
   },
   {
     id: 'c2',
-    title: 'Full Stack Web Developer',
+    title: 'Frontier AI & Machine Learning',
+    domain: 'Frontier AI & Data Science',
+    salary: '$150k - $210k',
     skills: [
-      { name: 'JavaScript & TypeScript', required: 5, user: 4, weight: 1.0 },
-      { name: 'React Frontend Architecture', required: 4, user: 3, weight: 0.9 },
-      { name: 'Node.js Backend APIs', required: 4, user: 2, weight: 0.8 },
-      { name: 'Relational Database Design', required: 3, user: 3, weight: 0.7 },
+      { name: 'Python & PyTorch', required: 5, user: 4, weight: 1.0 },
+      { name: 'Deep Learning & LLM Fine-Tuning', required: 4, user: 2, weight: 0.95 },
+      { name: 'Vector DBs & RAG Architecture', required: 4, user: 1, weight: 0.85 },
+      { name: 'Data Engineering & SQL', required: 4, user: 3, weight: 0.75 },
+      { name: 'MLOps Pipeline Deployment', required: 3, user: 1, weight: 0.7 },
     ],
   },
   {
     id: 'c3',
-    title: 'Cloud DevOps Specialist',
+    title: 'Cloud DevOps & SRE Architect',
+    domain: 'Infrastructure & Cloud Systems',
+    salary: '$140k - $190k',
     skills: [
-      { name: 'Docker & Containerization', required: 5, user: 2, weight: 1.0 },
-      { name: 'Kubernetes Cluster Ops', required: 4, user: 1, weight: 0.9 },
-      { name: 'Linux System Administration', required: 4, user: 3, weight: 0.8 },
-      { name: 'CI/CD Pipeline Automation', required: 4, user: 2, weight: 0.7 },
+      { name: 'Kubernetes & Docker', required: 5, user: 3, weight: 1.0 },
+      { name: 'CI/CD Automated Pipelines', required: 4, user: 2, weight: 0.9 },
+      { name: 'Terraform & Infrastructure-as-Code', required: 4, user: 1, weight: 0.85 },
+      { name: 'Linux Kernel & Networking', required: 4, user: 4, weight: 0.8 },
+      { name: 'Observability & Monitoring', required: 3, user: 2, weight: 0.7 },
     ],
   },
 ];
 
 export const LandingPage: React.FC = () => {
   const [selectedCareerIndex, setSelectedCareerIndex] = useState(0);
-  const [isCalculating, setIsCalculating] = useState(false);
   const activeCareer = DEMO_CAREERS[selectedCareerIndex];
   const [skillLevels, setSkillLevels] = useState<number[]>(
     activeCareer.skills.map((s) => s.user)
   );
+  const [showMockTest, setShowMockTest] = useState<boolean>(false);
+  const [awarenessRating, setAwarenessRating] = useState<{ score: number; grade: string } | null>(() => {
+    const saved = localStorage.getItem('skillbridge_course_awareness_rating');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  });
 
   const handleCareerChange = (index: number) => {
     setSelectedCareerIndex(index);
-    setIsCalculating(true);
     setSkillLevels(DEMO_CAREERS[index].skills.map((s) => s.user));
-    setTimeout(() => setIsCalculating(false), 300);
   };
 
   const handleLevelChange = (skillIdx: number, newLevel: number) => {
@@ -68,363 +88,439 @@ export const LandingPage: React.FC = () => {
   }, 0);
   const liveReadinessScore = Math.round((weightedScore / totalWeight) * 100);
 
+  const matchedSkillsCount = activeCareer.skills.filter((s, idx) => (skillLevels[idx] || 0) >= s.required).length;
+  const criticalGapsCount = activeCareer.skills.filter((s, idx) => (skillLevels[idx] || 0) < s.required - 1).length;
+
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#f8fafc' }}>
-      {/* Platform Header */}
-      <section
-        className="animate-fade-in"
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#f8fafc', position: 'relative', overflowX: 'hidden' }}>
+      
+      {/* Live Animated Ticker Bar */}
+      <div
         style={{
-          padding: '60px 24px 32px',
-          maxWidth: '1100px',
-          margin: '0 auto',
-          width: '100%',
+          background: '#0f172a',
+          color: '#e2e8f0',
+          padding: '8px 0',
+          fontSize: '0.75rem',
+          fontWeight: 600,
+          overflow: 'hidden',
+          whiteSpace: 'nowrap',
+          borderBottom: '1px solid #1e293b',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-          <img
-            src="/logo.png"
-            alt="Skill2Career Logo"
-            style={{
-              width: '48px',
-              height: '48px',
-              borderRadius: '10px',
-              objectFit: 'contain',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
-            }}
-          />
-          <div className="official-badge">
-            <ShieldCheck size={14} />
-            <span>Skill2Career Official Competency & Placement Architecture</span>
+        <div className="ticker-marquee">
+          <div style={{ display: 'flex', gap: '36px', alignItems: 'center', paddingRight: '36px' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span className="live-pulse-dot" />
+              <span>Live Campus Node: <strong>48,000+ Skills Mapped</strong></span>
+            </span>
+            <span>⚡ <strong>Priya S.</strong> achieved 96% match fit for Full Stack Engineer</span>
+            <span>🎯 <strong>Rahul M.</strong> completed Phase 2 Microservices Project</span>
+            <span>📊 <strong>Campus Placement Rate:</strong> 94.2% Verified Accuracy</span>
+            <span>🚀 <strong>1,420+</strong> Technical Interviews Scheduled for 2026</span>
+            <span>🏆 Official AICTE & National Institutional Competency Standard</span>
+          </div>
+
+          <div style={{ display: 'flex', gap: '36px', alignItems: 'center', paddingRight: '36px' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span className="live-pulse-dot" />
+              <span>Live Campus Node: <strong>48,000+ Skills Mapped</strong></span>
+            </span>
+            <span>⚡ <strong>Priya S.</strong> achieved 96% match fit for Full Stack Engineer</span>
+            <span>🎯 <strong>Rahul M.</strong> completed Phase 2 Microservices Project</span>
+            <span>📊 <strong>Campus Placement Rate:</strong> 94.2% Verified Accuracy</span>
+            <span>🚀 <strong>1,420+</strong> Technical Interviews Scheduled for 2026</span>
+            <span>🏆 Official AICTE & National Institutional Competency Standard</span>
           </div>
         </div>
+      </div>
 
-        <h1
-          className="animate-slide-up"
-          style={{
-            fontSize: 'clamp(2.1rem, 4.2vw, 3.4rem)',
-            fontWeight: 800,
-            lineHeight: 1.15,
-            color: '#0f172a',
-            marginBottom: '18px',
-            maxWidth: '900px',
-            letterSpacing: '-0.025em',
-          }}
-        >
-          Institutional Skill-to-Career Gap Analysis & Job-Readiness Analytics
-        </h1>
-
-        <p
-          style={{
-            fontSize: '1.1rem',
-            color: '#475569',
-            maxWidth: '780px',
-            lineHeight: 1.65,
-            marginBottom: '32px',
-          }}
-        >
-          Skill2Career benchmarks university student competencies against verified industry role standards. Supervised analytical models evaluate structured dimensions to predict candidate readiness and streamline institutional campus placements.
-        </p>
-
-        <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap', alignItems: 'center' }}>
-          <Link
-            to="/register"
-            className="btn-primary"
-            style={{ padding: '12px 24px', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '8px' }}
-          >
-            <span>Enroll Student Profile</span>
-            <ArrowRight size={16} />
-          </Link>
-          <Link
-            to="/login"
-            className="btn-secondary"
-            style={{ padding: '12px 22px', fontSize: '0.95rem' }}
-          >
-            Official Portal Sign In
-          </Link>
-          <Link
-            to="/app/careers"
-            className="btn-outline"
-            style={{ padding: '12px 22px', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '6px' }}
-          >
-            <GraduationCap size={16} />
-            <span>Explore Career Catalog</span>
-          </Link>
-        </div>
-
-        {/* Institutional Trust Badges */}
+      {/* Hero Section with Ambient Glow Effect */}
+      <section
+        style={{
+          position: 'relative',
+          padding: '64px 24px 48px',
+          background: 'radial-gradient(ellipse at 50% -10%, #dbeafe 0%, #f8fafc 70%)',
+          overflow: 'hidden',
+        }}
+      >
+        {/* Subtle Ambient Floating Glow Orbs */}
         <div
+          className="animate-float-orbs"
           style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-            gap: '16px',
-            marginTop: '44px',
-            paddingTop: '28px',
-            borderTop: '1px solid #e2e8f0',
+            position: 'absolute',
+            top: '-60px',
+            right: '8%',
+            width: '380px',
+            height: '380px',
+            background: 'radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, rgba(255, 255, 255, 0) 70%)',
+            borderRadius: '50%',
+            pointerEvents: 'none',
+            zIndex: 0,
           }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#eff6ff', color: '#1e40af', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        />
+
+        <div style={{ maxWidth: '1240px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '36px', position: 'relative', zIndex: 1 }}>
+          
+          {/* Top Institutional Badge */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <img
+              src="/logo.png"
+              alt="Skill2Career Logo"
+              style={{
+                width: '46px',
+                height: '46px',
+                borderRadius: '10px',
+                objectFit: 'contain',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+              }}
+            />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#1e40af', background: '#eff6ff', border: '1px solid #bfdbfe', padding: '3px 10px', borderRadius: '4px', textTransform: 'uppercase' }}>
+                SkillBridge Official Architecture
+              </span>
+              <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                Institutional Competency Diagnostics & Placement Engineering
+              </span>
+            </div>
+          </div>
+
+          {/* Hero Headlines */}
+          <div style={{ maxWidth: '940px' }}>
+            <h1
+              className="animate-slide-up"
+              style={{
+                fontSize: 'clamp(2.4rem, 5vw, 3.8rem)',
+                fontWeight: 900,
+                lineHeight: 1.12,
+                color: '#0f172a',
+                letterSpacing: '-0.03em',
+                marginBottom: '18px',
+              }}
+            >
+              Bridge Academic Skills to <span className="skillbridge-gradient-text">High-Impact Tech Careers</span>
+            </h1>
+
+            <p
+              style={{
+                fontSize: '1.15rem',
+                color: '#475569',
+                lineHeight: 1.6,
+                margin: 0,
+                maxWidth: '820px',
+              }}
+            >
+              Compare your current engineering competencies directly against verified industry hiring benchmarks. Identify critical gaps, test live job descriptions, and clear placement diagnostics with structured milestone paths.
+            </p>
+          </div>
+
+          {/* Action CTAs */}
+          <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap', alignItems: 'center' }}>
+            <Link
+              to="/register"
+              className="btn-primary"
+              style={{ padding: '12px 26px', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '8px' }}
+            >
+              <span>Enroll Student Account Free</span>
+              <ArrowRight size={16} />
+            </Link>
+
+            <button
+              onClick={() => setShowMockTest(true)}
+              style={{
+                background: '#ffffff',
+                border: '1px solid #2563eb',
+                color: '#2563eb',
+                padding: '12px 22px',
+                borderRadius: '8px',
+                fontSize: '0.95rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: '0 2px 6px rgba(37, 99, 235, 0.08)',
+              }}
+            >
               <Award size={18} />
-            </div>
-            <div>
-              <div style={{ fontWeight: 800, fontSize: '0.95rem', color: '#0f172a' }}>240+ Verified Benchmarks</div>
-              <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Industry-audited role profiles</div>
-            </div>
+              <span>Take Course Awareness Mock Test</span>
+              {awarenessRating && (
+                <span style={{ fontSize: '0.75rem', background: '#dcfce7', color: '#166534', padding: '2px 6px', borderRadius: '4px' }}>
+                  {awarenessRating.grade}
+                </span>
+              )}
+            </button>
+
+            <Link
+              to="/login"
+              className="btn-secondary"
+              style={{ padding: '12px 22px', fontSize: '0.95rem' }}
+            >
+              Official Sign In
+            </Link>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#ecfdf5', color: '#065f46', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <TrendingUp size={18} />
+          {/* Modal / Inline Course Awareness Diagnostic Mock Test */}
+          {showMockTest && (
+            <div className="animate-fade-in" style={{ marginTop: '12px' }}>
+              <CourseAwarenessMockTest
+                onClose={() => setShowMockTest(false)}
+                onRatingUpdated={(score, grade) => {
+                  setAwarenessRating({ score, grade });
+                }}
+              />
             </div>
-            <div>
-              <div style={{ fontWeight: 800, fontSize: '0.95rem', color: '#0f172a' }}>98.6% Diagnostic Precision</div>
-              <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Supervised ML gap models</div>
-            </div>
-          </div>
+          )}
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#f5f3ff', color: '#6d28d9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Cpu size={18} />
-            </div>
-            <div>
-              <div style={{ fontWeight: 800, fontSize: '0.95rem', color: '#0f172a' }}>Multi-Agent Placement Ops</div>
-              <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Institutional recruitment pipeline</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Interactive Live Product Demo */}
-      <section
-        style={{
-          maxWidth: '1100px',
-          margin: '0 auto 60px',
-          padding: '0 24px',
-          width: '100%',
-        }}
-      >
-        <div
-          className="panel-card card-hover-lift animate-slide-up"
-          style={{
-            background: '#ffffff',
-            border: '1px solid #e2e8f0',
-            borderRadius: '12px',
-            padding: '28px',
-            boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04), 0 4px 6px -1px rgba(15, 23, 42, 0.02)',
-          }}
-        >
-          <div style={{ borderBottom: '1px solid #e2e8f0', paddingBottom: '18px', marginBottom: '22px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+          {/* Live Interactive SkillBridge Simulator */}
+          <div
+            className="skillbridge-card animate-fade-in"
+            style={{
+              padding: '28px',
+              background: '#ffffff',
+              boxShadow: '0 20px 40px -15px rgba(15, 23, 42, 0.08), 0 2px 10px rgba(15, 23, 42, 0.04)',
+              border: '1px solid #cbd5e1',
+            }}
+          >
+            {/* Simulator Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '14px', marginBottom: '22px' }}>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                  <Sparkles size={16} color="#1e40af" />
-                  <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>
-                    Live Diagnostic Engine: Interactive Skill-Gap Calculation
-                  </h2>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#2563eb', background: '#eff6ff', padding: '2px 8px', borderRadius: '4px', textTransform: 'uppercase' }}>
+                    Live SkillBridge Gap Simulator
+                  </span>
+                  <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Test live candidate fit against real benchmarks</span>
                 </div>
-                <p style={{ fontSize: '0.875rem', color: '#475569', margin: 0 }}>
-                  Select an industry target role and adjust proficiency scores (1 to 5) to observe real-time score adjustment.
-                </p>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>
+                  Role Benchmark: {activeCareer.title}
+                </h3>
               </div>
-              <div
-                style={{
-                  background: '#eff6ff',
-                  border: '1px solid #bfdbfe',
-                  borderRadius: '8px',
-                  padding: '10px 18px',
-                  textAlign: 'right',
-                  minWidth: '140px',
-                  position: 'relative',
-                }}
-              >
-                <div style={{ fontSize: '0.725rem', fontWeight: 700, color: '#1e40af', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                  Calculated Readiness
-                </div>
-                {isCalculating ? (
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '6px', height: '34px' }}>
-                    <span className="spinner spinner-primary" style={{ width: '16px', height: '16px' }} />
-                    <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#1e40af' }}>Updating...</span>
-                  </div>
-                ) : (
-                  <div style={{ fontSize: '1.85rem', fontWeight: 800, color: '#1e40af', lineHeight: 1.1 }}>
-                    {liveReadinessScore}%
-                  </div>
-                )}
-              </div>
-            </div>
 
-            {/* Career Selector Tabs */}
-            <div style={{ display: 'flex', gap: '8px', marginTop: '16px', flexWrap: 'wrap' }}>
-              {DEMO_CAREERS.map((c, idx) => {
-                const isActive = idx === selectedCareerIndex;
-                return (
+              {/* Role Toggle Tabs */}
+              <div style={{ display: 'flex', gap: '6px', background: '#f1f5f9', padding: '4px', borderRadius: '8px' }}>
+                {DEMO_CAREERS.map((c, i) => (
                   <button
                     key={c.id}
-                    onClick={() => handleCareerChange(idx)}
+                    onClick={() => handleCareerChange(i)}
                     style={{
-                      padding: '7px 16px',
-                      background: isActive ? '#1e40af' : '#ffffff',
-                      color: isActive ? '#ffffff' : '#334155',
-                      border: isActive ? '1px solid #1e40af' : '1px solid #cbd5e1',
-                      borderRadius: '8px',
-                      fontSize: '0.85rem',
-                      fontWeight: 600,
+                      padding: '6px 14px',
+                      fontSize: '0.8rem',
+                      fontWeight: 700,
+                      borderRadius: '6px',
+                      border: 'none',
                       cursor: 'pointer',
-                      boxShadow: isActive ? '0 1px 2px rgba(30, 64, 175, 0.2)' : '0 1px 2px rgba(0, 0, 0, 0.03)',
+                      background: selectedCareerIndex === i ? '#ffffff' : 'transparent',
+                      color: selectedCareerIndex === i ? '#0f172a' : '#64748b',
+                      boxShadow: selectedCareerIndex === i ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
                       transition: 'all 0.15s ease',
                     }}
                   >
-                    {c.title}
+                    {c.title.split(' ')[0]}
                   </button>
-                );
-              })}
+                ))}
+              </div>
             </div>
-          </div>
 
-          {/* Two-Column Specification & Matrix Breakdown */}
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-              gap: '24px',
-            }}
-          >
-            {/* Left Column: Skill sliders */}
-            <div>
-              <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1e293b', marginBottom: '12px' }}>
-                Competency Assessment Vectors
-              </h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            {/* Main Interactive Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '28px', alignItems: 'center' }}>
+              
+              {/* Left Column: Interactive Skill Sliders */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {activeCareer.skills.map((skill, idx) => {
-                  const current = skillLevels[idx] || 0;
-                  const gap = Math.max(0, skill.required - current);
+                  const currentLevel = skillLevels[idx] || 0;
+                  const isMet = currentLevel >= skill.required;
+
                   return (
-                    <div
-                      key={skill.name}
-                      style={{
-                        padding: '12px 14px',
-                        background: '#f8fafc',
-                        border: '1px solid #e2e8f0',
-                        borderRadius: '8px',
-                      }}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                        <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#0f172a' }}>
+                    <div key={skill.name} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b' }}>
                           {skill.name}
                         </span>
-                        <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
-                          Target Benchmark: Level {skill.required}
-                        </span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontSize: '0.775rem', color: isMet ? '#15803d' : '#b45309', fontWeight: 600 }}>
+                            Level {currentLevel} / {skill.required} {isMet ? '✓ Met' : `(-${skill.required - currentLevel} gap)`}
+                          </span>
+                        </div>
                       </div>
 
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <input
                           type="range"
-                          min={1}
-                          max={5}
-                          value={current}
+                          min="0"
+                          max="5"
+                          step="1"
+                          value={currentLevel}
                           onChange={(e) => handleLevelChange(idx, parseInt(e.target.value))}
-                          style={{ flex: 1, accentColor: '#1e40af', cursor: 'pointer' }}
+                          className="skill-range"
                         />
-                        <span
-                          style={{
-                            fontSize: '0.8rem',
-                            fontWeight: 700,
-                            padding: '3px 10px',
-                            borderRadius: '5px',
-                            background: current >= skill.required ? '#ecfdf5' : '#fef2f2',
-                            color: current >= skill.required ? '#065f46' : '#991b1b',
-                            border: current >= skill.required ? '1px solid #a7f3d0' : '1px solid #fecaca',
-                            minWidth: '80px',
-                            textAlign: 'center',
-                          }}
-                        >
-                          Level {current} {gap === 0 ? '• Qualified' : `• Gap -${gap}`}
+                        <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#0f172a', width: '24px', textAlign: 'center' }}>
+                          {currentLevel}
                         </span>
                       </div>
                     </div>
                   );
                 })}
               </div>
-            </div>
 
-            {/* Right Column: Grounded ML Architecture Specifications */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1e293b', marginBottom: '2px' }}>
-                Institutional Analytics Engine
-              </h3>
-
-              <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '16px' }}>
-                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e40af', marginBottom: '4px' }}>
-                  Supervised Gradient Boosting Pipeline
+              {/* Right Column: Live Readiness Dial & Gap Summary */}
+              <div
+                style={{
+                  background: '#f8fafc',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '12px',
+                  padding: '24px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '18px',
+                  textAlign: 'center',
+                }}
+              >
+                {/* Dial SVG */}
+                <div style={{ position: 'relative', width: '130px', height: '130px' }}>
+                  <svg viewBox="0 0 36 36" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
+                    <path
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                      fill="none"
+                      stroke="#e2e8f0"
+                      strokeWidth="3.2"
+                    />
+                    <path
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                      fill="none"
+                      stroke={liveReadinessScore >= 80 ? '#10b981' : liveReadinessScore >= 60 ? '#3b82f6' : '#f59e0b'}
+                      strokeWidth="3.2"
+                      strokeDasharray={`${liveReadinessScore}, 100`}
+                      strokeLinecap="round"
+                      style={{ transition: 'stroke-dasharray 0.4s ease' }}
+                    />
+                  </svg>
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <span style={{ fontSize: '1.9rem', fontWeight: 900, color: '#0f172a', lineHeight: 1 }}>
+                      {liveReadinessScore}%
+                    </span>
+                    <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginTop: '2px' }}>
+                      Readiness
+                    </span>
+                  </div>
                 </div>
-                <p style={{ fontSize: '0.85rem', color: '#475569', lineHeight: 1.5, margin: 0 }}>
-                  The decision engine calculates an objective candidate readiness score (0-100%) by processing verified course grades, quiz diagnostics, coding lab test cases, and project artifacts.
-                </p>
-              </div>
 
-              <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '16px' }}>
-                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e40af', marginBottom: '4px' }}>
-                  24-Week Trajectory Simulation
+                <div>
+                  <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#0f172a' }}>
+                    {liveReadinessScore >= 80 ? 'Placement Interview Ready' : liveReadinessScore >= 60 ? 'Competitive with Moderate Deficits' : 'Deficit Remediation Required'}
+                  </div>
+                  <p style={{ fontSize: '0.8rem', color: '#475569', margin: '4px 0 0 0', maxWidth: '300px' }}>
+                    {matchedSkillsCount} skills meet industry standards. {criticalGapsCount} critical deficit{criticalGapsCount === 1 ? '' : 's'} require targeted roadmap practice.
+                  </p>
                 </div>
-                <p style={{ fontSize: '0.85rem', color: '#475569', lineHeight: 1.5, margin: 0 }}>
-                  Simulates student competency growth based on weekly dedicated hours and learning velocity, projecting exact milestones when candidates cross the 75% job-ready threshold.
-                </p>
-              </div>
 
-              <div style={{ marginTop: 'auto', paddingTop: '8px' }}>
+                {/* Direct CTA to portal */}
                 <Link
-                  to="/app/dashboard"
+                  to="/app/skill-gap"
                   className="btn-primary"
-                  style={{ width: '100%', textAlign: 'center', padding: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                  style={{
+                    width: '100%',
+                    padding: '10px 16px',
+                    fontSize: '0.875rem',
+                    fontWeight: 700,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                  }}
                 >
-                  <span>Enter Student Workspace</span>
-                  <ArrowRight size={16} />
+                  <Zap size={15} />
+                  <span>Open Full SkillBridge Engine</span>
                 </Link>
               </div>
+
             </div>
           </div>
+
         </div>
       </section>
 
-      {/* Compliance & Policy Footer */}
-      <footer
-        style={{
-          marginTop: 'auto',
-          background: '#ffffff',
-          borderTop: '1px solid #e2e8f0',
-          padding: '24px',
-        }}
-      >
-        <div
-          style={{
-            maxWidth: '1100px',
-            margin: '0 auto',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: '16px',
-            fontSize: '0.85rem',
-            color: '#475569',
-          }}
-        >
-          <div>
-            <strong>Skill2Career</strong> — Official Career Readiness, Competency Architecture & Placement Platform.
-          </div>
-          <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-            <Link to="/terms" style={{ color: '#1e40af', fontWeight: 600 }}>
-              Terms of Service
-            </Link>
-            <Link to="/privacy" style={{ color: '#1e40af', fontWeight: 600 }}>
-              Privacy Policy
-            </Link>
-            <Link to="/app/job-readiness" style={{ color: '#1e40af', fontWeight: 600 }}>
-              Job-Readiness Engine
-            </Link>
-          </div>
+      {/* Core Competency Pillars */}
+      <section style={{ padding: '60px 24px', maxWidth: '1240px', margin: '0 auto', width: '100%' }}>
+        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+          <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#1e40af', background: '#eff6ff', border: '1px solid #bfdbfe', padding: '3px 10px', borderRadius: '4px', textTransform: 'uppercase' }}>
+            Built for Academic-to-Corporate Success
+          </span>
+          <h2 style={{ fontSize: '2.1rem', fontWeight: 900, color: '#0f172a', marginTop: '8px', marginBottom: '8px', letterSpacing: '-0.02em' }}>
+            Everything You Need to Clear Placement Interviews
+          </h2>
+          <p style={{ color: '#475569', fontSize: '1rem', maxWidth: '640px', margin: '0 auto' }}>
+            Directly bridge theoretical university engineering education into verified production job readiness.
+          </p>
         </div>
-      </footer>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '20px' }}>
+          
+          <div className="skillbridge-card" style={{ padding: '24px' }}>
+            <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
+              <Layers size={22} color="#1d4ed8" />
+            </div>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', marginBottom: '8px' }}>
+              Job Description Matcher
+            </h3>
+            <p style={{ fontSize: '0.85rem', color: '#475569', lineHeight: 1.55, margin: 0 }}>
+              Paste any software, AI, or cloud engineering job description. Our parser extracts required competencies and calculates your exact fit delta.
+            </p>
+          </div>
+
+          <div className="skillbridge-card" style={{ padding: '24px' }}>
+            <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: '#ecfdf5', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
+              <Sparkles size={22} color="#059669" />
+            </div>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', marginBottom: '8px' }}>
+              Milestone Learning Paths
+            </h3>
+            <p style={{ fontSize: '0.85rem', color: '#475569', lineHeight: 1.55, margin: 0 }}>
+              Structured 4-phase sequence: Core Foundations, Production Projects, Systems Scaling, and Mock Interview Clearance with interactive tracking.
+            </p>
+          </div>
+
+          <div className="skillbridge-card" style={{ padding: '24px' }}>
+            <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
+              <TrendingUp size={22} color="#b45309" />
+            </div>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', marginBottom: '8px' }}>
+              Predictive Trajectory
+            </h3>
+            <p style={{ fontSize: '0.85rem', color: '#475569', lineHeight: 1.55, margin: 0 }}>
+              Simulate weekly study hours and practice consistency to forecast the exact calendar date you achieve 85%+ placement interview clearance.
+            </p>
+          </div>
+
+          <div className="skillbridge-card" style={{ padding: '24px' }}>
+            <div style={{ width: '42px', height: '42px', borderRadius: '10px', background: '#f5f3ff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
+              <Terminal size={22} color="#6d28d9" />
+            </div>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', marginBottom: '8px' }}>
+              Branch Sandboxes & Labs
+            </h3>
+            <p style={{ fontSize: '0.85rem', color: '#475569', lineHeight: 1.55, margin: 0 }}>
+              Real-world compiler sandboxes for 12+ engineering disciplines, from modern Web & Cloud to Embedded Systems and Hardware Design.
+            </p>
+          </div>
+
+        </div>
+      </section>
+
+      {/* Official Bottom Navigation Bar & Footer */}
+      <Footer />
+
     </div>
   );
 };

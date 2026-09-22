@@ -9,6 +9,8 @@ import { AIChatbox } from './components/AIChatbox';
 import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
+import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
+import { Footer } from './components/Footer';
 import { DashboardPage } from './pages/DashboardPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { SkillsPage } from './pages/SkillsPage';
@@ -67,6 +69,7 @@ export const App: React.FC = () => {
           <Routes>
             {/* Public Routes */}
             <Route path="/" element={<LandingPage />} />
+            <Route path="/privacy" element={<PrivacyPolicyPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/auth/callback" element={<OAuthCallbackPage />} />
