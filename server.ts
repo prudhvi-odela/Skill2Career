@@ -46,7 +46,15 @@ const app = express();
 const PORT = 3000;
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ strict: false }));
+
+// Graceful JSON parsing error handler
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  if (err instanceof SyntaxError && 'status' in err && (err as any).status === 400) {
+    return res.status(400).json({ error: 'Bad JSON request payload format.' });
+  }
+  next();
+});
 
 // Mount Placement-Ops-AI Multi-Agent router
 app.use(placementOpsRouter);

@@ -22,12 +22,10 @@ apiClient.interceptors.request.use((config) => {
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401) {
-      // If unauthorized on a protected route, token is expired
-      if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/register')) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-      }
+    // Only clean session if /auth/me explicitly returned 401
+    if (error.response && error.response.status === 401 && error.config?.url?.includes('/auth/me')) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
     }
     return Promise.reject(error);
   }
@@ -75,7 +73,7 @@ export const careersApi = {
 
 export const analysisApi = {
   getSkillGap: (targetCareerId?: string) =>
-    apiClient.post('/analysis/gap', null, { params: { target_career_id: targetCareerId } }),
+    apiClient.post('/analysis/gap', {}, { params: { target_career_id: targetCareerId } }),
   predictReadiness: (targetCareerId?: string, customSkills?: any[]) =>
     apiClient.post('/analysis/readiness', { target_career_id: targetCareerId, custom_skills: customSkills }),
   forecastTrajectory: (weeklyStudyHours?: number, consistency?: number, targetCareerId?: string) =>
@@ -91,13 +89,13 @@ export const roadmapApi = {
   getRoadmap: (targetCareerId?: string) =>
     apiClient.get('/roadmap', { params: { target_career_id: targetCareerId } }),
   regenerateRoadmap: (targetCareerId?: string) =>
-    apiClient.post('/roadmap/regenerate', null, { params: { target_career_id: targetCareerId } }),
+    apiClient.post('/roadmap/regenerate', {}, { params: { target_career_id: targetCareerId } }),
   toggleRoadmapItem: (itemId: string, isCompleted: boolean) =>
     apiClient.put(`/roadmap/items/${itemId}`, { is_completed: isCompleted }),
   getAdaptiveCurrent: (careerId?: string) =>
     apiClient.get('/roadmap/current', { params: { career_id: careerId } }),
   recalculateAdaptive: (careerId?: string) =>
-    apiClient.post('/roadmap/recalculate', null, { params: { career_id: careerId } }),
+    apiClient.post('/roadmap/recalculate', {}, { params: { career_id: careerId } }),
   getHistory: (careerId?: string) =>
     apiClient.get('/roadmap/history', { params: { career_id: careerId } }),
   updateProgress: (milestoneId: string, isCompleted: boolean) =>
@@ -110,7 +108,7 @@ export const recommendationsApi = {
   getForCareer: (careerId: string) =>
     apiClient.get(`/recommendations/${careerId}`),
   generate: (careerId?: string) =>
-    apiClient.post('/recommendations/generate', null, { params: { career_id: careerId } }),
+    apiClient.post('/recommendations/generate', {}, { params: { career_id: careerId } }),
   submitFeedback: (data: { skill_id: string; career_id: string; feedback_type: string; notes?: string }) =>
     apiClient.post('/recommendations/feedback', data),
 };
@@ -135,7 +133,7 @@ export const mlAdminApi = {
   getFeatureImportance: () => apiClient.get('/ml/feature-importance'),
   activateVersion: (versionId: string) => apiClient.post(`/ml/versions/${versionId}/activate`),
   triggerRetraining: (datasetName?: string) =>
-    apiClient.post('/ml/train', null, { params: { dataset_name: datasetName } }),
+    apiClient.post('/ml/train', {}, { params: { dataset_name: datasetName } }),
 };
 
 export const aiApi = {
@@ -159,7 +157,7 @@ export const aiApi = {
       code_snippet: codeSnippet
     }),
   getConversations: () => apiClient.get('/ai/conversations'),
-  createConversation: (title?: string) => apiClient.post('/ai/conversations', null, { params: { title } }),
+  createConversation: (title?: string) => apiClient.post('/ai/conversations', {}, { params: { title } }),
   getConversationMessages: (conversationId: string) => apiClient.get(`/ai/conversations/${conversationId}/messages`),
   deleteConversation: (conversationId: string) => apiClient.delete(`/ai/conversations/${conversationId}`),
   searchResources: (params?: { query?: string; skill_id?: string; topic?: string }) =>
@@ -253,7 +251,7 @@ export const learningIntelligenceApi = {
   getStagnation: () => apiClient.get('/learning-intelligence/stagnation'),
   getSkillHistory: (skillId: string) => apiClient.get(`/learning-intelligence/skills/${skillId}`),
   recordSnapshot: (targetCareerId?: string) =>
-    apiClient.post('/learning-intelligence/snapshot', null, { params: { target_career_id: targetCareerId } }),
+    apiClient.post('/learning-intelligence/snapshot', {}, { params: { target_career_id: targetCareerId } }),
   logSession: (data: {
     topic: string;
     duration_minutes: number;

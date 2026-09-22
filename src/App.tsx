@@ -20,6 +20,7 @@ import { TrajectoryPage } from './pages/TrajectoryPage';
 import { OnboardingPage } from './pages/OnboardingPage';
 import { BranchCurriculumPage } from './pages/BranchCurriculumPage';
 import { OAuthCallbackPage } from './pages/OAuthCallbackPage';
+import { NotFoundPage } from './pages/NotFoundPage';
 
 // Placement-Ops-AI Reference Pages
 import { PlacementOpsPage } from './pages/PlacementOpsPage';
@@ -112,11 +113,11 @@ export const App: React.FC = () => {
               <Route path="resume-ai" element={<ResumeAIPage />} />
               <Route path="agent-13" element={<FacultyDiscoveryDashboard />} />
 
-              <Route path="*" element={<Navigate to="/app/dashboard" replace />} />
+              <Route path="*" element={<NotFoundPage />} />
             </Route>
 
-            {/* Fallback */}
-            <Route path="*" element={<Navigate to="/" replace />} />
+            {/* Global 404 Fallback */}
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </div>
       </BrowserRouter>

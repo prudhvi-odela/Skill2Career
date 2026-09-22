@@ -1,3 +1,5 @@
+import fs from 'fs';
+import path from 'path';
 import {
   SKILLS_CATALOG,
   CAREER_ROLES,
@@ -9,6 +11,8 @@ import {
   Skill,
   CareerRole
 } from './seedData.js';
+
+const DB_FILE = path.resolve(process.cwd(), 'server', 'db_storage.json');
 
 export interface User {
   id: string;
@@ -77,7 +81,7 @@ export interface RoadmapItem {
   category: string;
 }
 
-// In-Memory Storage
+// In-Memory & File-Persistent Storage
 class DataStore {
   users: Map<string, User> = new Map();
   profiles: Map<string, any> = new Map();
@@ -92,6 +96,40 @@ class DataStore {
 
   constructor() {
     this.seedInitialData();
+    this.loadFromDisk();
+  }
+
+  saveToDisk() {
+    try {
+      const data = {
+        users: Array.from(this.users.entries()),
+        profiles: Array.from(this.profiles.entries()),
+        projects: Array.from(this.projects.entries()),
+        certifications: Array.from(this.certifications.entries()),
+        workExperiences: Array.from(this.workExperiences.entries()),
+        roadmaps: Array.from(this.roadmaps.entries()),
+      };
+      fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
+    } catch (e) {
+      console.warn('Could not persist data store to disk:', e);
+    }
+  }
+
+  loadFromDisk() {
+    try {
+      if (fs.existsSync(DB_FILE)) {
+        const content = fs.readFileSync(DB_FILE, 'utf-8');
+        const data = JSON.parse(content);
+        if (Array.isArray(data.users)) data.users.forEach(([k, v]: any) => this.users.set(k, v));
+        if (Array.isArray(data.profiles)) data.profiles.forEach(([k, v]: any) => this.profiles.set(k, v));
+        if (Array.isArray(data.projects)) data.projects.forEach(([k, v]: any) => this.projects.set(k, v));
+        if (Array.isArray(data.certifications)) data.certifications.forEach(([k, v]: any) => this.certifications.set(k, v));
+        if (Array.isArray(data.workExperiences)) data.workExperiences.forEach(([k, v]: any) => this.workExperiences.set(k, v));
+        if (Array.isArray(data.roadmaps)) data.roadmaps.forEach(([k, v]: any) => this.roadmaps.set(k, v));
+      }
+    } catch (e) {
+      console.warn('Could not load data store from disk:', e);
+    }
   }
 
   seedInitialData() {
@@ -300,6 +338,7 @@ class DataStore {
     this.roadmaps.set(id, []);
     this.evidenceList.set(id, []);
 
+    this.saveToDisk();
     return { success: true, user };
   }
 
@@ -347,6 +386,7 @@ class DataStore {
       }
       this.users.set(user.id, user);
       this.users.set(normalized, user);
+      this.saveToDisk();
     }
 
     return { success: true, user };
@@ -392,6 +432,7 @@ class DataStore {
       }
     }
     this.profiles.set(userId, updated);
+    this.saveToDisk();
     return updated;
   }
 

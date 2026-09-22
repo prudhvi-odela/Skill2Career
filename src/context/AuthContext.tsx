@@ -73,21 +73,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
+    let isMounted = true;
     const initAuth = async () => {
       const storedToken = localStorage.getItem('token');
+      const storedUser = localStorage.getItem('user');
+
       if (storedToken) {
+        // If we already have storedUser in state/localStorage, keep user authenticated immediately
+        if (storedUser && !user) {
+          try {
+            setUser(JSON.parse(storedUser));
+          } catch (e) {
+            console.warn('Could not parse stored user:', e);
+          }
+        }
+
         try {
           const res = await authApi.getMe();
-          setUser(res.data);
+          if (isMounted && res.data) {
+            setUser(res.data);
+            localStorage.setItem('user', JSON.stringify(res.data));
+          }
           await refreshProfile(storedToken);
-        } catch (err) {
-          console.error('Session expired:', err);
-          logout();
+        } catch (err: any) {
+          console.warn('Auth sync notice:', err?.response?.data || err.message);
+          // Only clear session if the server explicitly returned 401 Unauthorized for the token
+          if (err?.response?.status === 401) {
+            if (isMounted) logout();
+          }
         }
       }
-      setIsLoading(false);
+      if (isMounted) setIsLoading(false);
     };
+
     initAuth();
+    return () => {
+      isMounted = false;
+    };
   }, [token]);
 
   const login = async (credentials: any) => {
