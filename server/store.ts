@@ -15,6 +15,9 @@ export interface User {
   email: string;
   full_name: string;
   role: string;
+  password?: string;
+  avatar_url?: string;
+  provider?: string;
 }
 
 export interface StudentSkill {
@@ -97,7 +100,9 @@ class DataStore {
       id: demoId,
       email: 'demo@skill2career.com',
       full_name: 'Alex Chen',
-      role: 'student'
+      role: 'student',
+      password: 'Password123!',
+      provider: 'local'
     };
     this.users.set(demoId, demoUser);
     this.users.set('demo@skill2career.com', demoUser);
@@ -221,54 +226,138 @@ class DataStore {
     ]);
   }
 
-  getOrCreateUser(email: string, fullName?: string): User {
-    let user = this.users.get(email);
-    if (!user) {
-      const id = 'usr_' + Math.random().toString(36).substring(2, 9);
-      user = {
-        id,
-        email,
-        full_name: fullName || email.split('@')[0],
-        role: 'student'
-      };
-      this.users.set(id, user);
-      this.users.set(email, user);
-
-      // Create default profile
-      this.profiles.set(id, {
-        user_id: id,
-        full_name: user.full_name,
-        email: user.email,
-        headline: 'Student / Aspiring Technologist',
-        bio: 'Welcome to Skill2Career. Update your profile to get personalized career insights.',
-        degree: 'B.Tech Computer Science',
-        institution: 'University of Technology',
-        institution_tier: 2,
-        graduation_year: 2026,
-        gpa: 8.0,
-        target_career_id: 'CG_CSE_1_software_engineer',
-        target_career_title: 'Software Engineer',
-        skills: [
-          { skill_id: 'SK001', name: 'Python', category: 'Languages', domain: 'General', level: 3.0, verified: false, verification_source: 'Self-Reported' },
-          { skill_id: 'SK002', name: 'JavaScript', category: 'Languages', domain: 'Web Development', level: 3.0, verified: false, verification_source: 'Self-Reported' }
-        ],
-        statistics: {
-          weekly_study_hours: 10.0,
-          learning_velocity_index: 1.0,
-          assessments_passed: 0,
-          projects_count: 0,
-          certifications_count: 0
-        },
-        updated_at: new Date().toISOString()
-      });
-
-      this.projects.set(id, []);
-      this.certifications.set(id, []);
-      this.workExperiences.set(id, []);
-      this.roadmaps.set(id, []);
-      this.evidenceList.set(id, []);
+  findUserByEmail(email: string): User | undefined {
+    const normalized = email.trim().toLowerCase();
+    for (const [, user] of this.users.entries()) {
+      if (user.email && user.email.trim().toLowerCase() === normalized) {
+        return user;
+      }
     }
-    return user;
+    return undefined;
+  }
+
+  registerUser(
+    email: string,
+    fullName?: string,
+    password?: string,
+    provider: string = 'local',
+    avatarUrl?: string
+  ): { success: boolean; user?: User; error?: string } {
+    const normalized = email.trim().toLowerCase();
+    const existing = this.findUserByEmail(normalized);
+    if (existing) {
+      return {
+        success: false,
+        error: 'An account with this email address already exists. Please log in instead.'
+      };
+    }
+
+    const id = 'usr_' + Math.random().toString(36).substring(2, 9);
+    const user: User = {
+      id,
+      email: normalized,
+      full_name: fullName?.trim() || normalized.split('@')[0],
+      role: 'student',
+      password: password || undefined,
+      provider,
+      avatar_url: avatarUrl
+    };
+
+    this.users.set(id, user);
+    this.users.set(normalized, user);
+
+    // Initialize clean student profile
+    this.profiles.set(id, {
+      user_id: id,
+      full_name: user.full_name,
+      email: user.email,
+      headline: 'Student / Aspiring Technologist',
+      bio: 'Welcome to Skill2Career. Update your profile to get personalized career insights.',
+      degree: 'B.Tech Computer Science',
+      institution: 'University of Technology',
+      institution_tier: 2,
+      graduation_year: 2026,
+      gpa: 8.0,
+      target_career_id: 'CG_CSE_1_software_engineer',
+      target_career_title: 'Software Engineer',
+      skills: [
+        { skill_id: 'SK001', name: 'Python', category: 'Languages', domain: 'General', level: 3.0, verified: false, verification_source: 'Self-Reported' },
+        { skill_id: 'SK002', name: 'JavaScript', category: 'Languages', domain: 'Web Development', level: 3.0, verified: false, verification_source: 'Self-Reported' }
+      ],
+      statistics: {
+        weekly_study_hours: 10.0,
+        learning_velocity_index: 1.0,
+        assessments_passed: 0,
+        projects_count: 0,
+        certifications_count: 0
+      },
+      updated_at: new Date().toISOString()
+    });
+
+    this.projects.set(id, []);
+    this.certifications.set(id, []);
+    this.workExperiences.set(id, []);
+    this.roadmaps.set(id, []);
+    this.evidenceList.set(id, []);
+
+    return { success: true, user };
+  }
+
+  validateUserLogin(
+    email: string,
+    password?: string
+  ): { success: boolean; user?: User; error?: string } {
+    const normalized = email.trim().toLowerCase();
+    const user = this.findUserByEmail(normalized);
+    if (!user) {
+      return {
+        success: false,
+        error: 'No account found with this email. Please register to create an account.'
+      };
+    }
+
+    if (user.password && password && user.password !== password) {
+      return {
+        success: false,
+        error: 'Invalid password. Please check your password and try again.'
+      };
+    }
+
+    return { success: true, user };
+  }
+
+  oauthLogin(
+    provider: string,
+    email: string,
+    fullName?: string,
+    avatarUrl?: string
+  ): { success: boolean; user: User } {
+    const normalized = email.trim().toLowerCase();
+    let user = this.findUserByEmail(normalized);
+
+    if (!user) {
+      const reg = this.registerUser(normalized, fullName, undefined, provider, avatarUrl);
+      user = reg.user!;
+    } else {
+      // Update provider or avatar if available
+      if (avatarUrl && !user.avatar_url) user.avatar_url = avatarUrl;
+      if (!user.provider) user.provider = provider;
+      if (fullName && (!user.full_name || user.full_name === normalized.split('@')[0])) {
+        user.full_name = fullName;
+      }
+      this.users.set(user.id, user);
+      this.users.set(normalized, user);
+    }
+
+    return { success: true, user };
+  }
+
+  getOrCreateUser(email: string, fullName?: string): User {
+    const normalized = email.trim().toLowerCase();
+    const existing = this.findUserByEmail(normalized);
+    if (existing) return existing;
+    const res = this.registerUser(normalized, fullName);
+    return res.user!;
   }
 
   getProfile(userId: string) {

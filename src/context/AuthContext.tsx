@@ -17,6 +17,7 @@ export interface StudentProfileData {
   headline?: string;
   bio?: string;
   degree?: string;
+  branch?: string;
   major_or_branch?: string;
   academic_year?: string;
   institution?: string;
@@ -43,6 +44,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (credentials: any) => Promise<void>;
   register: (data: any) => Promise<void>;
+  oauthLogin: (data: { provider: string; email: string; full_name?: string; avatar_url?: string }) => Promise<void>;
   logout: () => void;
   refreshProfile: () => Promise<void>;
   updateProfile: (data: any) => Promise<any>;
@@ -112,6 +114,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await refreshProfile(access_token);
   };
 
+  const oauthLogin = async (data: { provider: string; email: string; full_name?: string; avatar_url?: string }) => {
+    const res = await authApi.oauthLogin(data);
+    const { access_token, user: userData } = res.data;
+    localStorage.setItem('token', access_token);
+    localStorage.setItem('user', JSON.stringify(userData));
+    localStorage.setItem('placement_ops_token', access_token);
+    localStorage.setItem('placement_ops_current_user', JSON.stringify({ ...userData, name: userData.full_name }));
+    setToken(access_token);
+    setUser(userData);
+    await refreshProfile(access_token);
+  };
+
   const updateProfile = async (data: any) => {
     const res = await studentApi.updateProfile(data);
     setProfile(res.data);
@@ -138,6 +152,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isLoading,
         login,
         register,
+        oauthLogin,
         logout,
         refreshProfile,
         updateProfile,

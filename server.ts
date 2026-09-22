@@ -68,12 +68,39 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Strict email format validation helper
+function isValidEmail(email: string): boolean {
+  if (!email || typeof email !== 'string') return false;
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  return emailRegex.test(email.trim());
+}
+
 // -------------------------------------------------------------
 // Auth Routes
 // -------------------------------------------------------------
 app.post('/api/v1/auth/register', (req, res) => {
   const { email, password, full_name } = req.body;
-  const user = store.getOrCreateUser(email || 'student@skill2career.com', full_name);
+
+  if (!email || !isValidEmail(email)) {
+    return res.status(400).json({
+      detail: 'Please provide a valid email address (e.g. student@domain.edu).'
+    });
+  }
+
+  if (!password || typeof password !== 'string' || password.length < 6) {
+    return res.status(400).json({
+      detail: 'Password must be at least 6 characters in length.'
+    });
+  }
+
+  const result = store.registerUser(email, full_name, password);
+  if (!result.success) {
+    return res.status(409).json({
+      detail: result.error || 'An account with this email already exists. Please sign in.'
+    });
+  }
+
+  const user = result.user!;
   res.json({
     access_token: user.id,
     token_type: 'bearer',
@@ -82,12 +109,49 @@ app.post('/api/v1/auth/register', (req, res) => {
 });
 
 app.post('/api/v1/auth/login', (req, res) => {
-  const { email } = req.body;
-  const user = store.getOrCreateUser(email || 'demo@skill2career.com');
+  const { email, password } = req.body;
+
+  if (!email || !isValidEmail(email)) {
+    return res.status(400).json({
+      detail: 'Please enter a valid email address format.'
+    });
+  }
+
+  const result = store.validateUserLogin(email, password);
+  if (!result.success) {
+    return res.status(401).json({
+      detail: result.error || 'Invalid credentials or user not found.'
+    });
+  }
+
+  const user = result.user!;
   res.json({
     access_token: user.id,
     token_type: 'bearer',
     user
+  });
+});
+
+app.post('/api/v1/auth/oauth', (req, res) => {
+  const { provider, email, full_name, avatar_url } = req.body;
+
+  if (!provider || !['google', 'github', 'linkedin'].includes(String(provider).toLowerCase())) {
+    return res.status(400).json({
+      detail: 'Unsupported or missing OAuth provider. Allowed: google, github, linkedin.'
+    });
+  }
+
+  if (!email || !isValidEmail(email)) {
+    return res.status(400).json({
+      detail: 'Invalid email returned by OAuth provider.'
+    });
+  }
+
+  const result = store.oauthLogin(String(provider).toLowerCase(), email, full_name, avatar_url);
+  res.json({
+    access_token: result.user.id,
+    token_type: 'bearer',
+    user: result.user
   });
 });
 
@@ -1369,14 +1433,17 @@ async function start() {
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
       server: { middlewareMode: true },
-      appType: 'spa',
+      appType: 'custom',
     });
     app.use(vite.middlewares);
 
-    // SPA fallback in development mode so reloading any URL renders the app
+    // Robust SPA fallback in development mode so reloading any URL renders the app smoothly
     app.use(async (req, res, next) => {
       if (req.method !== 'GET') return next();
-      if (req.path.startsWith('/api') || req.path.includes('.')) return next();
+      // If it's an API route that wasn't handled, respond with 404 JSON instead of HTML
+      if (req.path.startsWith('/api')) {
+        return res.status(404).json({ error: 'API endpoint not found' });
+      }
       try {
         const url = req.originalUrl;
         const htmlPath = path.resolve(process.cwd(), 'index.html');
@@ -1393,7 +1460,9 @@ async function start() {
     // SPA fallback in production mode
     app.use((req, res, next) => {
       if (req.method !== 'GET') return next();
-      if (req.path.startsWith('/api') || req.path.includes('.')) return next();
+      if (req.path.startsWith('/api')) {
+        return res.status(404).json({ error: 'API endpoint not found' });
+      }
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }

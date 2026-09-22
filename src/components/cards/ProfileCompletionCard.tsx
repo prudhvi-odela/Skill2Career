@@ -49,7 +49,7 @@ export function ProfileCompletionCard({ profile }: { profile: StudentProfile }) 
           <h2>Complete Your Profile</h2>
           <p>Recruiters and the matching engine rank complete profiles higher.</p>
         </div>
-        <button onClick={() => router.push('/profile')} className="btn btn-primary">
+        <button onClick={() => router.push('/app/profile')} className="btn btn-primary">
           Complete Profile <ArrowRight size={13} />
         </button>
       </div>

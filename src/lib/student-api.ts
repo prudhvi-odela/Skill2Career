@@ -24,7 +24,7 @@ export interface StudentProfile {
   github_url: string | null;
   linkedin_url: string | null;
   portfolio_url: string | null;
-  coding_profiles: { leetcode?: string; codeforces?: string; hackerrank?: string };
+  coding_profiles: { leetcode?: string; codeforces?: string; hackerrank?: string; github?: string };
   preferred_roles: string[];
   expected_salary: number | null;
   location_preference: string[];
@@ -34,6 +34,27 @@ export interface StudentProfile {
   ssi_score: number;
   prs_score: number;
   profile_completion_pct: number;
+}
+
+export interface RoleSuggestion {
+  role_title: string;
+  category: string;
+  compatibility_pct: number;
+  base_salary: string;
+  overview: string;
+  key_matching_skills: string[];
+  why_matched: string[];
+  recommended_action: string;
+  is_best_match?: boolean;
+}
+
+export interface PersonalizedSuggestionsData {
+  student_name: string;
+  branch: string;
+  cgpa: number;
+  top_recommended_role: string;
+  verdict_reasoning: string;
+  roles: RoleSuggestion[];
 }
 
 export type StudentProfileUpdate = Partial<StudentProfile>;

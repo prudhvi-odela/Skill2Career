@@ -63,8 +63,8 @@ export function StudentDashboard({ user, onLogout }: { user: any; onLogout: () =
 
   const handleNavClick = (id: string, comingSoon?: boolean) => {
     if (comingSoon) return
-    if (id === 'profile') { router.push('/profile'); return }
-    if (id === 'resume-ai') { router.push('/resume-ai'); return }
+    if (id === 'profile') { router.push('/app/profile'); return }
+    if (id === 'resume-ai') { router.push('/app/resume-ai'); return }
     setActive(id)
     setMobileNav(false)
   }

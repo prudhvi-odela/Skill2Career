@@ -7,11 +7,13 @@
     "types": ["vite/client"],
     "allowArbitraryExtensions": true,
     "skipLibCheck": true,
+    "ignoreDeprecations": "6.0",
 
     /* Bundler mode */
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "next/navigation": ["src/next/navigation.ts"]
     },
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,

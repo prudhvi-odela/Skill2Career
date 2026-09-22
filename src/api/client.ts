@@ -37,6 +37,8 @@ apiClient.interceptors.response.use(
 export const authApi = {
   register: (data: any) => apiClient.post('/auth/register', data),
   login: (data: any) => apiClient.post('/auth/login', data),
+  oauthLogin: (data: { provider: string; email: string; full_name?: string; avatar_url?: string }) =>
+    apiClient.post('/auth/oauth', data),
   getMe: () => apiClient.get('/auth/me'),
 };
 

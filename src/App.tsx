@@ -51,7 +51,7 @@ const ProtectedLayout: React.FC = () => {
       <main style={{ flex: 1, minWidth: 0, overflowX: 'hidden' }}>
         <Outlet />
       </main>
-      <AIChatbox userRole="student" />
+      <AIChatbox />
     </div>
   );
 };
@@ -68,6 +68,23 @@ export const App: React.FC = () => {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/onboarding" element={<OnboardingPage />} />
+
+            {/* Direct alias redirects for top-level paths */}
+            <Route path="/profile" element={<Navigate to="/app/profile" replace />} />
+            <Route path="/dashboard" element={<Navigate to="/app/dashboard" replace />} />
+            <Route path="/resume-ai" element={<Navigate to="/app/resume-ai" replace />} />
+            <Route path="/skills" element={<Navigate to="/app/skills" replace />} />
+            <Route path="/curriculum" element={<Navigate to="/app/curriculum" replace />} />
+            <Route path="/compiler" element={<Navigate to="/app/compiler" replace />} />
+            <Route path="/skill-gap" element={<Navigate to="/app/skill-gap" replace />} />
+            <Route path="/trajectory" element={<Navigate to="/app/trajectory" replace />} />
+            <Route path="/job-readiness" element={<Navigate to="/app/job-readiness" replace />} />
+            <Route path="/careers" element={<Navigate to="/app/careers" replace />} />
+            <Route path="/assessments" element={<Navigate to="/app/assessments" replace />} />
+            <Route path="/ai-copilot" element={<Navigate to="/app/ai-copilot" replace />} />
+            <Route path="/chat" element={<Navigate to="/app/chat" replace />} />
+            <Route path="/placement-ops" element={<Navigate to="/app/placement-ops" replace />} />
+            <Route path="/agent-13" element={<Navigate to="/app/agent-13" replace />} />
 
             {/* Protected Student Portal & Placement Operations Suite */}
             <Route path="/app" element={<ProtectedLayout />}>
