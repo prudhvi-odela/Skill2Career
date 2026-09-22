@@ -6,15 +6,9 @@ declare global {
   }
 }
 
-export const GOOGLE_CLIENT_ID =
-  import.meta.env.VITE_GOOGLE_CLIENT_ID ||
-  '612543971842-q4bknu4m82c3n8dks8j2g8k0h0k5n6b3.apps.googleusercontent.com'; // Default or configured client ID
-
-export const GITHUB_CLIENT_ID =
-  import.meta.env.VITE_GITHUB_CLIENT_ID || 'Ov23liSKILL2CAREER';
-
-export const LINKEDIN_CLIENT_ID =
-  import.meta.env.VITE_LINKEDIN_CLIENT_ID || '78skill2career';
+export const GOOGLE_CLIENT_ID = (import.meta.env.VITE_GOOGLE_CLIENT_ID || '').trim();
+export const GITHUB_CLIENT_ID = (import.meta.env.VITE_GITHUB_CLIENT_ID || '').trim();
+export const LINKEDIN_CLIENT_ID = (import.meta.env.VITE_LINKEDIN_CLIENT_ID || '').trim();
 
 /**
  * Initiates official Google OAuth 2.0 Sign In
@@ -25,6 +19,12 @@ export async function triggerGoogleOAuth(): Promise<{
   full_name: string;
   avatar_url: string;
 }> {
+  if (!GOOGLE_CLIENT_ID) {
+    throw new Error(
+      'Google Client ID is not configured. Please add VITE_GOOGLE_CLIENT_ID to your .env or Render environment variables.'
+    );
+  }
+
   return new Promise((resolve, reject) => {
     // 1. Check if Google Identity Services is available
     if (window.google?.accounts?.oauth2) {
@@ -88,7 +88,6 @@ export async function triggerGoogleOAuth(): Promise<{
     );
 
     if (!popup) {
-      // If popup blocked, redirect directly
       window.location.href = googleAuthUrl;
       return;
     }
@@ -110,6 +109,12 @@ export async function triggerGoogleOAuth(): Promise<{
  * Initiates official GitHub OAuth 2.0 Sign In
  */
 export function triggerGithubOAuth() {
+  if (!GITHUB_CLIENT_ID) {
+    throw new Error(
+      'GitHub Client ID is not configured. Please add VITE_GITHUB_CLIENT_ID to your .env or Render environment variables.'
+    );
+  }
+
   const redirectUri = `${window.location.origin}/auth/callback`;
   const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${encodeURIComponent(
     GITHUB_CLIENT_ID
@@ -122,6 +127,12 @@ export function triggerGithubOAuth() {
  * Initiates official LinkedIn OAuth 2.0 Sign In
  */
 export function triggerLinkedinOAuth() {
+  if (!LINKEDIN_CLIENT_ID) {
+    throw new Error(
+      'LinkedIn Client ID is not configured. Please add VITE_LINKEDIN_CLIENT_ID to your .env or Render environment variables.'
+    );
+  }
+
   const redirectUri = `${window.location.origin}/auth/callback`;
   const linkedinAuthUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${encodeURIComponent(
     LINKEDIN_CLIENT_ID
