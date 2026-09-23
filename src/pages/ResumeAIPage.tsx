@@ -43,6 +43,8 @@ interface ATSVerificationResult {
   missing_keywords: string[];
   clichés_found: string[];
   weak_verbs_found: string[];
+  extracted_skills?: { skill_name: string; category: string; level: number }[];
+  extracted_projects?: { title: string; tech_stack: string[]; description: string }[];
   enhancements: ATSEnhancement[];
   analyzed_at: string;
   source: string;
@@ -149,9 +151,10 @@ export const ResumeAIPage: React.FC = () => {
   // ATS Verification State
   const [verifying, setVerifying] = useState<boolean>(false);
   const [verificationResult, setVerificationResult] = useState<ATSVerificationResult | null>(null);
-  const [activeScoreTab, setActiveScoreTab] = useState<'enhancements' | 'pillars' | 'keywords' | 'cliches'>('enhancements');
+  const [activeScoreTab, setActiveScoreTab] = useState<'extracted' | 'enhancements' | 'pillars' | 'keywords' | 'cliches'>('extracted');
   const [enhancementFilter, setEnhancementFilter] = useState<'all' | 'critical' | 'impact' | 'verbs' | 'keywords' | 'cliches'>('all');
   const [appliedEnhancements, setAppliedEnhancements] = useState<Set<string>>(new Set());
+  const [syncSuccess, setSyncSuccess] = useState<boolean>(false);
 
   // Bullet generator & Outreach state
   const [bulletTitle, setBulletTitle] = useState('SkillBridge Real-Time Career Engine');
@@ -272,6 +275,45 @@ ${profile?.full_name || 'Alex Chen'}`
     }
     setResumeText(newText);
     handleRunATSVerification(newText, targetRole);
+  };
+
+  const handleSyncToProfile = () => {
+    if (!verificationResult) return;
+    setSyncSuccess(true);
+    setTimeout(() => setSyncSuccess(false), 3500);
+
+    if (updateProfile) {
+      const existingSkills = profile?.skills || [];
+      const skillNameMap = new Map<string, any>();
+      existingSkills.forEach((s: any) => skillNameMap.set((s.name || s.skill_name || '').toLowerCase().trim(), s));
+
+      const mergedSkills = [...existingSkills];
+      (verificationResult.extracted_skills || []).forEach(es => {
+        const key = es.skill_name.toLowerCase().trim();
+        if (!skillNameMap.has(key)) {
+          const newSkill = {
+            skill_id: `SK_RES_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+            name: es.skill_name,
+            skill_name: es.skill_name,
+            category: es.category || 'Core Competency',
+            domain: 'Resume Verified',
+            level: es.level || 3.5,
+            proficiency_level: es.level || 3.5,
+            verified: true,
+            verification_source: 'Resume ATS Extraction',
+            years_experience: 1.5
+          };
+          mergedSkills.push(newSkill);
+          skillNameMap.set(key, newSkill);
+        }
+      });
+
+      updateProfile({
+        skills: mergedSkills,
+        resume_ats_score: verificationResult.overall_score,
+        resume_name: 'verified_ats_resume.pdf'
+      });
+    }
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -942,6 +984,29 @@ GitHub: github.com/alexchen | LinkedIn: linkedin.com/in/alexchen`);
           {/* Navigation Sub-Tabs */}
           <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid #e2e8f0', paddingBottom: '10px', flexWrap: 'wrap' }}>
             <button
+              onClick={() => setActiveScoreTab('extracted')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 14px',
+                borderRadius: '8px',
+                background: activeScoreTab === 'extracted' ? '#eff6ff' : 'transparent',
+                color: activeScoreTab === 'extracted' ? '#006EFF' : '#64748b',
+                fontWeight: 700,
+                fontSize: '12.5px',
+                border: 'none',
+                cursor: 'pointer'
+              }}
+            >
+              <Sparkles size={14} />
+              <span>Extracted Skills & Projects</span>
+              <span style={{ fontSize: '10px', background: '#dcfce7', color: '#166534', padding: '1px 6px', borderRadius: '10px', fontWeight: 800 }}>
+                {(verificationResult?.extracted_skills?.length || 0) + (verificationResult?.extracted_projects?.length || 0)}
+              </span>
+            </button>
+
+            <button
               onClick={() => setActiveScoreTab('enhancements')}
               style={{
                 display: 'flex',
@@ -1024,6 +1089,150 @@ GitHub: github.com/alexchen | LinkedIn: linkedin.com/in/alexchen`);
               <span>Clichés & Verbs</span>
             </button>
           </div>
+
+          {/* ── SUB-TAB 0: Extracted Skills & Projects Analysis & Auto-Sync ── */}
+          {activeScoreTab === 'extracted' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              
+              {/* Sync to Profile Action Card */}
+              <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '12px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                <div>
+                  <div style={{ fontSize: '13px', fontWeight: 800, color: '#14532d', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <ShieldCheck size={16} /> Extracted Competencies & Technical Portfolio
+                  </div>
+                  <p style={{ fontSize: '12px', color: '#166534', margin: '3px 0 0' }}>
+                    Found {verificationResult?.extracted_skills?.length || 0} skills & {verificationResult?.extracted_projects?.length || 0} projects in your resume. Sync them to update your Job-Readiness evaluation.
+                  </p>
+                </div>
+                <button
+                  onClick={handleSyncToProfile}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                    background: syncSuccess ? '#15803d' : '#16a34a',
+                    color: '#ffffff',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    border: 'none',
+                    cursor: 'pointer',
+                    boxShadow: '0 2px 6px rgba(22, 163, 74, 0.3)'
+                  }}
+                >
+                  {syncSuccess ? <Check size={14} /> : <Zap size={14} />}
+                  <span>{syncSuccess ? 'Synced to Profile & Portfolio!' : 'Sync All to Profile'}</span>
+                </button>
+              </div>
+
+              {/* Extracted Skills Matrix */}
+              <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '18px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a' }}>
+                    Extracted Candidate Skills ({verificationResult?.extracted_skills?.length || 0})
+                  </div>
+                  <span style={{ fontSize: '11px', color: '#64748b' }}>Classified by Domain</span>
+                </div>
+
+                {verificationResult?.extracted_skills && verificationResult.extracted_skills.length > 0 ? (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                    {verificationResult.extracted_skills.map((sk, idx) => (
+                      <div
+                        key={idx}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          padding: '6px 10px',
+                          borderRadius: '8px',
+                          background: '#f8fafc',
+                          border: '1px solid #cbd5e1',
+                          fontSize: '12px',
+                          color: '#1e293b'
+                        }}
+                      >
+                        <span style={{ fontWeight: 700 }}>{sk.skill_name}</span>
+                        <span style={{ fontSize: '10px', background: '#e0f2fe', color: '#0369a1', padding: '1px 5px', borderRadius: '4px' }}>
+                          {sk.category}
+                        </span>
+                        <span style={{ fontSize: '10px', background: '#dcfce7', color: '#15803d', padding: '1px 5px', borderRadius: '4px', fontWeight: 600 }}>
+                          Lvl {sk.level}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p style={{ fontSize: '12px', color: '#64748b', margin: 0 }}>
+                    No skills extracted yet. Upload or type your resume on the left to extract.
+                  </p>
+                )}
+              </div>
+
+              {/* Extracted Projects */}
+              <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '18px' }}>
+                <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a', marginBottom: '12px' }}>
+                  Extracted Technical Projects ({verificationResult?.extracted_projects?.length || 0})
+                </div>
+
+                {verificationResult?.extracted_projects && verificationResult.extracted_projects.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {verificationResult.extracted_projects.map((prj, idx) => (
+                      <div
+                        key={idx}
+                        style={{
+                          background: '#f8fafc',
+                          border: '1px solid #e2e8f0',
+                          borderRadius: '10px',
+                          padding: '14px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '8px'
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '6px' }}>
+                          <span style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a' }}>
+                            {prj.title}
+                          </span>
+                          <span className="badge badge-primary" style={{ fontSize: '10px' }}>
+                            Portfolio Item
+                          </span>
+                        </div>
+                        {prj.description && (
+                          <p style={{ fontSize: '12px', color: '#475569', margin: 0, lineHeight: 1.5 }}>
+                            {prj.description}
+                          </p>
+                        )}
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '2px' }}>
+                          {prj.tech_stack.map((t, tIdx) => (
+                            <span
+                              key={tIdx}
+                              style={{
+                                fontSize: '10px',
+                                background: '#eff6ff',
+                                color: '#1d4ed8',
+                                border: '1px solid #bfdbfe',
+                                padding: '1px 6px',
+                                borderRadius: '4px',
+                                fontWeight: 600
+                              }}
+                            >
+                              {t}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p style={{ fontSize: '12px', color: '#64748b', margin: 0 }}>
+                    No projects detected in resume. Add a "Projects" section with bullet points to analyze.
+                  </p>
+                )}
+              </div>
+
+            </div>
+          )}
 
           {/* ── SUB-TAB 1: Enhancements for Modifying in Resume (Enhancv Style) ── */}
           {activeScoreTab === 'enhancements' && (

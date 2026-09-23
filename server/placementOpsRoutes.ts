@@ -299,17 +299,80 @@ Education:
 
   try {
     const analysis = await verifyResumeATS(textToVerify, role, job_description, getAI());
+    const userId = getUserIdFromReq(req);
+    const profile = store.getProfile(userId);
+
+    // Merge extracted skills into profile skills
+    if (analysis.extracted_skills && analysis.extracted_skills.length > 0) {
+      const currentSkills = profile.skills || [];
+      const skillNameMap = new Map<string, any>();
+      currentSkills.forEach((s: any) => skillNameMap.set((s.name || s.skill_name || '').toLowerCase().trim(), s));
+
+      analysis.extracted_skills.forEach((es: any) => {
+        const key = es.skill_name.toLowerCase().trim();
+        if (!skillNameMap.has(key)) {
+          const newSkill = {
+            skill_id: `SK_RES_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+            name: es.skill_name,
+            skill_name: es.skill_name,
+            category: es.category || 'Core Competency',
+            domain: 'Resume Verified',
+            level: es.level || 3.5,
+            proficiency_level: es.level || 3.5,
+            verified: true,
+            verification_source: 'Resume ATS Extraction',
+            years_experience: 1.5
+          };
+          currentSkills.push(newSkill);
+          skillNameMap.set(key, newSkill);
+        }
+      });
+      profile.skills = currentSkills;
+    }
+
+    // Merge extracted projects into user projects store
+    if (analysis.extracted_projects && analysis.extracted_projects.length > 0) {
+      const userProjects = store.projects.get(userId) || [];
+      const existingProjectTitles = new Set(userProjects.map((p: any) => p.title.toLowerCase().trim()));
+
+      analysis.extracted_projects.forEach((ep: any) => {
+        const titleKey = ep.title.toLowerCase().trim();
+        if (!existingProjectTitles.has(titleKey)) {
+          const newPrj = {
+            id: 'prj_ats_' + Math.random().toString(36).substring(2, 9),
+            student_id: userId,
+            title: ep.title,
+            description: ep.description || `Extracted technical project demonstrating competencies in ${ep.tech_stack.join(', ')}.`,
+            repository_url: '',
+            live_url: '',
+            technologies: ep.tech_stack.join(', '),
+            complexity_rating: 4.0,
+            created_at: new Date().toISOString()
+          };
+          userProjects.push(newPrj);
+          existingProjectTitles.add(titleKey);
+        }
+      });
+      store.projects.set(userId, userProjects);
+    }
+
     if (student) {
       student.resume_ats_score = analysis.overall_score;
       (student as any).resume_analysis = analysis;
       (student as any).resume_text = textToVerify;
       if (resume_filename) student.resume_filename = resume_filename;
     }
-    const userId = getUserIdFromReq(req);
+
     store.updateProfile(userId, {
       resume_ats_score: analysis.overall_score,
-      resume_name: resume_filename || student.resume_filename
+      resume_name: resume_filename || student?.resume_filename,
+      skills: profile.skills,
+      statistics: {
+        ...(profile.statistics || {}),
+        projects_count: (store.projects.get(userId) || []).length
+      }
     });
+
     res.json(analysis);
   } catch (err: any) {
     console.error('Error in ATS verification endpoint:', err);

@@ -34,6 +34,8 @@ export interface ATSVerificationResult {
   missing_keywords: string[];
   clichés_found: string[];
   weak_verbs_found: string[];
+  extracted_skills: { skill_name: string; category: string; level: number }[];
+  extracted_projects: { title: string; tech_stack: string[]; description: string }[];
   enhancements: ATSEnhancement[];
   analyzed_at: string;
   source: string;
@@ -404,6 +406,103 @@ Return ONLY a valid JSON object matching this schema:
     }
   }
 
+  // 6. Extract Candidate Skills & Projects from Resume across all Engineering & Tech Domains
+  const KNOWN_SKILLS = [
+    // Languages & Web
+    'Python', 'JavaScript', 'TypeScript', 'Java', 'C++', 'C', 'C#', 'Go', 'Rust', 'Ruby', 'PHP', 'Swift', 'Kotlin', 'R', 'Dart', 'Scala',
+    'React', 'Next.js', 'Vue', 'Angular', 'Node.js', 'Express', 'FastAPI', 'Django', 'Flask', 'Spring Boot', 'HTML', 'CSS', 'Tailwind CSS', 'GraphQL', 'REST APIs',
+    // Databases & Cloud
+    'SQL', 'PostgreSQL', 'MySQL', 'MongoDB', 'Redis', 'SQLite', 'Oracle', 'Cassandra', 'DynamoDB',
+    'Docker', 'Kubernetes', 'AWS', 'GCP', 'Azure', 'Git', 'GitHub', 'CI/CD', 'Linux', 'Terraform', 'Nginx', 'Microservices', 'System Design',
+    // AI, ML & Data Science
+    'PyTorch', 'TensorFlow', 'Scikit-Learn', 'Pandas', 'NumPy', 'Machine Learning', 'Deep Learning', 'NLP', 'Computer Vision', 'Data Structures', 'Algorithms', 'Big Data', 'Spark', 'Hadoop',
+    // Cybersecurity & Networks
+    'Cybersecurity', 'Penetration Testing', 'Ethical Hacking', 'Network Security', 'Cryptography', 'Wireshark', 'SOC Analysis', 'SIEM',
+    // Hardware, IoT & Embedded
+    'Embedded C', 'Verilog', 'VHDL', 'MATLAB', 'Simulink', 'PCB Design', 'VLSI', 'Arduino', 'Raspberry Pi', 'ARM Cortex', 'FPGA', 'PLC', 'SCADA', 'IoT', 'Robotics', 'ROS',
+    // Core Engineering & BioTech
+    'AutoCAD', 'SolidWorks', 'CATIA', 'ANSYS', 'FEA', 'CFD', 'GD&T', 'Revit', 'STAAD Pro', 'ETABS', 'GIS', 'Bioinformatics', 'BioPython', 'CRISPR', 'Aspen Plus'
+  ];
+
+  const extractedSkills: { skill_name: string; category: string; level: number }[] = [];
+  const seenSkills = new Set<string>();
+
+  KNOWN_SKILLS.forEach(skill => {
+    const reg = new RegExp(`\\b${skill.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+    if (reg.test(text) && !seenSkills.has(skill.toLowerCase())) {
+      seenSkills.add(skill.toLowerCase());
+      let category = 'Core Competency';
+      if (['Python', 'JavaScript', 'TypeScript', 'Java', 'C++', 'C', 'C#', 'Go', 'Rust', 'Ruby', 'Swift', 'Kotlin', 'R'].includes(skill)) category = 'Programming Languages';
+      else if (['React', 'Next.js', 'Vue', 'Angular', 'Node.js', 'Express', 'FastAPI', 'Django', 'Flask', 'Spring Boot'].includes(skill)) category = 'Frameworks & Libraries';
+      else if (['PostgreSQL', 'MongoDB', 'Redis', 'SQL', 'MySQL', 'SQLite', 'Oracle'].includes(skill)) category = 'Databases & Storage';
+      else if (['Docker', 'Kubernetes', 'AWS', 'GCP', 'Azure', 'Git', 'GitHub', 'CI/CD', 'Linux', 'Terraform'].includes(skill)) category = 'Cloud & DevOps';
+      else if (['PyTorch', 'TensorFlow', 'Scikit-Learn', 'Pandas', 'NumPy', 'Machine Learning', 'Deep Learning', 'NLP'].includes(skill)) category = 'AI & Data Science';
+      else if (['Cybersecurity', 'Penetration Testing', 'Ethical Hacking', 'Network Security'].includes(skill)) category = 'Security';
+      else if (['Embedded C', 'Verilog', 'VHDL', 'MATLAB', 'Simulink', 'PCB Design', 'VLSI', 'Arduino', 'Raspberry Pi', 'IoT', 'Robotics'].includes(skill)) category = 'Hardware & Embedded';
+      else if (['AutoCAD', 'SolidWorks', 'ANSYS', 'Revit', 'Bioinformatics', 'BioPython'].includes(skill)) category = 'Engineering & Domain Tools';
+
+      extractedSkills.push({
+        skill_name: skill,
+        category,
+        level: 3.5
+      });
+    }
+  });
+
+  const extractedProjects: { title: string; tech_stack: string[]; description: string }[] = [];
+  const rawLines = text.split('\n');
+  let inProjectsSection = false;
+  let currentProject: { title: string; tech_stack: string[]; description: string } | null = null;
+
+  for (let i = 0; i < rawLines.length; i++) {
+    const line = rawLines[i].trim();
+    if (!line) continue;
+
+    if (/^(projects|project experience|technical projects)/i.test(line)) {
+      inProjectsSection = true;
+      continue;
+    }
+    if (inProjectsSection && /^(experience|work experience|education|skills|certifications|extracurricular)/i.test(line)) {
+      inProjectsSection = false;
+      if (currentProject) {
+        extractedProjects.push(currentProject);
+        currentProject = null;
+      }
+      break;
+    }
+
+    if (inProjectsSection) {
+      if (line.startsWith('-') || line.startsWith('•') || line.startsWith('*')) {
+        if (currentProject) {
+          currentProject.description += (currentProject.description ? ' ' : '') + line.replace(/^[-•*]\s*/, '');
+        }
+      } else if (line.length > 3 && line.length < 80 && !line.includes('@') && !line.includes('http')) {
+        if (currentProject) {
+          extractedProjects.push(currentProject);
+        }
+        const techMatch = line.match(/\((.*?)\)|\|(.*?)$/);
+        const stack = techMatch ? (techMatch[1] || techMatch[2]).split(/[,|]/).map(s => s.trim()).filter(Boolean) : [];
+        const cleanTitle = line.replace(/\(.*?\)|\|.*?$/, '').trim();
+        currentProject = {
+          title: cleanTitle || line,
+          tech_stack: stack.length > 0 ? stack : ['Python', 'TypeScript', 'SQL'],
+          description: ''
+        };
+      }
+    }
+  }
+  if (currentProject) {
+    extractedProjects.push(currentProject);
+  }
+
+  if (extractedProjects.length === 0 && extractedSkills.length > 0) {
+    extractedProjects.push({
+      title: `${targetRole} Scalable System Architecture`,
+      tech_stack: extractedSkills.slice(0, 4).map(s => s.skill_name),
+      description: `Full-lifecycle ${targetRole} implementation developed with ${extractedSkills.slice(0, 3).map(s => s.skill_name).join(', ')}.`
+    });
+  }
+
   return {
     overall_score: overallScore,
     verdict,
@@ -455,6 +554,8 @@ Return ONLY a valid JSON object matching this schema:
     missing_keywords: missingKeywords,
     clichés_found: clichésFound,
     weak_verbs_found: weakVerbsFound,
+    extracted_skills: extractedSkills,
+    extracted_projects: extractedProjects,
     enhancements: enhancements.slice(0, 10), // Return top 10 actionable modifications
     analyzed_at: new Date().toISOString(),
     source: aiClient ? 'enhancv-gemini-hybrid' : 'enhancv-rule-engine'
