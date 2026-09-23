@@ -153,7 +153,12 @@ export const BranchCurriculumPage: React.FC = () => {
             <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 600 }}>Quick Select:</span>
             <select
               value={currentBranchCode}
-              onChange={(e) => setCurrentBranchCode(e.target.value)}
+              onChange={(e) => {
+                const newCode = e.target.value;
+                setCurrentBranchCode(newCode);
+                const b = ALL_BRANCHES.find(x => x.code === newCode);
+                if (b && b.category) setSelectedCategory(b.category);
+              }}
               style={{
                 padding: '8px 12px',
                 borderRadius: '8px',
@@ -169,7 +174,7 @@ export const BranchCurriculumPage: React.FC = () => {
                 <optgroup key={cat.name} label={`${cat.emoji} ${cat.name}`}>
                   {cat.branches.map((b) => (
                     <option key={b.code} value={b.code}>
-                      {b.name}
+                      {b.name} ({b.code})
                     </option>
                   ))}
                 </optgroup>
@@ -179,10 +184,12 @@ export const BranchCurriculumPage: React.FC = () => {
         </div>
 
         {/* Category Tabs */}
-        <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
+        <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px', marginBottom: '12px' }}>
           <button
             type="button"
-            onClick={() => setSelectedCategory('All')}
+            onClick={() => {
+              setSelectedCategory('All');
+            }}
             style={{
               padding: '6px 14px',
               borderRadius: '20px',
@@ -202,7 +209,12 @@ export const BranchCurriculumPage: React.FC = () => {
             <button
               key={cat.name}
               type="button"
-              onClick={() => setSelectedCategory(cat.name)}
+              onClick={() => {
+                setSelectedCategory(cat.name);
+                if (cat.branches.length > 0) {
+                  setCurrentBranchCode(cat.branches[0].code);
+                }
+              }}
               style={{
                 padding: '6px 14px',
                 borderRadius: '20px',
@@ -217,6 +229,34 @@ export const BranchCurriculumPage: React.FC = () => {
               }}
             >
               {cat.emoji} {cat.name} ({cat.branches.length})
+            </button>
+          ))}
+        </div>
+
+        {/* Branch Chips in Selected Category */}
+        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', borderTop: '1px solid #f1f5f9', paddingTop: '10px' }}>
+          <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, alignSelf: 'center', marginRight: '4px' }}>
+            Branches ({filteredBranches.length}):
+          </span>
+          {filteredBranches.map((b) => (
+            <button
+              key={b.code}
+              type="button"
+              onClick={() => setCurrentBranchCode(b.code)}
+              style={{
+                padding: '4px 10px',
+                borderRadius: '6px',
+                fontSize: '11.5px',
+                fontWeight: currentBranchCode === b.code ? 700 : 500,
+                border: '1px solid',
+                borderColor: currentBranchCode === b.code ? '#006EFF' : '#cbd5e1',
+                background: currentBranchCode === b.code ? '#006EFF' : '#f8fafc',
+                color: currentBranchCode === b.code ? '#ffffff' : '#334155',
+                cursor: 'pointer',
+                transition: 'all 0.1s ease',
+              }}
+            >
+              {b.shortName || b.name}
             </button>
           ))}
         </div>

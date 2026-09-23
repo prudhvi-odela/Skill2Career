@@ -361,7 +361,7 @@ Return ONLY a valid JSON object matching this schema:
   "personalized_critique": "Brief 2-sentence summary of resume standing"
 }`;
 
-      const candidateModels = ['gemini-3.8-flash', 'gemini-3.1-flash-lite'];
+      const candidateModels = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'];
       for (const m of candidateModels) {
         try {
           const aiResponse = await aiClient.models.generateContent({

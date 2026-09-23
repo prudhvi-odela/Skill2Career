@@ -38,24 +38,141 @@ export const AICopilotPage: React.FC = () => {
   ]);
   const [activeThreadId, setActiveThreadId] = useState<string>('th_1');
 
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: 'init_msg',
-      role: 'assistant',
-      content: `### 👋 Welcome to Skill2Career AI Copilot
+  const INITIAL_THREAD_MESSAGES: Record<string, ChatMessage[]> = {
+    th_1: [
+      {
+        id: 'msg_1_1',
+        role: 'user',
+        content: 'What should I prepare today for my placement schedule?',
+        timestamp: '09:30 AM'
+      },
+      {
+        id: 'msg_1_2',
+        role: 'assistant',
+        content: `### 📅 High-Yield Daily Preparation Plan for Today
 
-I am your intelligent technical career mentor and tutor, powered by Google Gemini and grounded placement operations agents.
+Here is your structured 4-stage placement readiness routine:
 
-Here is what I can do for you right now:
-- 📅 **Daily Study Schedule**: Ask *"What should I prepare today?"* or *"How to prepare today?"* for an optimal 4-stage study routine.
-- 🌐 **Chrome Documentation Links**: Get direct official links to [FastAPI Documentation](https://fastapi.tiangolo.com), [MDN Web Docs](https://developer.mozilla.org), [React.dev Guides](https://react.dev/learn), [PyTorch Tutorials](https://pytorch.org/tutorials/), and [NeetCode 150](https://neetcode.io/roadmap).
-- 📝 **Diagnostic Topic Assessments**: Test your skills on Python, React, SQL, FastAPI, Docker, and DSA with instant verified profile badges.
-- 📄 **Resume Optimization**: Convert project descriptions into quantified Google X-Y-Z / STAR bullet points.
+#### ⏱️ **Block 1: Data Structures & Algorithms (60 Minutes)**
+- **Topic**: Two-Pointer Patterns & Binary Search (Search in Rotated Sorted Array, Container With Most Water).
+- **Goal**: Solve 2 LeetCode Medium problems in under 25 minutes each.
+- **Resource**: 🌐 [NeetCode 150 Blind Roadmap](https://neetcode.io/roadmap) | 🌐 [LeetCode Blind 75](https://leetcode.com/studyplan/blind-75/)
 
-*Select a quick prompt below or type your career question!*`,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    }
-  ]);
+---
+
+#### ⏱️ **Block 2: Core Stack & System APIs (90 Minutes)**
+- **Topic**: Asynchronous APIs & Database Indexing (FastAPI / Node.js + PostgreSQL).
+- **Goal**: Implement clean CRUD endpoints with input validation and connection pooling.
+- **Resources**: 🌐 [FastAPI Async Documentation](https://fastapi.tiangolo.com/tutorial/)
+
+---
+
+#### ⏱️ **Block 3: System Design & CS Fundamentals (45 Minutes)**
+- **Topic**: Distributed Caching (Redis LRU Eviction & Write-Through vs Write-Back Caching).
+- **Goal**: Understand CAP Theorem tradeoffs and partition tolerance.
+
+---
+
+#### ⏱️ **Block 4: Diagnostic Assessment Verification (15 Minutes)**
+- **Goal**: Complete today's topic assessment in our **Assessment Center** to earn a verified skill badge on your profile!`,
+        timestamp: '09:31 AM'
+      }
+    ],
+    th_2: [
+      {
+        id: 'msg_2_1',
+        role: 'user',
+        content: 'Explain React hooks and frontend architecture best practices with official Chrome docs links.',
+        timestamp: 'Yesterday'
+      },
+      {
+        id: 'msg_2_2',
+        role: 'assistant',
+        content: `### ⚛️ React 19 Architecture, Hooks & Modern Best Practices
+
+React builds dynamic web interfaces through declarative components and state reactivity.
+
+#### 1. Core Hooks Every Engineer Must Master:
+- **\`useState\`**: Declares local component state. Always treat state as **immutable**; React uses shallow reference equality (\`Object.is\`) to trigger re-renders.
+- **\`useEffect\`**: Synchronizes with external systems (APIs, subscriptions, DOM mutations). Empty dependency array \`[]\` executes only on mount; omit dependencies carefully to avoid stale closures.
+- **\`useMemo\` & \`useCallback\`**: Cache CPU-intensive calculations and callback function instances between re-renders.
+- **\`useRef\`**: Persists mutable values without triggering re-renders (useful for DOM access and interval timers).
+
+#### 🌐 Official Chrome Documentation & Learning Links:
+- 🔗 [React.dev Official Interactive Tutorials](https://react.dev/learn) — Official modern docs with interactive sandboxes.
+- 🔗 [MDN JavaScript Guide](https://developer.mozilla.org/en-US/docs/Web/JavaScript) — Core closures, promises, and async event loop.
+- 🔗 [React Patterns & Custom Hooks Guide](https://reactpatterns.js.org/) — Real-world architectural composition patterns.`,
+        timestamp: 'Yesterday'
+      }
+    ],
+    th_3: [
+      {
+        id: 'msg_3_1',
+        role: 'user',
+        content: 'How do I convert my project notes into Google STAR resume bullets for ATS?',
+        timestamp: '2 days ago'
+      },
+      {
+        id: 'msg_3_2',
+        role: 'assistant',
+        content: `### 📄 Resume Architecture & High-Scoring ATS Strategy
+
+To pass automated Applicant Tracking Systems (ATS) and impress technical interviewers at top tech firms, structure your resume using the **Google X-Y-Z / STAR Formula**:
+
+> *"Accomplished [X], as measured by [Y], by doing [Z]"*
+
+#### Project Bullet Before & After:
+- ❌ **Before**: *"Made an e-commerce backend API using Python and Docker."*
+- ✅ **After**: *"Architected high-throughput RESTful backend service using **FastAPI** and **PostgreSQL**, containerizing deployment with **Docker** multi-stage builds to serve **5,000+** daily requests with **<80ms** response latency."*
+
+#### 🌐 Recommended Resume & Career Tools:
+- 🔗 [Resume AI Studio](/app/resume-ai) — Run real-time ATS scoring, generate STAR bullets, and tailor cold emails.
+- 🔗 [Google Technical Resume Guide](https://www.techinterviewhandbook.org/resume/) — Comprehensive format rules.`,
+        timestamp: '2 days ago'
+      }
+    ],
+    th_4: [
+      {
+        id: 'msg_4_1',
+        role: 'user',
+        content: 'How does Redis distributed caching improve FastAPI response times?',
+        timestamp: 'Last week'
+      },
+      {
+        id: 'msg_4_2',
+        role: 'assistant',
+        content: `### ⚡ FastAPI & Redis Distributed Caching Architecture
+
+Redis acts as an in-memory key-value data structure store used as a database, cache, and message broker.
+
+#### Key Architectural Benefits:
+1. **Sub-millisecond Latency**: Serving pre-computed queries from RAM drops p99 latency from ~120ms to <4ms.
+2. **Cache-Aside Pattern**:
+   - Application checks Redis for key.
+   - If *Cache Hit*, return data immediately.
+   - If *Cache Miss*, fetch from PostgreSQL, write to Redis with TTL (e.g. 300s), and return.
+3. **Connection Pooling**: Use \`redis.asyncio\` connection pool in FastAPI startup event.
+
+#### Official Documentation:
+- 🔗 [FastAPI Advanced Caching](https://fastapi.tiangolo.com/advanced/custom-response/)
+- 🔗 [Redis Official Documentation](https://redis.io/docs/)`,
+        timestamp: 'Last week'
+      }
+    ]
+  };
+
+  const [threadMessagesMap, setThreadMessagesMap] = useState<Record<string, ChatMessage[]>>(INITIAL_THREAD_MESSAGES);
+  const messages = threadMessagesMap[activeThreadId] || INITIAL_THREAD_MESSAGES['th_1'];
+
+  const setMessages = (updater: (prev: ChatMessage[]) => ChatMessage[]) => {
+    setThreadMessagesMap((prev) => {
+      const currentList = prev[activeThreadId] || [];
+      return {
+        ...prev,
+        [activeThreadId]: updater(currentList)
+      };
+    });
+  };
 
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -277,25 +394,27 @@ Here are targeted recommendations based on your target role (**${profile?.target
 
   const handleNewChat = () => {
     const newId = 'th_' + Date.now();
-    setThreads((prev) => [
-      { id: newId, title: 'New Conversation', lastMessage: 'Starting new prep session...', date: 'Just now' },
-      ...prev
-    ]);
-    setActiveThreadId(newId);
-    setMessages([
-      {
-        id: 'init_msg_' + newId,
-        role: 'assistant',
-        content: `### 🚀 New Session Started
+    const initMessage: ChatMessage = {
+      id: 'init_msg_' + newId,
+      role: 'assistant',
+      content: `### 🚀 New Session Started
 
 How can I help you prepare today? You can ask for:
 - 📅 **"What should I prepare today?"**
 - ⚛️ **"Explain React hooks and give official Chrome documentation links"**
 - 📄 **"How do I build a strong engineering resume?"**
 - 📝 **"Test my skills with a quiz"**`,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      }
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+    setThreads((prev) => [
+      { id: newId, title: 'New Conversation', lastMessage: 'Starting new prep session...', date: 'Just now' },
+      ...prev
     ]);
+    setActiveThreadId(newId);
+    setThreadMessagesMap((prev) => ({
+      ...prev,
+      [newId]: [initMessage]
+    }));
   };
 
   // Render markdown text cleanly with clickable links

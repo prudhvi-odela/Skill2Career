@@ -32,10 +32,26 @@ export const SkillsPage: React.FC = () => {
         studentApi.getSkills(),
         careersApi.getSkillsCatalog(),
       ]);
-      setStudentSkills(skillsRes.data);
+      const normalized = (skillsRes.data || []).map((s: any, idx: number) => {
+        const id = s.skill_id || s.id || `sk_${idx}_${(s.name || s.skill_name || 'skill').replace(/\s+/g, '_')}`;
+        const name = s.skill_name || s.name || 'Core Competency';
+        const cleanName = (name === 'Skill' || !name) ? 'Core Technical Competency' : name;
+        return {
+          ...s,
+          skill_id: id,
+          id: id,
+          skill_name: cleanName,
+          name: cleanName,
+          proficiency_level: Number(s.proficiency_level ?? s.level ?? 3.5),
+          level: Number(s.proficiency_level ?? s.level ?? 3.5),
+          years_experience: Number(s.years_experience ?? 1.0),
+          category: s.category || 'General'
+        };
+      });
+      setStudentSkills(normalized);
       setCatalog(catRes.data);
       if (catRes.data.length > 0) {
-        setNewSkillId(catRes.data[0].id);
+        setNewSkillId(catRes.data[0].id || catRes.data[0].skill_id);
       }
     } catch (err: any) {
       console.error('Failed to load skills:', err);
@@ -69,7 +85,7 @@ export const SkillsPage: React.FC = () => {
     if (!confirm('Are you sure you want to remove this skill?')) return;
     try {
       await studentApi.deleteSkill(skillId);
-      await loadSkills();
+      setStudentSkills((prev) => prev.filter((s) => s.skill_id !== skillId));
       await refreshProfile();
     } catch (err: any) {
       console.error('Failed to delete skill:', err);
@@ -77,15 +93,15 @@ export const SkillsPage: React.FC = () => {
   };
 
   const handleUpdateLevel = async (skillId: string, level: number) => {
+    // Optimistic local state update for exact skillId only
+    setStudentSkills((prev) =>
+      prev.map((s) => (s.skill_id === skillId ? { ...s, proficiency_level: level, level: level } : s))
+    );
     try {
       await studentApi.addSkill({
         skill_id: skillId,
         proficiency_level: level,
       });
-      setStudentSkills((prev) =>
-        prev.map((s) => (s.skill_id === skillId ? { ...s, proficiency_level: level } : s))
-      );
-      await refreshProfile();
     } catch (err: any) {
       console.error('Failed to update skill:', err);
     }
@@ -93,16 +109,9 @@ export const SkillsPage: React.FC = () => {
 
   const categories = ['All', ...Array.from(new Set(catalog.map((s) => s.category)))];
 
-  const filteredStudentSkills = studentSkills.map(s => ({
-    ...s,
-    skill_id: s.skill_id || s.id,
-    skill_name: s.skill_name || s.name || 'Unnamed Skill',
-    proficiency_level: s.proficiency_level ?? s.level ?? 3.0,
-    years_experience: s.years_experience ?? 1.0,
-    category: s.category || 'General'
-  })).filter((s) => {
+  const filteredStudentSkills = studentSkills.filter((s) => {
     const matchesCat = selectedCategory === 'All' || s.category === selectedCategory;
-    const matchesSearch = s.skill_name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = (s.skill_name || '').toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCat && matchesSearch;
   });
 
@@ -205,7 +214,7 @@ export const SkillsPage: React.FC = () => {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                   <span className="badge badge-neutral">{s.category}</span>
                   <span style={{ fontSize: '0.8rem', color: '#1e3a8a', fontWeight: 700 }}>
-                    Level {s.proficiency_level}.0 / 5.0
+                    Level {Number(s.proficiency_level).toFixed(1)} / 5.0
                   </span>
                 </div>
 
@@ -221,7 +230,7 @@ export const SkillsPage: React.FC = () => {
               <div style={{ borderTop: '1px solid #cbd5e1', paddingTop: '10px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#475569', marginBottom: '4px' }}>
                   <span>Update Proficiency:</span>
-                  <span style={{ fontWeight: 700, color: '#0f172a' }}>{s.proficiency_level}.0</span>
+                  <span style={{ fontWeight: 700, color: '#0f172a' }}>{Number(s.proficiency_level).toFixed(1)}</span>
                 </div>
                 <input
                   type="range"

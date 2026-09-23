@@ -1055,7 +1055,7 @@ Conversation Guidelines:
 4. If the user engages in general conversation, greeting, or concept queries, respond naturally, warmly, and thoroughly.
 5. Format responses using clean GitHub Markdown with clear section headers, bullet lists, and syntax-highlighted code fences.`;
 
-      const candidateModels = ['gemini-3.8-flash', 'gemini-3.1-flash-lite'];
+      const candidateModels = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'];
       for (const model of candidateModels) {
         try {
           const response = await ai.models.generateContent({
