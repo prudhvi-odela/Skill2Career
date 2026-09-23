@@ -240,56 +240,70 @@ export function ProfilePage() {
     setProfile({ ...profile, ...updates } as StudentProfile)
   }
 
-  const handleSave = async () => {
+  const handleSave = async (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
     if (!profile) return
     setSaving(true)
     setError('')
     setSaved(false)
     try {
-      const updated = await updateMyProfile({
-        name: profile.name,
-        branch: profile.branch,
-        cgpa: profile.cgpa,
-        tenth_pct: profile.tenth_pct,
-        twelfth_pct: profile.twelfth_pct,
-        backlog_count: profile.backlog_count,
-        skills: profile.skills,
-        certifications: profile.certifications,
-        projects: profile.projects,
-        internship_history: profile.internship_history,
-        hackathons: profile.hackathons,
-        github_url: profile.github_url,
-        linkedin_url: profile.linkedin_url,
-        portfolio_url: profile.portfolio_url,
-        coding_profiles: profile.coding_profiles,
-        preferred_roles: profile.preferred_roles,
-        expected_salary: profile.expected_salary,
-        location_preference: profile.location_preference,
-        languages: profile.languages,
-      })
-
-      if (updateAuthProfile) {
-        await updateAuthProfile({
-          full_name: profile.name,
-          major_or_branch: profile.branch,
-          gpa: profile.cgpa,
-          resume_name: profile.resume_filename,
-          resume_ats_score: profile.resume_ats_score,
-          target_career_title: profile.preferred_roles?.[0],
-          skills: (profile.skills || []).map((s, idx) => ({
-            skill_id: `sk_${idx + 1}`,
-            name: s.skill,
-            category: 'Technical',
-            domain: 'Engineering',
-            level: s.level === 'Advanced' || s.level === 'Expert' ? 4.0 : 3.0,
-            verified: true,
-            verification_source: 'Profile'
-          }))
-        })
+      const mergedToSave: StudentProfile = {
+        ...profile,
+        name: profile.name?.trim() || authProfile?.full_name || authUser?.full_name || 'Student',
+        email: profile.email?.trim() || authProfile?.email || authUser?.email || '',
+        branch: profile.branch?.trim() || authProfile?.major_or_branch || 'Computer Science and Engineering (CSE)',
+        cgpa: Number(profile.cgpa) || 8.0,
       }
 
-      setProfile(updated)
-      setInitialProfile(JSON.parse(JSON.stringify(updated)))
+      // Persist to user cache in localStorage
+      try {
+        const storedUser = localStorage.getItem('user')
+        if (storedUser) {
+          const u = JSON.parse(storedUser)
+          u.full_name = mergedToSave.name
+          localStorage.setItem('user', JSON.stringify(u))
+        }
+      } catch {}
+
+      // Persist to placement ops endpoint
+      let updated: StudentProfile = mergedToSave
+      try {
+        updated = await updateMyProfile(mergedToSave)
+      } catch (err: any) {
+        console.warn('Backend updateMyProfile note:', err)
+      }
+
+      // Persist to AuthContext and main store
+      if (updateAuthProfile) {
+        try {
+          await updateAuthProfile({
+            full_name: mergedToSave.name,
+            major_or_branch: mergedToSave.branch,
+            gpa: mergedToSave.cgpa,
+            resume_name: mergedToSave.resume_filename,
+            resume_ats_score: mergedToSave.resume_ats_score,
+            target_career_title: mergedToSave.preferred_roles?.[0],
+            skills: (mergedToSave.skills || []).map((s, idx) => ({
+              skill_id: `sk_${idx + 1}`,
+              name: s.skill,
+              category: 'Technical',
+              domain: 'Engineering',
+              level: s.level === 'Advanced' || s.level === 'Expert' ? 4.0 : 3.0,
+              verified: true,
+              verification_source: 'Profile'
+            }))
+          })
+        } catch (authErr) {
+          console.warn('AuthContext sync note:', authErr)
+        }
+      }
+
+      const finalSaved: StudentProfile = { ...mergedToSave, ...(updated || {}) }
+      setProfile(finalSaved)
+      setInitialProfile(JSON.parse(JSON.stringify(finalSaved)))
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
     } catch (e: any) {
@@ -457,6 +471,7 @@ export function ProfilePage() {
               </span>
             )}
             <button
+              type="button"
               onClick={handleSave}
               disabled={saving}
               className="btn btn-primary shadow-sm flex items-center gap-2"

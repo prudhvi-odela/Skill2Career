@@ -7,7 +7,7 @@ export async function apiFetch(path: string, options: RequestInit = {}): Promise
   if (!headers.has('Content-Type') && !(options.body instanceof FormData)) {
     headers.set('Content-Type', 'application/json');
   }
-  const token = localStorage.getItem('placement_ops_token') || 'demo-token';
+  const token = localStorage.getItem('token') || localStorage.getItem('placement_ops_token') || 'usr_demo_01';
   headers.set('Authorization', `Bearer ${token}`);
 
   const cleanPath = path.startsWith('/') ? path : `/${path}`;

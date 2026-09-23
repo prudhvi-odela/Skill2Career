@@ -68,19 +68,18 @@ export const LogoLoader: React.FC<LogoLoaderProps> = ({
           aria-hidden="true"
         />
 
-        {/* Logo Card with Breathing Elevation */}
+        {/* Vibrant Glass Brand Emblem */}
         <div
-          className={`relative z-10 flex items-center justify-center rounded-2xl bg-white p-2.5 shadow-lg border border-slate-100 animate-float-gentle ${logoDimensions}`}
+          className={`relative z-10 flex items-center justify-center rounded-2xl bg-white/90 backdrop-blur-md p-2 shadow-xl border border-slate-200/80 animate-float-gentle overflow-hidden ${logoDimensions}`}
         >
           <img
-            src="/S2C.png"
-            alt="Skill2Career S2C Logo"
+            src="/logo.png"
+            alt="Skill2Career Logo"
             className="w-full h-full object-contain filter drop-shadow-sm select-none"
             onError={(e) => {
-              // Fallback to /logo.png if S2C.png relative path differs
               const target = e.currentTarget;
-              if (!target.src.includes('logo.png')) {
-                target.src = '/logo.png';
+              if (!target.src.includes('S2C.png')) {
+                target.src = '/S2C.png';
               }
             }}
           />
