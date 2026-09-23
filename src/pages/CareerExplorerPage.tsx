@@ -9,7 +9,7 @@ import { BranchCareerGoalNavigator } from '../components/BranchCareerGoalNavigat
 
 export const CareerExplorerPage: React.FC = () => {
   const { profile, refreshProfile } = useAuth();
-  const [viewMode, setViewMode] = useState<'hierarchy' | 'catalog'>('hierarchy');
+  const [viewMode, setViewMode] = useState<'hierarchy' | 'catalog'>('catalog');
   const [careers, setCareers] = useState<any[]>([]);
   const [recommendations, setRecommendations] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');

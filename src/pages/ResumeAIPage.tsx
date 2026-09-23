@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { apiFetch } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
+import { OfficialResumeTemplateEditor, compileResumeToText, type StructuredResumeData } from '../components/resume/OfficialResumeTemplateEditor';
 
 interface ATSEnhancement {
   id: string;
@@ -141,6 +142,7 @@ export const ResumeAIPage: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Resume Text & Role Settings
+  const [editorMode, setEditorMode] = useState<'template' | 'raw'>('template');
   const [resumeText, setResumeText] = useState<string>(() => {
     return SAMPLE_RESUMES.decent;
   });
@@ -598,275 +600,363 @@ GitHub: github.com/alexchen | LinkedIn: linkedin.com/in/alexchen`);
             background: '#ffffff',
             borderRadius: '16px',
             border: '1px solid #e2e8f0',
-            padding: '20px',
+            padding: '16px',
             display: 'flex',
             flexDirection: 'column',
             gap: '14px',
             boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
           }}
         >
-          {/* Editor Header & Actions */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <FileText size={18} className="text-blue-600" />
-              <span style={{ fontSize: '15px', fontWeight: 800, color: '#0f172a' }}>Live Resume Editor</span>
-              <span style={{ fontSize: '11px', background: '#f1f5f9', color: '#475569', padding: '2px 8px', borderRadius: '12px', fontWeight: 600 }}>
-                {verificationResult?.word_count || resumeText.split(/\s+/).filter(Boolean).length} words
-              </span>
-            </div>
-
-            {/* Quick Sample Selector */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>Try Sample:</span>
-              <button
-                onClick={() => {
-                  setResumeText(SAMPLE_RESUMES.needs_work);
-                  handleRunATSVerification(SAMPLE_RESUMES.needs_work, targetRole);
-                }}
-                style={{
-                  fontSize: '11px',
-                  padding: '3px 8px',
-                  borderRadius: '6px',
-                  background: '#fef2f2',
-                  border: '1px solid #fecaca',
-                  color: '#991b1b',
-                  cursor: 'pointer',
-                  fontWeight: 700
-                }}
-                title="Loads weak resume with passive verbs and clichés"
-              >
-                Needs Work (~45)
-              </button>
-              <button
-                onClick={() => {
-                  setResumeText(SAMPLE_RESUMES.decent);
-                  handleRunATSVerification(SAMPLE_RESUMES.decent, targetRole);
-                }}
-                style={{
-                  fontSize: '11px',
-                  padding: '3px 8px',
-                  borderRadius: '6px',
-                  background: '#fffbeb',
-                  border: '1px solid #fef3c7',
-                  color: '#92400e',
-                  cursor: 'pointer',
-                  fontWeight: 700
-                }}
-                title="Loads average intermediate resume"
-              >
-                Decent (~78)
-              </button>
-              <button
-                onClick={() => {
-                  setResumeText(SAMPLE_RESUMES.ready);
-                  handleRunATSVerification(SAMPLE_RESUMES.ready, targetRole);
-                }}
-                style={{
-                  fontSize: '11px',
-                  padding: '3px 8px',
-                  borderRadius: '6px',
-                  background: '#f0fdf4',
-                  border: '1px solid #bbf7d0',
-                  color: '#166534',
-                  cursor: 'pointer',
-                  fontWeight: 700
-                }}
-                title="Loads high-impact STAR resume"
-              >
-                Top 5% (~94)
-              </button>
-            </div>
-          </div>
-
-          {/* Action Toolbar: Upload, Clear, Copy, Download, Print */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#f8fafc', padding: '8px 12px', borderRadius: '8px', border: '1px solid #f1f5f9', flexWrap: 'wrap', gap: '8px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFileUpload}
-                accept=".txt,.md,.doc,.docx"
-                style={{ display: 'none' }}
-              />
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '5px',
-                  padding: '5px 10px',
-                  borderRadius: '6px',
-                  background: '#ffffff',
-                  border: '1px solid #cbd5e1',
-                  color: '#334155',
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  cursor: 'pointer'
-                }}
-                title="Upload plain text or markdown resume"
-              >
-                <Upload size={13} />
-                <span>Upload File</span>
-              </button>
-
-              <button
-                onClick={() => setShowJobDesc(!showJobDesc)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '5px',
-                  padding: '5px 10px',
-                  borderRadius: '6px',
-                  background: showJobDesc ? '#eff6ff' : '#ffffff',
-                  border: showJobDesc ? '1px solid #93c5fd' : '1px solid #cbd5e1',
-                  color: showJobDesc ? '#1d4ed8' : '#334155',
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  cursor: 'pointer'
-                }}
-              >
-                <Target size={13} />
-                <span>Target Job Description {showJobDesc ? '▲' : '▼'}</span>
-              </button>
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <button
-                onClick={() => handleCopy('editor_resume', resumeText)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  padding: '5px 9px',
-                  borderRadius: '6px',
-                  background: '#ffffff',
-                  border: '1px solid #cbd5e1',
-                  color: '#475569',
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  cursor: 'pointer'
-                }}
-                title="Copy entire resume text"
-              >
-                {copiedId === 'editor_resume' ? <Check size={12} className="text-emerald-600" /> : <Copy size={12} />}
-                <span>{copiedId === 'editor_resume' ? 'Copied' : 'Copy'}</span>
-              </button>
-
-              <button
-                onClick={handleDownloadTxt}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  padding: '5px 9px',
-                  borderRadius: '6px',
-                  background: '#ffffff',
-                  border: '1px solid #cbd5e1',
-                  color: '#475569',
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  cursor: 'pointer'
-                }}
-                title="Download formatted .txt"
-              >
-                <Download size={12} />
-                <span>Download</span>
-              </button>
-
-              <button
-                onClick={handlePrint}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  padding: '5px 9px',
-                  borderRadius: '6px',
-                  background: '#ffffff',
-                  border: '1px solid #cbd5e1',
-                  color: '#475569',
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  cursor: 'pointer'
-                }}
-                title="Print or Save as PDF"
-              >
-                <Printer size={12} />
-                <span>Print / PDF</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Optional Target Job Description Accordion */}
-          {showJobDesc && (
-            <div className="animate-fade-in" style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '12px' }}>
-              <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
-                Paste Job Description (for precise ATS keyword alignment):
-              </label>
-              <textarea
-                rows={3}
-                value={customJobDesc}
-                onChange={(e) => setCustomJobDesc(e.target.value)}
-                placeholder="Paste the job requirements, qualifications, and responsibilities here..."
-                style={{
-                  width: '100%',
-                  padding: '8px 10px',
-                  borderRadius: '6px',
-                  border: '1px solid #cbd5e1',
-                  background: '#ffffff',
-                  fontSize: '12px',
-                  lineHeight: 1.4,
-                  outline: 'none',
-                  resize: 'vertical'
-                }}
-              />
-            </div>
-          )}
-
-          {/* Main Textarea Editor */}
-          <div style={{ position: 'relative' }}>
-            <textarea
-              rows={22}
-              value={resumeText}
-              onChange={(e) => setResumeText(e.target.value)}
-              placeholder="Paste or write your full resume here (Contact Info, Summary, Experience, Projects, Skills, Education)..."
-              style={{
-                width: '100%',
-                padding: '14px',
-                borderRadius: '8px',
-                border: '1px solid #cbd5e1',
-                background: '#ffffff',
-                fontSize: '12.5px',
-                fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
-                lineHeight: 1.6,
-                color: '#1e293b',
-                outline: 'none',
-                resize: 'vertical'
-              }}
-            />
-          </div>
-
-          {/* Quick Stats Footnote */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '11px', color: '#64748b', padding: '0 4px' }}>
-            <span>
-              💡 Edit any section above or click <strong>"Apply to Resume"</strong> on any suggestion to modify instantly.
-            </span>
+          {/* Top Switcher: Official Interactive Template Editor vs Plain Text Editor */}
+          <div style={{ display: 'flex', gap: '8px', background: '#f1f5f9', padding: '4px', borderRadius: '10px' }}>
             <button
-              onClick={() => handleRunATSVerification(resumeText, targetRole)}
+              onClick={() => setEditorMode('template')}
               style={{
-                background: 'none',
-                border: 'none',
-                color: '#006EFF',
-                fontWeight: 700,
-                cursor: 'pointer',
+                flex: 1,
                 display: 'flex',
                 alignItems: 'center',
-                gap: '4px'
+                justifyContent: 'center',
+                gap: '6px',
+                padding: '8px 12px',
+                borderRadius: '8px',
+                background: editorMode === 'template' ? '#ffffff' : 'transparent',
+                color: editorMode === 'template' ? '#006EFF' : '#64748b',
+                fontWeight: 700,
+                fontSize: '12px',
+                border: 'none',
+                cursor: 'pointer',
+                boxShadow: editorMode === 'template' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                transition: 'all 0.15s ease'
               }}
             >
-              <RefreshCw size={11} className={verifying ? 'animate-spin' : ''} />
-              <span>Re-calculate Score</span>
+              <Sparkles size={14} />
+              <span>🏛️ Official ATS Template & Paper</span>
+            </button>
+
+            <button
+              onClick={() => setEditorMode('raw')}
+              style={{
+                flex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                padding: '8px 12px',
+                borderRadius: '8px',
+                background: editorMode === 'raw' ? '#ffffff' : 'transparent',
+                color: editorMode === 'raw' ? '#006EFF' : '#64748b',
+                fontWeight: 700,
+                fontSize: '12px',
+                border: 'none',
+                cursor: 'pointer',
+                boxShadow: editorMode === 'raw' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <FileText size={14} />
+              <span>📝 Raw Text / Markdown Editor</span>
             </button>
           </div>
+
+          {editorMode === 'template' ? (
+            <div className="animate-fade-in">
+              <OfficialResumeTemplateEditor
+                targetRole={targetRole}
+                initialData={{
+                  fullName: profile?.full_name || 'Alex Chen',
+                  email: profile?.email || 'alex.chen@rvce.edu.in',
+                  phone: profile?.phone || '+91 98765 43210',
+                  location: 'Bangalore, Karnataka, India',
+                  linkedinUrl: 'linkedin.com/in/alexchen',
+                  githubUrl: 'github.com/alexchen',
+                  summary: `Results-driven ${targetRole} with strong foundations in distributed backend services, algorithmic problem solving, and modern cloud deployment architectures.`,
+                  skills: {
+                    languages: (profile?.skills || []).filter((s: any) => (s.category || '').toLowerCase().includes('lang') || ['python', 'java', 'c++', 'javascript', 'typescript', 'go', 'sql'].includes((s.name || s.skill_name || '').toLowerCase())).map((s: any) => s.name || s.skill_name).join(', ') || 'Python, TypeScript, SQL, Go, C++',
+                    frameworks: (profile?.skills || []).filter((s: any) => (s.category || '').toLowerCase().includes('frame') || ['react', 'fastapi', 'node.js', 'django', 'spring', 'express'].includes((s.name || s.skill_name || '').toLowerCase())).map((s: any) => s.name || s.skill_name).join(', ') || 'FastAPI, React 19, Node.js, Express, Docker',
+                    databasesCloud: 'PostgreSQL, Redis, MongoDB, AWS (EC2/S3), Docker',
+                    developerTools: 'Git, GitHub Actions, Linux, PyTest, Postman, Jest'
+                  },
+                  education: {
+                    degree: `B.Tech in ${profile?.major_or_branch || 'Computer Science and Engineering'}`,
+                    institution: profile?.college_name || 'RV College of Engineering',
+                    location: 'Bangalore, India',
+                    graduationYear: '2026',
+                    cgpa: `${profile?.gpa || 8.8} / 10.0`,
+                    relevantCoursework: 'Data Structures & Algorithms, Database Systems, Operating Systems, Computer Networks'
+                  }
+                }}
+                onTextChange={(compiledText) => {
+                  setResumeText(compiledText);
+                  handleRunATSVerification(compiledText, targetRole);
+                }}
+              />
+            </div>
+          ) : (
+            <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              {/* Editor Header & Actions */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <FileText size={18} className="text-blue-600" />
+                  <span style={{ fontSize: '15px', fontWeight: 800, color: '#0f172a' }}>Raw Text Resume</span>
+                  <span style={{ fontSize: '11px', background: '#f1f5f9', color: '#475569', padding: '2px 8px', borderRadius: '12px', fontWeight: 600 }}>
+                    {verificationResult?.word_count || resumeText.split(/\s+/).filter(Boolean).length} words
+                  </span>
+                </div>
+
+                {/* Quick Sample Selector */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>Try Sample:</span>
+                  <button
+                    onClick={() => {
+                      setResumeText(SAMPLE_RESUMES.needs_work);
+                      handleRunATSVerification(SAMPLE_RESUMES.needs_work, targetRole);
+                    }}
+                    style={{
+                      fontSize: '11px',
+                      padding: '3px 8px',
+                      borderRadius: '6px',
+                      background: '#fef2f2',
+                      border: '1px solid #fecaca',
+                      color: '#991b1b',
+                      cursor: 'pointer',
+                      fontWeight: 700
+                    }}
+                    title="Loads weak resume with passive verbs and clichés"
+                  >
+                    Needs Work (~45)
+                  </button>
+                  <button
+                    onClick={() => {
+                      setResumeText(SAMPLE_RESUMES.decent);
+                      handleRunATSVerification(SAMPLE_RESUMES.decent, targetRole);
+                    }}
+                    style={{
+                      fontSize: '11px',
+                      padding: '3px 8px',
+                      borderRadius: '6px',
+                      background: '#fffbeb',
+                      border: '1px solid #fef3c7',
+                      color: '#92400e',
+                      cursor: 'pointer',
+                      fontWeight: 700
+                    }}
+                    title="Loads average intermediate resume"
+                  >
+                    Decent (~78)
+                  </button>
+                  <button
+                    onClick={() => {
+                      setResumeText(SAMPLE_RESUMES.ready);
+                      handleRunATSVerification(SAMPLE_RESUMES.ready, targetRole);
+                    }}
+                    style={{
+                      fontSize: '11px',
+                      padding: '3px 8px',
+                      borderRadius: '6px',
+                      background: '#f0fdf4',
+                      border: '1px solid #bbf7d0',
+                      color: '#166534',
+                      cursor: 'pointer',
+                      fontWeight: 700
+                    }}
+                    title="Loads high-impact STAR resume"
+                  >
+                    Top 5% (~94)
+                  </button>
+                </div>
+              </div>
+
+              {/* Action Toolbar: Upload, Clear, Copy, Download, Print */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#f8fafc', padding: '8px 12px', borderRadius: '8px', border: '1px solid #f1f5f9', flexWrap: 'wrap', gap: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileUpload}
+                    accept=".pdf,.txt,.md,.doc,.docx"
+                    style={{ display: 'none' }}
+                  />
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      padding: '5px 10px',
+                      borderRadius: '6px',
+                      background: '#ffffff',
+                      border: '1px solid #cbd5e1',
+                      color: '#334155',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      cursor: 'pointer'
+                    }}
+                    title="Upload PDF, text, or markdown resume"
+                  >
+                    <Upload size={13} />
+                    <span>Upload Resume</span>
+                  </button>
+
+                  <button
+                    onClick={() => setShowJobDesc(!showJobDesc)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      padding: '5px 10px',
+                      borderRadius: '6px',
+                      background: showJobDesc ? '#eff6ff' : '#ffffff',
+                      border: showJobDesc ? '1px solid #93c5fd' : '1px solid #cbd5e1',
+                      color: showJobDesc ? '#1d4ed8' : '#334155',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <Target size={13} />
+                    <span>Target Job Description {showJobDesc ? '▲' : '▼'}</span>
+                  </button>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <button
+                    onClick={() => handleCopy('editor_resume', resumeText)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      padding: '5px 9px',
+                      borderRadius: '6px',
+                      background: '#ffffff',
+                      border: '1px solid #cbd5e1',
+                      color: '#475569',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      cursor: 'pointer'
+                    }}
+                    title="Copy entire resume text"
+                  >
+                    {copiedId === 'editor_resume' ? <Check size={12} className="text-emerald-600" /> : <Copy size={12} />}
+                    <span>{copiedId === 'editor_resume' ? 'Copied' : 'Copy'}</span>
+                  </button>
+
+                  <button
+                    onClick={handleDownloadTxt}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      padding: '5px 9px',
+                      borderRadius: '6px',
+                      background: '#ffffff',
+                      border: '1px solid #cbd5e1',
+                      color: '#475569',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      cursor: 'pointer'
+                    }}
+                    title="Download formatted .txt"
+                  >
+                    <Download size={12} />
+                    <span>Download</span>
+                  </button>
+
+                  <button
+                    onClick={handlePrint}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      padding: '5px 9px',
+                      borderRadius: '6px',
+                      background: '#ffffff',
+                      border: '1px solid #cbd5e1',
+                      color: '#475569',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      cursor: 'pointer'
+                    }}
+                    title="Print or Save as PDF"
+                  >
+                    <Printer size={12} />
+                    <span>Print / PDF</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Optional Target Job Description Accordion */}
+              {showJobDesc && (
+                <div className="animate-fade-in" style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '12px' }}>
+                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#334155', marginBottom: '4px' }}>
+                    Paste Job Description (for precise ATS keyword alignment):
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={customJobDesc}
+                    onChange={(e) => setCustomJobDesc(e.target.value)}
+                    placeholder="Paste the job requirements, qualifications, and responsibilities here..."
+                    style={{
+                      width: '100%',
+                      padding: '8px 10px',
+                      borderRadius: '6px',
+                      border: '1px solid #cbd5e1',
+                      background: '#ffffff',
+                      fontSize: '12px',
+                      lineHeight: 1.4,
+                      outline: 'none',
+                      resize: 'vertical'
+                    }}
+                  />
+                </div>
+              )}
+
+              {/* Main Textarea Editor */}
+              <div style={{ position: 'relative' }}>
+                <textarea
+                  rows={22}
+                  value={resumeText}
+                  onChange={(e) => setResumeText(e.target.value)}
+                  placeholder="Paste or write your full resume here (Contact Info, Summary, Experience, Projects, Skills, Education)..."
+                  style={{
+                    width: '100%',
+                    padding: '14px',
+                    borderRadius: '8px',
+                    border: '1px solid #cbd5e1',
+                    background: '#ffffff',
+                    fontSize: '12.5px',
+                    fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+                    lineHeight: 1.6,
+                    color: '#1e293b',
+                    outline: 'none',
+                    resize: 'vertical'
+                  }}
+                />
+              </div>
+
+              {/* Quick Stats Footnote */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '11px', color: '#64748b', padding: '0 4px' }}>
+                <span>
+                  💡 Edit any section above or click <strong>"Apply to Resume"</strong> on any suggestion to modify instantly.
+                </span>
+                <button
+                  onClick={() => handleRunATSVerification(resumeText, targetRole)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#006EFF',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  <RefreshCw size={11} className={verifying ? 'animate-spin' : ''} />
+                  <span>Re-calculate Score</span>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* ── RIGHT COLUMN: Enhancv ATS Scorecard & Live Enhancements Hub ── */}
