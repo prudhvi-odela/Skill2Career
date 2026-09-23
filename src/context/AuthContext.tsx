@@ -34,6 +34,8 @@ export interface StudentProfileData {
   certifications_count: number;
   experiences_count?: number;
   onboarded?: boolean;
+  resume_name?: string;
+  resume_ats_score?: number;
 }
 
 interface AuthContextType {

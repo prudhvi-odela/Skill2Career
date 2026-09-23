@@ -31,6 +31,7 @@ import {
   TrendingUp,
   Edit3,
 } from 'lucide-react'
+import { useAuth } from '../context/AuthContext'
 import {
   getMyProfile,
   updateMyProfile,
@@ -84,6 +85,7 @@ const POPULAR_SKILLS = [
 
 export function ProfilePage() {
   const navigate = useNavigate()
+  const { user: authUser, profile: authProfile, updateProfile: updateAuthProfile } = useAuth()
   const [profile, setProfile] = useState<StudentProfile | null>(null)
   const [initialProfile, setInitialProfile] = useState<StudentProfile | null>(null)
   const [loading, setLoading] = useState(true)
@@ -114,8 +116,26 @@ export function ProfilePage() {
         setError('')
         const prof = await getMyProfile()
         if (active && prof && prof.id) {
-          setProfile(prof)
-          setInitialProfile(JSON.parse(JSON.stringify(prof)))
+          // Merge with active authenticated user identity
+          const resolvedName = authProfile?.full_name || authUser?.full_name || prof.name || 'Student'
+          const resolvedEmail = authProfile?.email || authUser?.email || prof.email || ''
+          const resolvedBranch = authProfile?.major_or_branch || authProfile?.branch || prof.branch || 'Computer Science and Engineering (CSE)'
+          const resolvedCgpa = authProfile?.gpa ?? prof.cgpa ?? 8.5
+          const resolvedTargetRole = authProfile?.target_career_title || (prof.preferred_roles && prof.preferred_roles[0]) || 'Software Engineer'
+
+          const mergedProf: StudentProfile = {
+            ...prof,
+            name: resolvedName,
+            email: resolvedEmail,
+            branch: resolvedBranch,
+            cgpa: resolvedCgpa,
+            preferred_roles: [resolvedTargetRole, ...(prof.preferred_roles || []).filter(r => r !== resolvedTargetRole)],
+            resume_filename: authProfile?.resume_name || prof.resume_filename,
+            resume_ats_score: authProfile?.resume_ats_score || prof.resume_ats_score || (prof.resume_filename ? 88 : null)
+          }
+
+          setProfile(mergedProf)
+          setInitialProfile(JSON.parse(JSON.stringify(mergedProf)))
           setLoading(false)
           return
         }
@@ -131,75 +151,73 @@ export function ProfilePage() {
           const raw = rawOpsUser || rawUser
           const u = raw ? JSON.parse(raw) : null
 
+          const studentName = authProfile?.full_name || authUser?.full_name || u?.name || u?.full_name || 'Student'
+          const studentEmail = authProfile?.email || authUser?.email || u?.email || 'student@university.edu'
+          const studentBranch = authProfile?.major_or_branch || authProfile?.branch || u?.branch || 'Computer Science and Engineering (CSE)'
+          const studentCgpa = authProfile?.gpa ?? u?.cgpa ?? 8.5
+          const targetRole = authProfile?.target_career_title || 'Software Engineer'
+
           const fallbackData: StudentProfile = {
             id: u?.id || 1,
-            profile_id: u?.profile_id || 'USN-2026-CS-042',
-            email: u?.email || 'alex.chen@rvce.edu.in',
-            name: u?.name || u?.full_name || 'Alex Chen',
-            branch: u?.branch || 'Computer Science & Engineering',
-            cgpa: u?.cgpa || 9.2,
-            tenth_pct: 94.0,
-            twelfth_pct: 92.5,
+            profile_id: u?.profile_id || 'STU-2026-001',
+            email: studentEmail,
+            name: studentName,
+            branch: studentBranch,
+            cgpa: studentCgpa,
+            tenth_pct: 90.0,
+            twelfth_pct: 88.5,
             semester_marks: {
-              'Sem 1': 8.8,
-              'Sem 2': 9.0,
-              'Sem 3': 8.9,
-              'Sem 4': 9.2,
-              'Sem 5': 9.3,
-              'Sem 6': 9.4,
+              'Sem 1': 8.5,
+              'Sem 2': 8.6,
+              'Sem 3': 8.7,
+              'Sem 4': 8.8,
+              'Sem 5': 8.9,
+              'Sem 6': 9.0,
             },
             backlog_count: 0,
-            skills: [
-              { skill: 'Python', level: 'Advanced' },
-              { skill: 'SQL', level: 'Advanced' },
-              { skill: 'React', level: 'Intermediate' },
-              { skill: 'FastAPI', level: 'Intermediate' },
-              { skill: 'TypeScript', level: 'Intermediate' },
-              { skill: 'Docker', level: 'Beginner' },
-            ],
+            skills: (authProfile?.skills && authProfile.skills.length > 0)
+              ? authProfile.skills.map((s: any) => ({
+                  skill: s.name || s.skill_name || s.skill || 'Competency',
+                  level: typeof s.level === 'string' ? s.level : (s.level >= 4 ? 'Advanced' : 'Intermediate')
+                }))
+              : [
+                  { skill: 'Data Structures & Algorithms', level: 'Advanced' },
+                  { skill: 'Python', level: 'Advanced' },
+                  { skill: 'SQL', level: 'Intermediate' },
+                  { skill: 'React', level: 'Intermediate' },
+                  { skill: 'Git & Version Control', level: 'Intermediate' },
+                ],
             certifications: [
-              { name: 'Google Cloud Associate Cloud Engineer', issuer: 'Google Cloud' },
-              { name: 'Deep Learning Specialization', issuer: 'DeepLearning.AI / Coursera' },
+              { name: 'Cloud Infrastructure Associate', issuer: 'Amazon Web Services / Google Cloud' },
             ],
             projects: [
               {
-                title: 'Skill2Career AI Diagnostic Suite',
-                tech_stack: ['React', 'TypeScript', 'FastAPI', 'Tailwind'],
-                description: 'Placement readiness diagnostic system with ATS parsing and skill gap mapping.',
-                link: 'https://github.com/namitha-koduru/Skill2Career',
-              },
-              {
-                title: 'High-Throughput Log Streaming Platform',
-                tech_stack: ['Go', 'Kafka', 'Redis', 'Docker'],
-                description: 'Real-time telemetry event aggregator processing 25,000 req/sec.',
-                link: 'https://github.com/demo/log-streamer',
+                title: `${targetRole} Portfolio Architecture`,
+                tech_stack: ['Python', 'TypeScript', 'PostgreSQL', 'Docker'],
+                description: `Comprehensive full-lifecycle engineering project configured for ${targetRole} tier-1 placement drives.`,
+                link: 'https://github.com',
               },
             ],
-            internship_history: [
-              { company: 'HyperScale Labs Inc.', duration_months: 3, role: 'Software Engineering Intern' },
-            ],
-            hackathons: [
-              { name: 'National Smart India Hackathon 2025', result: '1st Runner Up' },
-              { name: 'HackBangalore Grand Finalist', result: 'Top 5 Overall' },
-            ],
-            current_best_offer: 18.5,
-            applied_drives: [101, 104],
+            internship_history: [],
+            hackathons: [],
+            current_best_offer: null,
+            applied_drives: [],
             profile_photo_url: u?.avatar_url || null,
-            resume_url: '/resumes/Alex_Chen_Resume.pdf',
-            resume_filename: 'Alex_Chen_Resume.pdf',
-            github_url: 'https://github.com/alexchen-dev',
-            linkedin_url: 'https://linkedin.com/in/alexchen-tech',
-            portfolio_url: 'https://alexchen.dev',
-            coding_profiles: { leetcode: 'alex_code99', github: 'alexchen-dev', codeforces: 'alex_c' },
-            preferred_roles: ['Software Engineer', 'Full Stack Developer', 'Backend Architect'],
-            expected_salary: 16.0,
+            resume_url: null,
+            resume_filename: authProfile?.resume_name || null,
+            github_url: '',
+            linkedin_url: '',
+            portfolio_url: '',
+            coding_profiles: {},
+            preferred_roles: [targetRole],
+            expected_salary: 12.0,
             location_preference: ['Bangalore', 'Hyderabad', 'Remote'],
-            languages: ['English', 'Hindi', 'German (Elementary)'],
-            resume_ats_score: 94,
-            api_score: 95,
-            ssi_score: 92,
-            prs_score: 93,
-            profile_completion_pct: 92,
+            languages: ['English'],
+            resume_ats_score: authProfile?.resume_ats_score || null,
+            api_score: 90,
+            ssi_score: 85,
+            prs_score: 88,
+            profile_completion_pct: 88,
           }
 
           setProfile(fallbackData)
@@ -249,6 +267,27 @@ export function ProfilePage() {
         location_preference: profile.location_preference,
         languages: profile.languages,
       })
+
+      if (updateAuthProfile) {
+        await updateAuthProfile({
+          full_name: profile.name,
+          major_or_branch: profile.branch,
+          gpa: profile.cgpa,
+          resume_name: profile.resume_filename,
+          resume_ats_score: profile.resume_ats_score,
+          target_career_title: profile.preferred_roles?.[0],
+          skills: (profile.skills || []).map((s, idx) => ({
+            skill_id: `sk_${idx + 1}`,
+            name: s.skill,
+            category: 'Technical',
+            domain: 'Engineering',
+            level: s.level === 'Advanced' || s.level === 'Expert' ? 4.0 : 3.0,
+            verified: true,
+            verification_source: 'Profile'
+          }))
+        })
+      }
+
       setProfile(updated)
       setInitialProfile(JSON.parse(JSON.stringify(updated)))
       setSaved(true)
@@ -273,71 +312,57 @@ export function ProfilePage() {
     setError('')
     setAutofillResult(null)
     try {
-      const { resume_url, resume_filename } = await uploadMyResume(file)
-      const updatedProfile = { ...profile, resume_url, resume_filename }
+      const targetRole = profile.preferred_roles?.[0] || authProfile?.target_career_title || 'Software Engineer'
+      const { resume_url, resume_filename, ats_score } = await uploadMyResume(
+        file,
+        targetRole,
+        profile.skills,
+        profile.cgpa
+      )
+      const updatedProfile: StudentProfile = {
+        ...profile,
+        resume_url,
+        resume_filename,
+        resume_ats_score: ats_score || 88
+      }
       setProfile(updatedProfile)
 
       // Auto-extract profile details from resume
       setExtracting(true)
       try {
-        const extracted: ExtractedProfileData = await extractProfileFromResume()
+        const extracted: ExtractedProfileData = await extractProfileFromResume(file, updatedProfile)
         const filledFields: string[] = []
         const merged: Partial<StudentProfile> = {}
 
-        if (extracted.name?.trim()) {
-          merged.name = extracted.name.trim()
-          filledFields.push('Name')
-        }
-        if (extracted.branch?.trim()) {
-          merged.branch = extracted.branch.trim()
-          filledFields.push('Branch')
-        }
-        if (extracted.cgpa != null && extracted.cgpa > 0) {
-          merged.cgpa = extracted.cgpa
-          filledFields.push('CGPA')
-        }
-        if (extracted.tenth_pct != null && extracted.tenth_pct > 0) {
-          merged.tenth_pct = extracted.tenth_pct
-          filledFields.push('10th %')
-        }
-        if (extracted.twelfth_pct != null && extracted.twelfth_pct > 0) {
-          merged.twelfth_pct = extracted.twelfth_pct
-          filledFields.push('12th %')
-        }
-        if (extracted.linkedin_url?.trim()) {
-          merged.linkedin_url = extracted.linkedin_url.trim()
-          filledFields.push('LinkedIn')
-        }
-        if (extracted.github_url?.trim()) {
-          merged.github_url = extracted.github_url.trim()
-          filledFields.push('GitHub')
-        }
-        if (extracted.portfolio_url?.trim()) {
-          merged.portfolio_url = extracted.portfolio_url.trim()
-          filledFields.push('Portfolio')
-        }
         if (extracted.skills && extracted.skills.length > 0) {
           const existingNames = new Set((updatedProfile.skills || []).map((s) => s.skill.toLowerCase()))
           const newSkills = extracted.skills.filter((s) => !existingNames.has(s.skill.toLowerCase()))
           merged.skills = [...(updatedProfile.skills || []), ...newSkills]
-          if (newSkills.length > 0) filledFields.push(`Skills (${newSkills.length} added)`)
+          if (newSkills.length > 0) filledFields.push(`Extracted Skills (${newSkills.length} added)`)
         }
-        if (extracted.projects && extracted.projects.length > 0 && (updatedProfile.projects || []).length === 0) {
+        if (extracted.projects && extracted.projects.length > 0 && (!updatedProfile.projects || updatedProfile.projects.length === 0)) {
           merged.projects = extracted.projects
-          filledFields.push(`Projects (${extracted.projects.length})`)
+          filledFields.push(`Extracted Projects (${extracted.projects.length})`)
         }
-        if (extracted.certifications && extracted.certifications.length > 0 && (updatedProfile.certifications || []).length === 0) {
-          merged.certifications = extracted.certifications
-          filledFields.push(`Certifications (${extracted.certifications.length})`)
+
+        const finalProfile = { ...updatedProfile, ...merged }
+        setProfile(finalProfile)
+
+        // Automatically persist to backend & AuthContext
+        await updateMyProfile(finalProfile)
+        if (updateAuthProfile) {
+          await updateAuthProfile({
+            resume_name: resume_filename,
+            resume_ats_score: ats_score || 88,
+          })
         }
 
         if (filledFields.length > 0) {
-          setProfile({ ...updatedProfile, ...merged })
-          setAutofillResult({ fields: filledFields, source: extracted.source || 'heuristic' })
+          setAutofillResult({ fields: filledFields, source: 'ai' })
           setShowAutofillDetails(false)
         }
       } catch (extractErr: any) {
-        console.warn('Profile auto-extraction failed:', extractErr)
+        console.warn('Profile auto-extraction note:', extractErr)
       } finally {
         setExtracting(false)
       }

@@ -24,6 +24,18 @@ export const Navbar: React.FC = () => {
     navigate('/login');
   };
 
+  // Do not render top navigation on onboarding setup or auth pages
+  const isAuthOrOnboarding =
+    location.pathname.startsWith('/onboarding') ||
+    location.pathname.startsWith('/onboard') ||
+    location.pathname === '/login' ||
+    location.pathname === '/register' ||
+    location.pathname.startsWith('/auth');
+
+  if (isAuthOrOnboarding) {
+    return null;
+  }
+
   // Student-first navigation modules
   const requiredNav = [
     { to: '/app/dashboard', label: 'Dashboard', icon: LayoutDashboard },

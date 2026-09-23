@@ -57,10 +57,101 @@ async function callGemini(contents: string): Promise<string> {
   return '';
 }
 
+// ── Auth & Student Identity Resolvers ──────────────────────────────
+function getUserIdFromReq(req: any): string {
+  const authHeader = req.headers?.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.substring(7);
+    if (token && token !== 'undefined' && token !== 'null') {
+      return token;
+    }
+  }
+  return 'usr_demo_01';
+}
+
+function getAuthenticatedStudent(req: any) {
+  const userId = getUserIdFromReq(req);
+  const user = store.users.get(userId);
+  const profile = store.getProfile(userId);
+
+  let student = placementOpsStore.students.find(
+    s => s.profile_id === userId || (user?.email && s.email.toLowerCase() === user.email.toLowerCase())
+  );
+
+  if (!student) {
+    const newId = placementOpsStore.students.length + 1;
+    student = {
+      id: newId,
+      profile_id: userId,
+      roll_number: `STU-2026-${String(newId).padStart(3, '0')}`,
+      section: 'A',
+      name: profile?.full_name || user?.full_name || 'Student',
+      email: user?.email || profile?.email || `${userId}@university.edu`,
+      branch: profile?.major_or_branch || profile?.branch || 'Computer Science and Engineering (CSE)',
+      cgpa: profile?.gpa || 8.5,
+      tenth_pct: 90.0,
+      twelfth_pct: 88.0,
+      semester_marks: { sem1: 8.5, sem2: 8.6, sem3: 8.7, sem4: 8.8 },
+      backlog_count: 0,
+      skills: (profile?.skills || []).map((s: any) => ({
+        skill: s.name || s.skill_name || s.skill || 'Technical Competency',
+        level: typeof s.level === 'string' ? s.level : (s.level >= 4 ? 'Advanced' : 'Intermediate')
+      })),
+      certifications: [],
+      projects: [],
+      internship_history: [],
+      hackathons: [],
+      current_best_offer: null,
+      applied_drives: [],
+      github_url: '',
+      linkedin_url: '',
+      coding_profiles: {},
+      preferred_roles: [profile?.target_career_title || 'Software Engineer'],
+      expected_salary: 12.0,
+      location_preference: ['Bangalore', 'Hyderabad', 'Remote'],
+      languages: ['English'],
+      resume_ats_score: profile?.resume_ats_score || null,
+      resume_filename: profile?.resume_name || null,
+      api_score: 85,
+      ssi_score: 80,
+      prs_score: 82,
+      profile_completion_pct: 85
+    };
+    placementOpsStore.students.push(student);
+  } else {
+    if (user?.full_name && (!student.name || student.name === 'Aditya Sharma')) {
+      student.name = user.full_name;
+    }
+    if (user?.email && (!student.email || student.email === 'aditya.sharma@example.com')) {
+      student.email = user.email;
+    }
+    if (profile?.full_name) {
+      student.name = profile.full_name;
+    }
+    if (profile?.major_or_branch) {
+      student.branch = profile.major_or_branch;
+    }
+    if (profile?.gpa) {
+      student.cgpa = profile.gpa;
+    }
+    if (profile?.target_career_title) {
+      student.preferred_roles = [profile.target_career_title, ...(student.preferred_roles || []).filter(r => r !== profile.target_career_title)];
+    }
+    if (profile?.resume_name) {
+      student.resume_filename = profile.resume_name;
+    }
+    if (profile?.resume_ats_score) {
+      student.resume_ats_score = profile.resume_ats_score;
+    }
+  }
+
+  return student;
+}
+
 // ── Auth Sync ───────────────────────────────────────────────────
 placementOpsRouter.post(['/auth/sync-profile', '/api/auth/sync-profile'], (req, res) => {
   const role = req.body?.role || 'student';
-  const student = placementOpsStore.students[0];
+  const student = getAuthenticatedStudent(req);
   res.json({
     role,
     profile_id: student.profile_id,
@@ -77,18 +168,26 @@ placementOpsRouter.get(['/students', '/api/students'], (req, res) => {
 });
 
 placementOpsRouter.get(['/students/me', '/api/students/me'], (req, res) => {
-  const student = placementOpsStore.students[0];
+  const student = getAuthenticatedStudent(req);
   res.json(student);
 });
 
 placementOpsRouter.patch(['/students/me', '/api/students/me'], (req, res) => {
-  const student = placementOpsStore.students[0];
+  const student = getAuthenticatedStudent(req);
   Object.assign(student, req.body);
+  const userId = getUserIdFromReq(req);
+  store.updateProfile(userId, {
+    full_name: student.name,
+    major_or_branch: student.branch,
+    gpa: student.cgpa,
+    resume_ats_score: student.resume_ats_score,
+    resume_name: student.resume_filename,
+  });
   res.json(student);
 });
 
 placementOpsRouter.get(['/students/me/dashboard', '/api/students/me/dashboard'], (req, res) => {
-  const student = placementOpsStore.students[0];
+  const student = getAuthenticatedStudent(req);
   const eligible_jobs = placementOpsStore.drives.filter(d => d.status === 'published');
   const applied_jobs = placementOpsStore.drives
     .filter(d => student.applied_drives.includes(d.id))
@@ -113,22 +212,23 @@ placementOpsRouter.get(['/students/me/dashboard', '/api/students/me/dashboard'],
 });
 
 placementOpsRouter.get(['/students/me/role-suggestions', '/api/students/me/role-suggestions'], (req, res) => {
-  const student = placementOpsStore.students[0];
+  const student = getAuthenticatedStudent(req);
+  const topRole = student.preferred_roles?.[0] || 'Software Engineer';
   res.json({
-    top_role: 'Backend Systems Engineer',
-    match_percentage: 94.2,
-    base_salary_range: '12 - 18 LPA',
+    top_role: topRole,
+    match_percentage: student.resume_ats_score || 91.5,
+    base_salary_range: `${student.expected_salary || 12} - ${(student.expected_salary || 12) + 6} LPA`,
     confidence_level: 'High (Deterministic + Trajectory Match)',
-    matching_skills: ['Python', 'SQL', 'FastAPI', 'Distributed Systems'],
-    missing_skills: ['Docker', 'Kubernetes'],
-    why_matched: 'Your advanced score in Python and SQL combined with real-world experience in FastAPI systems positions you in the top 5% of campus candidates for tier-1 product backend roles.',
-    recommended_action: 'Complete the Docker & Containerization sprint to achieve 98% compatibility with Acme Systems & FinTech tier-1 cohorts.'
+    matching_skills: student.skills?.map(s => s.skill) || ['Technical Fundamentals', 'Engineering Design'],
+    missing_skills: ['Cloud & Containerization (Docker/AWS)', 'Advanced System Verification'],
+    why_matched: `Your academic background in ${student.branch} and proficiency scores align strongly with Tier-1 placement standards for ${topRole}.`,
+    recommended_action: `Complete the targeted skill sprints for ${topRole} to maximize shortlist conversion on campus drives.`
   });
 });
 
 placementOpsRouter.post(['/students/me/apply/:drive_id', '/api/students/me/apply/:drive_id'], (req, res) => {
   const driveId = parseInt(req.params.drive_id, 10);
-  const student = placementOpsStore.students[0];
+  const student = getAuthenticatedStudent(req);
   if (!student.applied_drives.includes(driveId)) {
     student.applied_drives.push(driveId);
   }
@@ -144,23 +244,26 @@ placementOpsRouter.post(['/students/me/apply/:drive_id', '/api/students/me/apply
   res.json({ success: true, applied_drives: student.applied_drives });
 });
 
-placementOpsRouter.get(['/students/me', '/api/students/me'], (req, res) => {
-  const student = placementOpsStore.students[0];
-  res.json(student);
-});
-
 placementOpsRouter.put(['/students/me', '/api/students/me'], (req, res) => {
-  const student = placementOpsStore.students[0];
+  const student = getAuthenticatedStudent(req);
   Object.assign(student, req.body);
+  const userId = getUserIdFromReq(req);
+  store.updateProfile(userId, {
+    full_name: student.name,
+    major_or_branch: student.branch,
+    gpa: student.cgpa,
+    resume_ats_score: student.resume_ats_score,
+    resume_name: student.resume_filename,
+  });
   res.json(student);
 });
 
 placementOpsRouter.get(['/students/:id', '/api/students/:id'], (req, res) => {
   if (req.params.id === 'me') {
-    return res.json(placementOpsStore.students[0]);
+    return res.json(getAuthenticatedStudent(req));
   }
   const id = parseInt(req.params.id, 10);
-  const student = placementOpsStore.students.find(s => s.id === id);
+  const student = placementOpsStore.students.find(s => s.id === id) || getAuthenticatedStudent(req);
   if (!student) return res.status(404).json({ error: 'Student not found' });
   res.json(student);
 });
@@ -173,35 +276,22 @@ placementOpsRouter.post([
   '/api/students/me/resume/verify-ats',
   '/api/v1/resume/verify-ats'
 ], async (req, res) => {
-  const { resume_text, target_role, job_description, drive_id } = req.body || {};
-  const student = placementOpsStore.students[0];
+  const { resume_text, target_role, job_description, drive_id, resume_filename } = req.body || {};
+  const student = getAuthenticatedStudent(req);
 
-  const role = target_role || (drive_id ? placementOpsStore.drives.find(d => d.id === Number(drive_id))?.role_title : undefined) || 'Software Engineer';
-  const defaultResume = student?.resume_text || `Alex Chen | alex.chen@rvce.edu.in | github.com/alexchen | linkedin.com/in/alexchen
-Bangalore, India
+  const role = target_role || (drive_id ? placementOpsStore.drives.find(d => d.id === Number(drive_id))?.role_title : undefined) || student.preferred_roles?.[0] || 'Software Engineer';
+  const defaultResume = student?.resume_text || `${student.name} | ${student.email}
+${student.branch} | CGPA: ${student.cgpa} / 10.0
+Target: ${role}
 
 Professional Summary:
-Aspiring Software Engineer with expertise in Python, FastAPI, React, and PostgreSQL. Experienced in architecting REST microservices, automated testing, and scalable backend workflows.
+Aspiring engineering candidate in ${student.branch} with proven competencies in ${(student.skills || []).map(s => s.skill).slice(0, 5).join(', ')}.
 
-Technical Skills:
-- Languages: Python, TypeScript, SQL, C++
-- Frameworks & Tools: FastAPI, React 19, Docker, Git, Node.js, Redis
-- Databases: PostgreSQL, SQLite
-
-Projects:
-Skill2Career Placement & Diagnostic Suite
-- Built a web platform using FastAPI and React to analyze technical skill gaps for 2,500+ students.
-- Implemented automated LeetCode/DSA verification engine reducing query response latency by 35%.
-- Containerized service using Docker multi-stage builds.
-
-Work Experience:
-Software Engineering Intern | Acme Labs (Jun 2025 - Aug 2025)
-- Responsible for developing backend APIs and helped with database management.
-- Worked on improving user authentication flows and assisted in bug fixing.
+Key Competencies & Technical Skills:
+- ${(student.skills || []).map(s => s.skill).join(', ')}
 
 Education:
-B.Tech in Computer Science and Engineering | RV College of Engineering
-CGPA: 8.8 / 10 | Graduation: 2026`;
+- ${student.branch} | Degree: Undergraduate Engineering | CGPA: ${student.cgpa} / 10.0`;
 
   const textToVerify = (resume_text && typeof resume_text === 'string' && resume_text.trim().length > 10)
     ? resume_text
@@ -213,7 +303,13 @@ CGPA: 8.8 / 10 | Graduation: 2026`;
       student.resume_ats_score = analysis.overall_score;
       (student as any).resume_analysis = analysis;
       (student as any).resume_text = textToVerify;
+      if (resume_filename) student.resume_filename = resume_filename;
     }
+    const userId = getUserIdFromReq(req);
+    store.updateProfile(userId, {
+      resume_ats_score: analysis.overall_score,
+      resume_name: resume_filename || student.resume_filename
+    });
     res.json(analysis);
   } catch (err: any) {
     console.error('Error in ATS verification endpoint:', err);
@@ -222,9 +318,9 @@ CGPA: 8.8 / 10 | Graduation: 2026`;
 });
 
 placementOpsRouter.get(['/students/me/resume/analysis', '/api/students/me/resume/analysis'], (req, res) => {
-  const student = placementOpsStore.students[0];
+  const student = getAuthenticatedStudent(req);
   if (!student.resume_analysis) {
-    const fresh = placementOpsStore.analyzeResume(1);
+    const fresh = placementOpsStore.analyzeResume(student.id);
     return res.json(fresh);
   }
   res.json(student.resume_analysis);

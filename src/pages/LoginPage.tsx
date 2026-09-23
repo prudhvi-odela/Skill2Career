@@ -28,7 +28,6 @@ export const LoginPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [oauthLoadingProvider, setOauthLoadingProvider] = useState<string | null>(null);
-  const [isDemoFilled, setIsDemoFilled] = useState(false);
 
   // Mouse interaction state for dynamic light and 3D card tilt
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -110,14 +109,6 @@ export const LoginPage: React.FC = () => {
     setTimeout(() => {
       setRipples((prev) => prev.filter((r) => r.id !== id));
     }, 900);
-  };
-
-  // Quick fill student demo credentials
-  const handleQuickFillStudent = () => {
-    setEmail('alex.chen@rvce.edu.in');
-    setPassword('placement2026!');
-    setIsDemoFilled(true);
-    setError(null);
   };
 
   const validateEmailFormat = (val: string) => {
@@ -379,37 +370,6 @@ export const LoginPage: React.FC = () => {
                 Access your student readiness profile, diagnostic tests, and placement drives.
               </p>
             </div>
-
-          {/* Quick-test student autofill chip */}
-          <div style={{ marginBottom: '18px' }}>
-            <button
-              type="button"
-              onClick={handleQuickFillStudent}
-              style={{
-                width: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '8px 14px',
-                borderRadius: '8px',
-                border: isDemoFilled ? '1px solid #93c5fd' : '1px dashed #cbd5e1',
-                background: isDemoFilled ? '#eff6ff' : '#f8fafc',
-                color: isDemoFilled ? '#1e40af' : '#475569',
-                fontSize: '0.78rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'all 0.15s ease',
-              }}
-            >
-              <span className="flex items-center gap-1.5">
-                <Sparkles size={13} className="text-amber-500" />
-                <span>Quick-test as student: <strong>Alex Chen</strong></span>
-              </span>
-              <span className="text-[11px] text-blue-600 font-bold">
-                {isDemoFilled ? '✓ Applied' : 'Autofill'}
-              </span>
-            </button>
-          </div>
 
           {error && (
             <div
