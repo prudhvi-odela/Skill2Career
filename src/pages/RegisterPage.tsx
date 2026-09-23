@@ -389,10 +389,31 @@ export const RegisterPage: React.FC = () => {
                 gap: '8px',
               }}
             >
-              <AlertCircle size={18} style={{ flexShrink: 0, marginTop: '1px' }} />
-              <div>
-                <span style={{ fontWeight: 700 }}>Notice: </span>
-                {error}
+              <AlertCircle size={18} style={{ flexShrink: 0, marginTop: '2px' }} />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 700, marginBottom: '2px' }}>Registration Notice:</div>
+                <div>{error}</div>
+                {error.toLowerCase().includes('already exists') && (
+                  <div style={{ marginTop: '8px' }}>
+                    <Link
+                      to="/login"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        background: '#991b1b',
+                        color: '#ffffff',
+                        padding: '4px 10px',
+                        borderRadius: '6px',
+                        fontSize: '0.78rem',
+                        fontWeight: 700,
+                        textDecoration: 'none'
+                      }}
+                    >
+                      <span>Sign In with this Email →</span>
+                    </Link>
+                  </div>
+                )}
               </div>
             </div>
           )}

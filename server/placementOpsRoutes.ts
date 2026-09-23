@@ -71,18 +71,21 @@ function getUserIdFromReq(req: any): string {
 
 function getAuthenticatedStudent(req: any) {
   const userId = getUserIdFromReq(req);
-  const user = store.users.get(userId);
+  const user = store.users.get(userId) || store.findUserByEmail(userId);
   const profile = store.getProfile(userId);
 
+  const normalizedEmail = (user?.email || profile?.email || '').trim().toLowerCase();
+
   let student = placementOpsStore.students.find(
-    s => s.profile_id === userId || (user?.email && s.email.toLowerCase() === user.email.toLowerCase())
+    s => (s.profile_id && (s.profile_id === userId || s.profile_id === user?.id)) ||
+         (normalizedEmail && s.email && s.email.trim().toLowerCase() === normalizedEmail)
   );
 
   if (!student) {
     const newId = placementOpsStore.students.length + 1;
     student = {
       id: newId,
-      profile_id: userId,
+      profile_id: user?.id || userId,
       roll_number: `STU-2026-${String(newId).padStart(3, '0')}`,
       section: 'A',
       name: profile?.full_name || user?.full_name || 'Student',
@@ -93,18 +96,25 @@ function getAuthenticatedStudent(req: any) {
       twelfth_pct: 88.0,
       semester_marks: { sem1: 8.5, sem2: 8.6, sem3: 8.7, sem4: 8.8 },
       backlog_count: 0,
-      skills: (profile?.skills || []).map((s: any) => ({
-        skill: s.name || s.skill_name || s.skill || 'Technical Competency',
-        level: typeof s.level === 'string' ? s.level : (s.level >= 4 ? 'Advanced' : 'Intermediate')
-      })),
-      certifications: [],
-      projects: [],
-      internship_history: [],
+      skills: (profile?.skills && profile.skills.length > 0)
+        ? profile.skills.map((s: any) => ({
+            skill: s.name || s.skill_name || s.skill || 'Technical Competency',
+            level: typeof s.level === 'string' ? s.level : (s.level >= 4 ? 'Advanced' : 'Intermediate')
+          }))
+        : [
+            { skill: 'Python', level: 'Advanced' },
+            { skill: 'SQL', level: 'Intermediate' },
+            { skill: 'React', level: 'Intermediate' },
+            { skill: 'Data Structures & Algorithms', level: 'Advanced' }
+          ],
+      certifications: profile?.certifications || [],
+      projects: profile?.projects || [],
+      internship_history: profile?.workExperiences || profile?.internship_history || [],
       hackathons: [],
       current_best_offer: null,
       applied_drives: [],
-      github_url: '',
-      linkedin_url: '',
+      github_url: profile?.github_url || '',
+      linkedin_url: profile?.linkedin_url || '',
       coding_profiles: {},
       preferred_roles: [profile?.target_career_title || 'Software Engineer'],
       expected_salary: 12.0,
@@ -119,17 +129,18 @@ function getAuthenticatedStudent(req: any) {
     };
     placementOpsStore.students.push(student);
   } else {
-    if (user?.full_name && (!student.name || student.name === 'Aditya Sharma')) {
+    // Sync latest profile changes from store
+    if (user?.full_name && user.full_name !== 'Aditya Sharma') {
       student.name = user.full_name;
     }
-    if (user?.email && (!student.email || student.email === 'aditya.sharma@example.com')) {
+    if (user?.email && user.email !== 'aditya.sharma@example.com') {
       student.email = user.email;
     }
     if (profile?.full_name) {
       student.name = profile.full_name;
     }
-    if (profile?.major_or_branch) {
-      student.branch = profile.major_or_branch;
+    if (profile?.major_or_branch || profile?.branch) {
+      student.branch = profile.major_or_branch || profile.branch;
     }
     if (profile?.gpa) {
       student.cgpa = profile.gpa;
@@ -142,6 +153,18 @@ function getAuthenticatedStudent(req: any) {
     }
     if (profile?.resume_ats_score) {
       student.resume_ats_score = profile.resume_ats_score;
+    }
+    if (profile?.skills && profile.skills.length > 0) {
+      student.skills = profile.skills.map((s: any) => ({
+        skill: s.name || s.skill_name || s.skill || 'Competency',
+        level: typeof s.level === 'string' ? s.level : (s.level >= 4 ? 'Advanced' : 'Intermediate')
+      }));
+    }
+    if (profile?.projects && profile.projects.length > 0) {
+      student.projects = profile.projects;
+    }
+    if (profile?.certifications && profile.certifications.length > 0) {
+      student.certifications = profile.certifications;
     }
   }
 
@@ -176,13 +199,36 @@ placementOpsRouter.patch(['/students/me', '/api/students/me'], (req, res) => {
   const student = getAuthenticatedStudent(req);
   Object.assign(student, req.body);
   const userId = getUserIdFromReq(req);
+  
+  const skillsToSync = (student.skills || []).map((s: any, idx: number) => ({
+    skill_id: s.skill_id || `sk_${idx + 1}`,
+    name: s.skill || s.name || s.skill_name || 'Competency',
+    skill_name: s.skill || s.name || s.skill_name || 'Competency',
+    category: 'Technical',
+    domain: 'Engineering',
+    level: typeof s.level === 'number' ? s.level : (s.level === 'Advanced' || s.level === 'Expert' ? 4.0 : 3.0),
+    proficiency_level: typeof s.level === 'number' ? s.level : (s.level === 'Advanced' || s.level === 'Expert' ? 4.0 : 3.0),
+    verified: true,
+    verification_source: 'Profile'
+  }));
+
   store.updateProfile(userId, {
     full_name: student.name,
     major_or_branch: student.branch,
+    branch: student.branch,
     gpa: student.cgpa,
     resume_ats_score: student.resume_ats_score,
     resume_name: student.resume_filename,
+    target_career_title: student.preferred_roles?.[0],
+    skills: skillsToSync.length > 0 ? skillsToSync : undefined,
+    projects: student.projects,
+    certifications: student.certifications,
+    internship_history: student.internship_history,
+    github_url: student.github_url,
+    linkedin_url: student.linkedin_url,
+    portfolio_url: student.portfolio_url
   });
+
   res.json(student);
 });
 
@@ -424,13 +470,13 @@ Return valid JSON with format:
 placementOpsRouter.post(['/students/me/resume/cover-letter', '/api/students/me/resume/cover-letter'], async (req, res) => {
   const driveId = parseInt(req.body?.drive_id || '1', 10);
   const drive = placementOpsStore.drives.find(d => d.id === driveId) || placementOpsStore.drives[0];
-  const student = placementOpsStore.students[0];
+  const student = getAuthenticatedStudent(req);
   const ai = getAI();
 
   if (ai) {
     try {
       const response = await ai.models.generateContent({
-        model: 'gemini-3.8-flash',
+        model: 'gemini-2.5-flash',
         contents: `Write an exceptional, tailored campus placement cover letter for a student applying for:
 Company: ${drive.company_name}
 Role: ${drive.role_title}
@@ -449,7 +495,7 @@ Format as a professional cover letter with clean paragraphs, formal salutation, 
     }
   }
 
-  const letter = placementOpsStore.generateCoverLetter(1, driveId);
+  const letter = placementOpsStore.generateCoverLetter(student.id || 1, driveId);
   res.json({ cover_letter: letter });
 });
 
@@ -461,7 +507,7 @@ placementOpsRouter.post(['/students/me/resume/cold-email', '/api/students/me/res
       company_name = company_name || d.company_name;
     }
   }
-  const student = placementOpsStore.students[0];
+  const student = getAuthenticatedStudent(req);
   const targetCompany = company_name || 'Engineering Team';
   const targetRecruiter = recruiter_name || 'Hiring Manager';
 
@@ -481,13 +527,14 @@ Make it respectful, under 180 words, highlighting value add and requesting a bri
     console.warn('Gemini cold email fallback:', err);
   }
 
-  const emailText = placementOpsStore.generateColdEmail(1, recruiter_name, company_name);
+  const emailText = placementOpsStore.generateColdEmail(student.id || 1, recruiter_name, company_name);
   res.json({ email: emailText, cold_email: emailText, source: 'gemini' });
 });
 
 placementOpsRouter.post(['/students/me/resume/match-drive', '/api/students/me/resume/match-drive'], (req, res) => {
   const driveId = parseInt(req.body?.drive_id || '1', 10);
-  const analysis = placementOpsStore.analyzeResume(1, driveId);
+  const student = getAuthenticatedStudent(req);
+  const analysis = placementOpsStore.analyzeResume(student.id || 1, driveId);
   res.json(analysis);
 });
 
@@ -745,12 +792,12 @@ placementOpsRouter.get(['/api/agent13/student/:student_id/profile', '/agents/13/
 
 // ── Resume AI Studio & Intelligence Endpoints ──────────────────
 placementOpsRouter.get(['/students/me/resume/analysis', '/api/students/me/resume/analysis'], (req, res) => {
-  const student = placementOpsStore.students[0];
+  const student = getAuthenticatedStudent(req);
   res.json({
     ats_score: student.resume_ats_score || 88,
     score_breakdown: {
-      skills: { score: 28, max: 30, detail: 'Strong technical stack coverage in Python, SQL, and FastAPI.' },
-      education: { score: 18, max: 20, detail: 'B.Tech CSE with accredited CGPA (9.2/10.0).' },
+      skills: { score: 28, max: 30, detail: `Strong technical stack coverage in ${(student.skills || []).map(s => s.skill).slice(0, 3).join(', ') || 'core languages'}.` },
+      education: { score: 18, max: 20, detail: `${student.branch} with accredited CGPA (${student.cgpa}/10.0).` },
       projects: { score: 22, max: 25, detail: 'Good distributed systems project with clear metrics.' },
       experience: { score: 12, max: 15, detail: 'Relevant ML intern experience demonstrated.' },
       formatting: { score: 8, max: 10, detail: 'Clean standard typography; standard single-column layout.' }

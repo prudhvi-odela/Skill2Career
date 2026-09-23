@@ -265,10 +265,24 @@ class DataStore {
   }
 
   findUserByEmail(email: string): User | undefined {
+    if (!email || typeof email !== 'string') return undefined;
     const normalized = email.trim().toLowerCase();
     for (const [, user] of this.users.entries()) {
-      if (user.email && user.email.trim().toLowerCase() === normalized) {
+      if (user && user.email && user.email.trim().toLowerCase() === normalized) {
         return user;
+      }
+    }
+    for (const [, prof] of this.profiles.entries()) {
+      if (prof && prof.email && prof.email.trim().toLowerCase() === normalized) {
+        const user = this.users.get(prof.user_id);
+        if (user) return user;
+        return {
+          id: prof.user_id || 'usr_' + Math.random().toString(36).substring(2, 9),
+          email: prof.email.trim().toLowerCase(),
+          full_name: prof.full_name || 'Student',
+          role: 'student',
+          provider: 'local'
+        };
       }
     }
     return undefined;
@@ -281,6 +295,12 @@ class DataStore {
     provider: string = 'local',
     avatarUrl?: string
   ): { success: boolean; user?: User; error?: string } {
+    if (!email || typeof email !== 'string' || !email.includes('@')) {
+      return {
+        success: false,
+        error: 'Please provide a valid email address.'
+      };
+    }
     const normalized = email.trim().toLowerCase();
     const existing = this.findUserByEmail(normalized);
     if (existing) {
@@ -305,32 +325,38 @@ class DataStore {
     this.users.set(normalized, user);
 
     // Initialize clean student profile
-    this.profiles.set(id, {
+    const initialProfile = {
       user_id: id,
       full_name: user.full_name,
       email: user.email,
       headline: 'Student / Aspiring Technologist',
       bio: 'Welcome to Skill2Career. Update your profile to get personalized career insights.',
       degree: 'B.Tech Computer Science',
-      institution: 'University of Technology',
-      institution_tier: 2,
+      major_or_branch: 'Computer Science and Engineering (CSE)',
+      branch: 'Computer Science and Engineering (CSE)',
+      institution: 'RV College of Engineering',
+      institution_tier: 1,
       graduation_year: 2026,
-      gpa: 8.0,
+      gpa: 8.5,
       target_career_id: 'CG_CSE_1_software_engineer',
       target_career_title: 'Software Engineer',
       skills: [
-        { skill_id: 'SK001', name: 'Python', category: 'Languages', domain: 'General', level: 3.0, verified: false, verification_source: 'Self-Reported' },
-        { skill_id: 'SK002', name: 'JavaScript', category: 'Languages', domain: 'Web Development', level: 3.0, verified: false, verification_source: 'Self-Reported' }
+        { skill_id: 'SK001', name: 'Python', skill_name: 'Python', category: 'Languages', domain: 'General', level: 3.5, verified: false, verification_source: 'Self-Reported' },
+        { skill_id: 'SK002', name: 'JavaScript', skill_name: 'JavaScript', category: 'Languages', domain: 'Web Development', level: 3.0, verified: false, verification_source: 'Self-Reported' },
+        { skill_id: 'SK008', name: 'SQL', skill_name: 'SQL', category: 'Languages', domain: 'Databases', level: 3.5, verified: false, verification_source: 'Self-Reported' }
       ],
       statistics: {
-        weekly_study_hours: 10.0,
+        weekly_study_hours: 12.0,
         learning_velocity_index: 1.0,
         assessments_passed: 0,
         projects_count: 0,
         certifications_count: 0
       },
       updated_at: new Date().toISOString()
-    });
+    };
+
+    this.profiles.set(id, initialProfile);
+    this.profiles.set(normalized, initialProfile);
 
     this.projects.set(id, []);
     this.certifications.set(id, []);
@@ -403,9 +429,17 @@ class DataStore {
   getProfile(userId: string) {
     let profile = this.profiles.get(userId);
     if (!profile) {
-      const user = this.users.get(userId);
-      this.getOrCreateUser(user ? user.email : 'demo@skill2career.com', user?.full_name);
-      profile = this.profiles.get(userId) || this.profiles.get('usr_demo_01')!;
+      const user = this.users.get(userId) || this.findUserByEmail(userId);
+      if (user) {
+        profile = this.profiles.get(user.id) || this.profiles.get(user.email.toLowerCase());
+        if (!profile) {
+          this.getOrCreateUser(user.email, user.full_name);
+          profile = this.profiles.get(user.id);
+        }
+      }
+    }
+    if (!profile) {
+      profile = this.profiles.get('usr_demo_01')!;
     }
     return profile;
   }
@@ -416,7 +450,7 @@ class DataStore {
       ...current,
       ...data,
       statistics: {
-        ...current.statistics,
+        ...current?.statistics,
         ...(data.statistics || {})
       },
       updated_at: new Date().toISOString()
@@ -432,6 +466,12 @@ class DataStore {
       }
     }
     this.profiles.set(userId, updated);
+    if (updated.email) {
+      this.profiles.set(updated.email.trim().toLowerCase(), updated);
+    }
+    if (current?.email) {
+      this.profiles.set(current.email.trim().toLowerCase(), updated);
+    }
     this.saveToDisk();
     return updated;
   }
