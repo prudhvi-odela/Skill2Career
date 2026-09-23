@@ -5,6 +5,7 @@ import {
   Sparkles, Check, Copy, Printer, Eye, Edit3, ArrowUpRight,
   Download, FileDown
 } from 'lucide-react';
+import { generateAndDownloadAtsPdf } from '../../utils/generateAtsPdf';
 
 export interface ResumeProject {
   id: string;
@@ -322,196 +323,16 @@ export const OfficialResumeTemplateEditor: React.FC<OfficialResumeTemplateEditor
   };
 
   const handleDownloadPdf = () => {
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) {
-      window.print();
-      return;
+    try {
+      generateAndDownloadAtsPdf(data, { theme: templateTheme, paperSize: 'letter' });
+    } catch (err) {
+      console.error('Direct PDF export error, falling back to print-to-pdf:', err);
+      handlePrint();
     }
+  };
 
-    const contactLine = [
-      data.email,
-      data.phone,
-      data.location,
-      data.githubUrl ? `github.com/${data.githubUrl.replace(/^https?:\/\/(www\.)?github\.com\/?/, '')}` : '',
-      data.linkedinUrl ? `linkedin.com/in/${data.linkedinUrl.replace(/^https?:\/\/(www\.)?linkedin\.com\/in\/?/, '')}` : '',
-      data.portfolioUrl
-    ].filter(Boolean).join('  •  ');
-
-    const htmlContent = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>${data.fullName || 'Candidate'} - Official ATS Resume</title>
-  <style>
-    @page {
-      size: letter;
-      margin: 12mm 14mm 12mm 14mm;
-    }
-    * {
-      box-sizing: border-box;
-      -webkit-print-color-adjust: exact;
-      print-color-adjust: exact;
-    }
-    body {
-      font-family: ${templateTheme === 'ivy' ? '"Times New Roman", Times, serif' : '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif'};
-      font-size: 10pt;
-      line-height: 1.35;
-      color: #0f172a;
-      background: #ffffff;
-      margin: 0;
-      padding: 16px;
-    }
-    h1 {
-      font-size: 18pt;
-      font-weight: 800;
-      text-align: center;
-      margin: 0 0 3px 0;
-      color: #0f172a;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-    .contact-info {
-      text-align: center;
-      font-size: 8.5pt;
-      color: #334155;
-      margin-bottom: 10px;
-    }
-    .section-title {
-      font-size: 10pt;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      border-bottom: 1.2px solid #0f172a;
-      padding-bottom: 1.5px;
-      margin: 9px 0 5px 0;
-      color: #0f172a;
-    }
-    .item-header {
-      display: flex;
-      justify-content: space-between;
-      font-weight: 700;
-      font-size: 9.5pt;
-      margin-top: 3px;
-    }
-    .item-subheader {
-      font-style: italic;
-      font-weight: 500;
-      color: #334155;
-    }
-    .item-meta {
-      font-size: 8.5pt;
-      font-weight: 600;
-      color: #475569;
-    }
-    ul {
-      margin: 2px 0 4px 16px;
-      padding: 0;
-    }
-    li {
-      font-size: 9pt;
-      margin-bottom: 2px;
-      line-height: 1.3;
-      color: #1e293b;
-    }
-    .skills-block {
-      font-size: 9pt;
-      line-height: 1.4;
-    }
-    .skills-block strong {
-      font-weight: 700;
-      color: #0f172a;
-    }
-    @media print {
-      body { padding: 0; }
-      @page { margin: 10mm 12mm; }
-    }
-  </style>
-</head>
-<body>
-  <h1>${data.fullName || 'Candidate Name'}</h1>
-  <div class="contact-info">${contactLine}</div>
-
-  ${data.summary ? `
-    <div class="section-title">Professional Summary</div>
-    <div style="font-size: 9pt; color: #1e293b; line-height: 1.35;">${data.summary}</div>
-  ` : ''}
-
-  <div class="section-title">Technical Competencies</div>
-  <div class="skills-block">
-    ${data.skills.languages ? `<div><strong>Languages:</strong> ${data.skills.languages}</div>` : ''}
-    ${data.skills.frameworks ? `<div><strong>Frameworks & Libraries:</strong> ${data.skills.frameworks}</div>` : ''}
-    ${data.skills.databasesCloud ? `<div><strong>Databases & Cloud:</strong> ${data.skills.databasesCloud}</div>` : ''}
-    ${data.skills.developerTools ? `<div><strong>Tools & Platforms:</strong> ${data.skills.developerTools}</div>` : ''}
-  </div>
-
-  ${data.projects && data.projects.length > 0 ? `
-    <div class="section-title">Technical Projects</div>
-    ${data.projects.map(p => `
-      <div style="margin-bottom: 4px;">
-        <div class="item-header">
-          <span>${p.title} ${p.technologies ? `<span class="item-subheader">| ${p.technologies}</span>` : ''}</span>
-          ${p.repoUrl ? `<span class="item-meta">${p.repoUrl.replace(/^https?:\/\//, '')}</span>` : ''}
-        </div>
-        <ul>
-          ${p.bullets.filter(b => b.trim()).map(b => `<li>${b}</li>`).join('')}
-        </ul>
-      </div>
-    `).join('')}
-  ` : ''}
-
-  ${data.experiences && data.experiences.length > 0 ? `
-    <div class="section-title">Work Experience</div>
-    ${data.experiences.map(e => `
-      <div style="margin-bottom: 4px;">
-        <div class="item-header">
-          <span>${e.role} — ${e.company}${e.location ? ` (${e.location})` : ''}</span>
-          <span class="item-meta">${e.duration}</span>
-        </div>
-        <ul>
-          ${e.bullets.filter(b => b.trim()).map(b => `<li>${b}</li>`).join('')}
-        </ul>
-      </div>
-    `).join('')}
-  ` : ''}
-
-  <div class="section-title">Education</div>
-  <div style="margin-bottom: 3px;">
-    <div class="item-header">
-      <span>${data.education.institution}${data.education.location ? ` (${data.education.location})` : ''}</span>
-      <span class="item-meta">Expected ${data.education.graduationYear || '2026'}</span>
-    </div>
-    <div style="font-size: 9pt; color: #1e293b;">
-      ${data.education.degree} — CGPA / GPA: <strong>${data.education.cgpa || '8.5 / 10.0'}</strong>
-    </div>
-    ${data.education.relevantCoursework ? `
-      <div style="font-size: 8.5pt; color: #475569; margin-top: 1px;">
-        <strong>Relevant Coursework:</strong> ${data.education.relevantCoursework}
-      </div>
-    ` : ''}
-  </div>
-
-  ${data.certifications && data.certifications.length > 0 ? `
-    <div class="section-title">Certifications & Achievements</div>
-    <ul>
-      ${data.certifications.filter(c => c.trim()).map(c => `<li>${c}</li>`).join('')}
-    </ul>
-  ` : ''}
-
-  <script>
-    window.onload = function() {
-      setTimeout(function() {
-        window.print();
-      }, 300);
-    };
-  </script>
-</body>
-</html>
-    `;
-
-    printWindow.document.open();
-    printWindow.document.write(htmlContent);
-    printWindow.document.close();
+  const handlePrint = () => {
+    window.print();
   };
 
   return (

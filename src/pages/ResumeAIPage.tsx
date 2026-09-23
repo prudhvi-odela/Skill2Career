@@ -10,6 +10,7 @@ import {
 import { apiFetch } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import { OfficialResumeTemplateEditor, compileResumeToText, type StructuredResumeData } from '../components/resume/OfficialResumeTemplateEditor';
+import { generateAndDownloadAtsPdf } from '../utils/generateAtsPdf';
 
 interface ATSEnhancement {
   id: string;
@@ -371,6 +372,19 @@ ${studentBranch} | Degree: Undergraduate Engineering | CGPA: ${studentCgpa} / 10
     setTimeout(() => setCopiedId(null), 1800);
   };
 
+  const handleDownloadPdf = () => {
+    try {
+      generateAndDownloadAtsPdf(resumeText, {
+        theme: 'ivy',
+        paperSize: 'letter',
+        filename: `${(profile?.full_name || 'Candidate').replace(/\s+/g, '_')}_Official_ATS_Resume.pdf`
+      });
+    } catch (err) {
+      console.error('Direct PDF export error:', err);
+      handleDownloadTxt();
+    }
+  };
+
   const handleDownloadTxt = () => {
     const element = document.createElement('a');
     const file = new Blob([resumeText], { type: 'text/plain;charset=utf-8' });
@@ -379,28 +393,6 @@ ${studentBranch} | Degree: Undergraduate Engineering | CGPA: ${studentCgpa} / 10
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
-  };
-
-  const handlePrint = () => {
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-      printWindow.document.write(`
-        <html>
-          <head>
-            <title>${profile?.full_name || 'Candidate'} - Resume</title>
-            <style>
-              body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.5; padding: 40px; color: #1e293b; }
-              pre { white-space: pre-wrap; font-family: inherit; font-size: 13px; }
-            </style>
-          </head>
-          <body>
-            <pre>${resumeText}</pre>
-            <script>window.onload = function() { window.print(); window.close(); };</script>
-          </body>
-        </html>
-      `);
-      printWindow.document.close();
-    }
   };
 
   const handleGenerateBullets = async () => {
@@ -841,6 +833,28 @@ GitHub: github.com/alexchen | LinkedIn: linkedin.com/in/alexchen`);
                   </button>
 
                   <button
+                    onClick={handleDownloadPdf}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      padding: '5px 11px',
+                      borderRadius: '6px',
+                      background: '#16a34a',
+                      border: 'none',
+                      color: '#ffffff',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      boxShadow: '0 2px 6px rgba(22, 163, 74, 0.25)'
+                    }}
+                    title="1-Click Direct ATS PDF Download (No print dialog)"
+                  >
+                    <Download size={13} />
+                    <span>Download ATS PDF</span>
+                  </button>
+
+                  <button
                     onClick={handleDownloadTxt}
                     style={{
                       display: 'flex',
@@ -855,31 +869,10 @@ GitHub: github.com/alexchen | LinkedIn: linkedin.com/in/alexchen`);
                       fontWeight: 700,
                       cursor: 'pointer'
                     }}
-                    title="Download formatted .txt"
+                    title="Download raw formatted .txt"
                   >
-                    <Download size={12} />
-                    <span>Download</span>
-                  </button>
-
-                  <button
-                    onClick={handlePrint}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      padding: '5px 9px',
-                      borderRadius: '6px',
-                      background: '#ffffff',
-                      border: '1px solid #cbd5e1',
-                      color: '#475569',
-                      fontSize: '11px',
-                      fontWeight: 700,
-                      cursor: 'pointer'
-                    }}
-                    title="Print or Save as PDF"
-                  >
-                    <Printer size={12} />
-                    <span>Print / PDF</span>
+                    <FileText size={12} />
+                    <span>.TXT</span>
                   </button>
                 </div>
               </div>
