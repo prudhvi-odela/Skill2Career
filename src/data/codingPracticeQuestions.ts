@@ -108,73 +108,32 @@ export const CODING_QUESTIONS: CodingQuestion[] = [
       { id: 5, input: '[1000000, 500, 2000000, 500], 1000', expectedOutput: '[1, 3]', isHidden: true }
     ],
     starterTemplates: {
-      python: `def two_sum(nums, target):
-    # Track complements in a hash map
-    seen = {}
-    for i, num in enumerate(nums):
-        diff = target - num
-        if diff in seen:
-            return [seen[diff], i]
-        seen[num] = i
-    return []
-
-# Test run
-print(two_sum([2, 7, 11, 15], 9))`,
+      python: `def two_sum(nums: list[int], target: int) -> list[int]:
+    # Write your solution here
+    pass`,
       javascript: `function twoSum(nums, target) {
-  const map = new Map();
-  for (let i = 0; i < nums.length; i++) {
-    const diff = target - nums[i];
-    if (map.has(diff)) {
-      return [map.get(diff), i];
-    }
-    map.set(nums[i], i);
-  }
-  return [];
-}
-
-console.log(twoSum([2, 7, 11, 15], 9));`,
-      typescript: `function twoSum(nums: number[], target: number): number[] {
-  const map = new Map<number, number>();
-  for (let i = 0; i < nums.length; i++) {
-    const complement = target - nums[i];
-    if (map.has(complement)) {
-      return [map.get(complement)!, i];
-    }
-    map.set(nums[i], i);
-  }
-  return [];
-}
-
-console.log(twoSum([2, 7, 11, 15], 9));`,
-      cpp: `#include <vector>
-#include <unordered_map>
-#include <iostream>
-
-std::vector<int> twoSum(std::vector<int>& nums, int target) {
-    std::unordered_map<int, int> seen;
-    for (int i = 0; i < nums.size(); ++i) {
-        int complement = target - nums[i];
-        if (seen.find(complement) != seen.end()) {
-            return {seen[complement], i};
-        }
-        seen[nums[i]] = i;
-    }
-    return {};
+  // Write your solution here
+  
 }`,
-      java: `import java.util.HashMap;
-import java.util.Map;
+      typescript: `function twoSum(nums: number[], target: number): number[] {
+  // Write your solution here
+  
+}`,
+      cpp: `#include <vector>
+
+class Solution {
+public:
+    std::vector<int> twoSum(std::vector<int>& nums, int target) {
+        // Write your solution here
+        
+    }
+};`,
+      java: `import java.util.*;
 
 class Solution {
     public int[] twoSum(int[] nums, int target) {
-        Map<Integer, Integer> map = new HashMap<>();
-        for (int i = 0; i < nums.length; i++) {
-            int complement = target - nums[i];
-            if (map.containsKey(complement)) {
-                return new int[] { map.get(complement), i };
-            }
-            map.put(nums[i], i);
-        }
-        return new int[0];
+        // Write your solution here
+        
     }
 }`
     },
@@ -223,75 +182,31 @@ class Solution {
     ],
     starterTemplates: {
       python: `def is_valid_parentheses(s: str) -> bool:
-    stack = []
-    mapping = {')': '(', '}': '{', ']': '['}
-    for char in s:
-        if char in mapping:
-            top_element = stack.pop() if stack else '#'
-            if mapping[char] != top_element:
-                return False
-        else:
-            stack.append(char)
-    return not stack
-
-print(is_valid_parentheses("()[]{}"))`,
+    # Write your solution here
+    pass`,
       javascript: `function isValidParentheses(s) {
-  const stack = [];
-  const map = { ')': '(', '}': '{', ']': '[' };
-  for (const char of s) {
-    if (map[char]) {
-      if (stack.pop() !== map[char]) return false;
-    } else {
-      stack.push(char);
-    }
-  }
-  return stack.length === 0;
-}
-
-console.log(isValidParentheses("()[]{}"));`,
-      typescript: `function isValidParentheses(s: string): boolean {
-  const stack: string[] = [];
-  const map: Record<string, string> = { ')': '(', '}': '{', ']': '[' };
-  for (const char of s) {
-    if (map[char]) {
-      if (stack.pop() !== map[char]) return false;
-    } else {
-      stack.push(char);
-    }
-  }
-  return stack.length === 0;
-}
-
-console.log(isValidParentheses("()[]{}"));`,
-      cpp: `#include <string>
-#include <stack>
-#include <unordered_map>
-
-bool isValid(std::string s) {
-    std::stack<char> st;
-    std::unordered_map<char, char> map = {{')', '('}, {'}', '{'}, {']', '['}};
-    for (char c : s) {
-        if (map.count(c)) {
-            if (st.empty() || st.top() != map[c]) return false;
-            st.pop();
-        } else {
-            st.push(c);
-        }
-    }
-    return st.empty();
+  // Write your solution here
+  
 }`,
-      java: `import java.util.Stack;
+      typescript: `function isValidParentheses(s: string): boolean {
+  // Write your solution here
+  
+}`,
+      cpp: `#include <string>
+
+class Solution {
+public:
+    bool isValid(std::string s) {
+        // Write your solution here
+        
+    }
+};`,
+      java: `import java.util.*;
 
 class Solution {
     public boolean isValid(String s) {
-        Stack<Character> stack = new Stack<>();
-        for (char c : s.toCharArray()) {
-            if (c == '(') stack.push(')');
-            else if (c == '{') stack.push('}');
-            else if (c == '[') stack.push(']');
-            else if (stack.isEmpty() || stack.pop() != c) return false;
-        }
-        return stack.isEmpty();
+        // Write your solution here
+        
     }
 }`
     },
@@ -345,65 +260,29 @@ class Solution {
     ],
     starterTemplates: {
       python: `def max_profit(prices: list[int]) -> int:
-    min_price = float('inf')
-    max_profit = 0
-    for price in prices:
-        if price < min_price:
-            min_price = price
-        elif price - min_price > max_profit:
-            max_profit = price - min_price
-    return max_profit
-
-print(max_profit([7, 1, 5, 3, 6, 4]))`,
+    # Write your solution here
+    pass`,
       javascript: `function maxProfit(prices) {
-  let minPrice = Infinity;
-  let maxProfit = 0;
-  for (const price of prices) {
-    if (price < minPrice) {
-      minPrice = price;
-    } else if (price - minPrice > maxProfit) {
-      maxProfit = price - minPrice;
-    }
-  }
-  return maxProfit;
-}
-
-console.log(maxProfit([7, 1, 5, 3, 6, 4]));`,
-      typescript: `function maxProfit(prices: number[]): number {
-  let minPrice = Infinity;
-  let maxProfit = 0;
-  for (const price of prices) {
-    if (price < minPrice) {
-      minPrice = price;
-    } else if (price - minPrice > maxProfit) {
-      maxProfit = price - minPrice;
-    }
-  }
-  return maxProfit;
-}
-
-console.log(maxProfit([7, 1, 5, 3, 6, 4]));`,
-      cpp: `#include <vector>
-#include <algorithm>
-
-int maxProfit(std::vector<int>& prices) {
-    int minPrice = 1e9;
-    int maxP = 0;
-    for (int p : prices) {
-        minPrice = std::min(minPrice, p);
-        maxP = std::max(maxP, p - minPrice);
-    }
-    return maxP;
+  // Write your solution here
+  
 }`,
+      typescript: `function maxProfit(prices: number[]): number {
+  // Write your solution here
+  
+}`,
+      cpp: `#include <vector>
+
+class Solution {
+public:
+    int maxProfit(std::vector<int>& prices) {
+        // Write your solution here
+        
+    }
+};`,
       java: `class Solution {
     public int maxProfit(int[] prices) {
-        int minPrice = Integer.MAX_VALUE;
-        int maxProfit = 0;
-        for (int price : prices) {
-            if (price < minPrice) minPrice = price;
-            else if (price - minPrice > maxProfit) maxProfit = price - minPrice;
-        }
-        return maxProfit;
+        // Write your solution here
+        
     }
 }`
     },
@@ -453,76 +332,60 @@ int maxProfit(std::vector<int>& prices) {
         self.val = val
         self.next = next
 
-def reverse_list(head):
-    prev = None
-    curr = head
-    while curr:
-        next_temp = curr.next
-        curr.next = prev
-        prev = curr
-        curr = next_temp
-    return prev`,
-      javascript: `function reverseList(head) {
-  let prev = null;
-  let curr = head;
-  while (curr !== null) {
-    const nextTemp = curr.next;
-    curr.next = prev;
-    prev = curr;
-    curr = nextTemp;
-  }
-  return prev;
+def reverse_list(head: ListNode) -> ListNode:
+    # Write your solution here
+    pass`,
+      javascript: `/**
+ * Definition for singly-linked list.
+ * function ListNode(val, next) {
+ *     this.val = (val===undefined ? 0 : val)
+ *     this.next = (next===undefined ? null : next)
+ * }
+ */
+function reverseList(head) {
+  // Write your solution here
+  
 }`,
-      typescript: `interface ListNode {
+      typescript: `class ListNode {
   val: number;
   next: ListNode | null;
+  constructor(val?: number, next?: ListNode | null) {
+    this.val = (val === undefined ? 0 : val);
+    this.next = (next === undefined ? null : next);
+  }
 }
 
 function reverseList(head: ListNode | null): ListNode | null {
-  let prev: ListNode | null = null;
-  let curr = head;
-  while (curr !== null) {
-    const nextTemp = curr.next;
-    curr.next = prev;
-    prev = curr;
-    curr = nextTemp;
-  }
-  return prev;
+  // Write your solution here
+  
 }`,
       cpp: `struct ListNode {
     int val;
     ListNode *next;
+    ListNode() : val(0), next(nullptr) {}
     ListNode(int x) : val(x), next(nullptr) {}
+    ListNode(int x, ListNode *next) : val(x), next(next) {}
 };
 
-ListNode* reverseList(ListNode* head) {
-    ListNode* prev = nullptr;
-    ListNode* curr = head;
-    while (curr) {
-        ListNode* nextTemp = curr->next;
-        curr->next = prev;
-        prev = curr;
-        curr = nextTemp;
+class Solution {
+public:
+    ListNode* reverseList(ListNode* head) {
+        // Write your solution here
+        
     }
-    return prev;
-}`,
+};`,
       java: `public class ListNode {
     int val;
     ListNode next;
-    ListNode(int x) { val = x; }
+    ListNode() {}
+    ListNode(int val) { this.val = val; }
+    ListNode(int val, ListNode next) { this.val = val; this.next = next; }
 }
 
 class Solution {
     public ListNode reverseList(ListNode head) {
-        ListNode prev = null;
-        ListNode curr = head;
-        while (curr != null) {
-            ListNode nextTemp = curr.next;
-            curr.next = prev;
-            prev = curr;
-            curr = nextTemp;
-        }
-        return prev;
+        // Write your solution here
+        
     }
 }`
     },
@@ -576,87 +439,29 @@ class Solution {
     ],
     starterTemplates: {
       python: `def max_area(height: list[int]) -> int:
-    left = 0
-    right = len(height) - 1
-    max_water = 0
-    
-    while left < right:
-        width = right - left
-        h = min(height[left], height[right])
-        max_water = max(max_water, width * h)
-        
-        # Greedily move the shorter line inward
-        if height[left] < height[right]:
-            left += 1
-        else:
-            right -= 1
-            
-    return max_water
-
-print(max_area([1, 8, 6, 2, 5, 4, 8, 3, 7]))`,
+    # Write your solution here
+    pass`,
       javascript: `function maxArea(height) {
-  let left = 0;
-  let right = height.length - 1;
-  let maxWater = 0;
-  while (left < right) {
-    const width = right - left;
-    const h = Math.min(height[left], height[right]);
-    maxWater = Math.max(maxWater, width * h);
-    if (height[left] < height[right]) {
-      left++;
-    } else {
-      right--;
-    }
-  }
-  return maxWater;
-}
-
-console.log(maxArea([1, 8, 6, 2, 5, 4, 8, 3, 7]));`,
-      typescript: `function maxArea(height: number[]): number {
-  let left = 0;
-  let right = height.length - 1;
-  let maxWater = 0;
-  while (left < right) {
-    const width = right - left;
-    const h = Math.min(height[left], height[right]);
-    maxWater = Math.max(maxWater, width * h);
-    if (height[left] < height[right]) {
-      left++;
-    } else {
-      right--;
-    }
-  }
-  return maxWater;
-}
-
-console.log(maxArea([1, 8, 6, 2, 5, 4, 8, 3, 7]));`,
-      cpp: `#include <vector>
-#include <algorithm>
-
-int maxArea(std::vector<int>& height) {
-    int left = 0, right = height.size() - 1;
-    int maxWater = 0;
-    while (left < right) {
-        int w = right - left;
-        int h = std::min(height[left], height[right]);
-        maxWater = std::max(maxWater, w * h);
-        if (height[left] < height[right]) left++;
-        else right--;
-    }
-    return maxWater;
+  // Write your solution here
+  
 }`,
+      typescript: `function maxArea(height: number[]): number {
+  // Write your solution here
+  
+}`,
+      cpp: `#include <vector>
+
+class Solution {
+public:
+    int maxArea(std::vector<int>& height) {
+        // Write your solution here
+        
+    }
+};`,
       java: `class Solution {
     public int maxArea(int[] height) {
-        int left = 0, right = height.length - 1;
-        int maxWater = 0;
-        while (left < right) {
-            int w = right - left;
-            int h = Math.min(height[left], height[right]);
-            maxWater = Math.max(maxWater, w * h);
-            if (height[left] < height[right]) left++;
-            else right--;
-        }
-        return maxWater;
+        // Write your solution here
+        
     }
 }`
     },
@@ -715,83 +520,29 @@ int maxArea(std::vector<int>& height) {
     ],
     starterTemplates: {
       python: `def length_of_longest_substring(s: str) -> int:
-    char_map = {}
-    left = 0
-    max_len = 0
-    
-    for right, char in enumerate(s):
-        if char in char_map and char_map[char] >= left:
-            left = char_map[char] + 1
-        char_map[char] = right
-        max_len = max(max_len, right - left + 1)
-        
-    return max_len
-
-print(length_of_longest_substring("abcabcbb"))`,
+    # Write your solution here
+    pass`,
       javascript: `function lengthOfLongestSubstring(s) {
-  const map = new Map();
-  let left = 0;
-  let maxLen = 0;
-  for (let right = 0; right < s.length; right++) {
-    const char = s[right];
-    if (map.has(char) && map.get(char) >= left) {
-      left = map.get(char) + 1;
-    }
-    map.set(char, right);
-    maxLen = Math.max(maxLen, right - left + 1);
-  }
-  return maxLen;
-}
-
-console.log(lengthOfLongestSubstring("abcabcbb"));`,
-      typescript: `function lengthOfLongestSubstring(s: string): number {
-  const map = new Map<string, number>();
-  let left = 0;
-  let maxLen = 0;
-  for (let right = 0; right < s.length; right++) {
-    const char = s[right];
-    if (map.has(char) && map.get(char)! >= left) {
-      left = map.get(char)! + 1;
-    }
-    map.set(char, right);
-    maxLen = Math.max(maxLen, right - left + 1);
-  }
-  return maxLen;
-}
-
-console.log(lengthOfLongestSubstring("abcabcbb"));`,
-      cpp: `#include <string>
-#include <unordered_map>
-#include <algorithm>
-
-int lengthOfLongestSubstring(std::string s) {
-    std::unordered_map<char, int> map;
-    int left = 0, maxLen = 0;
-    for (int right = 0; right < s.length(); ++right) {
-        if (map.find(s[right]) != map.end() && map[s[right]] >= left) {
-            left = map[s[right]] + 1;
-        }
-        map[s[right]] = right;
-        maxLen = std::max(maxLen, right - left + 1);
-    }
-    return maxLen;
+  // Write your solution here
+  
 }`,
-      java: `import java.util.HashMap;
-import java.util.Map;
+      typescript: `function lengthOfLongestSubstring(s: string): number {
+  // Write your solution here
+  
+}`,
+      cpp: `#include <string>
 
 class Solution {
+public:
+    int lengthOfLongestSubstring(std::string s) {
+        // Write your solution here
+        
+    }
+};`,
+      java: `class Solution {
     public int lengthOfLongestSubstring(String s) {
-        Map<Character, Integer> map = new HashMap<>();
-        int left = 0, maxLen = 0;
-        for (int right = 0; right < s.length(); right++) {
-            char c = s.charAt(right);
-            if (map.containsKey(c) && map.get(c) >= left) {
-                left = map.get(c) + 1;
-            }
-            map.put(c, right);
-            maxLen = Math.max(maxLen, right - left + 1);
-        }
-        return maxLen;
+        // Write your solution here
+        
     }
 }`
     },
@@ -844,58 +595,27 @@ class Solution {
     ],
     starterTemplates: {
       python: `def climb_stairs(n: int) -> int:
-    if n <= 2:
-        return n
-    first, second = 1, 2
-    for _ in range(3, n + 1):
-        first, second = second, first + second
-    return second
-
-print(climb_stairs(5))`,
+    # Write your solution here
+    pass`,
       javascript: `function climbStairs(n) {
-  if (n <= 2) return n;
-  let a = 1, b = 2;
-  for (let i = 3; i <= n; i++) {
-    const c = a + b;
-    a = b;
-    b = c;
-  }
-  return b;
-}
-
-console.log(climbStairs(5));`,
-      typescript: `function climbStairs(n: number): number {
-  if (n <= 2) return n;
-  let a = 1, b = 2;
-  for (let i = 3; i <= n; i++) {
-    const c = a + b;
-    a = b;
-    b = c;
-  }
-  return b;
-}
-
-console.log(climbStairs(5));`,
-      cpp: `int climbStairs(int n) {
-    if (n <= 2) return n;
-    int a = 1, b = 2;
-    for (int i = 3; i <= n; ++i) {
-        int c = a + b;
-        a = b;
-        b = c;
-    }
-    return b;
+  // Write your solution here
+  
 }`,
+      typescript: `function climbStairs(n: number): number {
+  // Write your solution here
+  
+}`,
+      cpp: `class Solution {
+public:
+    int climbStairs(int n) {
+        // Write your solution here
+        
+    }
+};`,
       java: `class Solution {
     public int climbStairs(int n) {
-        if (n <= 2) return n;
-        int a = 1, b = 2;
-        for (int i = 3; i <= n; i++) {
-            int c = a + b;
-            a = b;
-            b = c;
-        }
-        return b;
+        // Write your solution here
+        
     }
 }`
     },
@@ -953,64 +673,29 @@ console.log(climbStairs(5));`,
     ],
     starterTemplates: {
       python: `def coin_change(coins: list[int], amount: int) -> int:
-    dp = [float('inf')] * (amount + 1)
-    dp[0] = 0
-    for coin in coins:
-        for x in range(coin, amount + 1):
-            dp[x] = min(dp[x], dp[x - coin] + 1)
-    return dp[amount] if dp[amount] != float('inf') else -1
-
-print(coin_change([1, 2, 5], 11))`,
+    # Write your solution here
+    pass`,
       javascript: `function coinChange(coins, amount) {
-  const dp = new Array(amount + 1).fill(Infinity);
-  dp[0] = 0;
-  for (const coin of coins) {
-    for (let x = coin; x <= amount; x++) {
-      dp[x] = Math.min(dp[x], dp[x - coin] + 1);
-    }
-  }
-  return dp[amount] === Infinity ? -1 : dp[amount];
-}
-
-console.log(coinChange([1, 2, 5], 11));`,
-      typescript: `function coinChange(coins: number[], amount: number): number {
-  const dp = new Array(amount + 1).fill(Infinity);
-  dp[0] = 0;
-  for (const coin of coins) {
-    for (let x = coin; x <= amount; x++) {
-      dp[x] = Math.min(dp[x], dp[x - coin] + 1);
-    }
-  }
-  return dp[amount] === Infinity ? -1 : dp[amount];
-}
-
-console.log(coinChange([1, 2, 5], 11));`,
-      cpp: `#include <vector>
-#include <algorithm>
-
-int coinChange(std::vector<int>& coins, int amount) {
-    std::vector<int> dp(amount + 1, amount + 1);
-    dp[0] = 0;
-    for (int coin : coins) {
-        for (int x = coin; x <= amount; ++x) {
-            dp[x] = std::min(dp[x], dp[x - coin] + 1);
-        }
-    }
-    return dp[amount] > amount ? -1 : dp[amount];
+  // Write your solution here
+  
 }`,
-      java: `import java.util.Arrays;
+      typescript: `function coinChange(coins: number[], amount: number): number {
+  // Write your solution here
+  
+}`,
+      cpp: `#include <vector>
 
 class Solution {
+public:
+    int coinChange(std::vector<int>& coins, int amount) {
+        // Write your solution here
+        
+    }
+};`,
+      java: `class Solution {
     public int coinChange(int[] coins, int amount) {
-        int[] dp = new int[amount + 1];
-        Arrays.fill(dp, amount + 1);
-        dp[0] = 0;
-        for (int coin : coins) {
-            for (int x = coin; x <= amount; x++) {
-                dp[x] = Math.min(dp[x], dp[x - coin] + 1);
-            }
-        }
-        return dp[amount] > amount ? -1 : dp[amount];
+        // Write your solution here
+        
     }
 }`
     },
@@ -1067,57 +752,29 @@ class Solution {
     ],
     starterTemplates: {
       python: `def max_sub_array(nums: list[int]) -> int:
-    current_sum = nums[0]
-    max_sum = nums[0]
-    for num in nums[1:]:
-        current_sum = max(num, current_sum + num)
-        max_sum = max(max_sum, current_sum)
-    return max_sum
-
-print(max_sub_array([-2, 1, -3, 4, -1, 2, 1, -5, 4]))`,
+    # Write your solution here
+    pass`,
       javascript: `function maxSubArray(nums) {
-  let currentSum = nums[0];
-  let maxSum = nums[0];
-  for (let i = 1; i < nums.length; i++) {
-    currentSum = Math.max(nums[i], currentSum + nums[i]);
-    maxSum = Math.max(maxSum, currentSum);
-  }
-  return maxSum;
-}
-
-console.log(maxSubArray([-2, 1, -3, 4, -1, 2, 1, -5, 4]));`,
-      typescript: `function maxSubArray(nums: number[]): number {
-  let currentSum = nums[0];
-  let maxSum = nums[0];
-  for (let i = 1; i < nums.length; i++) {
-    currentSum = Math.max(nums[i], currentSum + nums[i]);
-    maxSum = Math.max(maxSum, currentSum);
-  }
-  return maxSum;
-}
-
-console.log(maxSubArray([-2, 1, -3, 4, -1, 2, 1, -5, 4]));`,
-      cpp: `#include <vector>
-#include <algorithm>
-
-int maxSubArray(std::vector<int>& nums) {
-    int currentSum = nums[0];
-    int maxSum = nums[0];
-    for (size_t i = 1; i < nums.size(); ++i) {
-        currentSum = std::max(nums[i], currentSum + nums[i]);
-        maxSum = std::max(maxSum, currentSum);
-    }
-    return maxSum;
+  // Write your solution here
+  
 }`,
+      typescript: `function maxSubArray(nums: number[]): number {
+  // Write your solution here
+  
+}`,
+      cpp: `#include <vector>
+
+class Solution {
+public:
+    int maxSubArray(std::vector<int>& nums) {
+        // Write your solution here
+        
+    }
+};`,
       java: `class Solution {
     public int maxSubArray(int[] nums) {
-        int currentSum = nums[0];
-        int maxSum = nums[0];
-        for (int i = 1; i < nums.length; i++) {
-            currentSum = Math.max(nums[i], currentSum + nums[i]);
-            maxSum = Math.max(maxSum, currentSum);
-        }
-        return maxSum;
+        // Write your solution here
+        
     }
 }`
     },
@@ -1192,126 +849,29 @@ int maxSubArray(std::vector<int>& nums) {
     ],
     starterTemplates: {
       python: `def num_islands(grid: list[list[str]]) -> int:
-    if not grid:
-        return 0
-    
-    rows, cols = len(grid), len(grid[0])
-    islands = 0
-    
-    def dfs(r, c):
-        if r < 0 or c < 0 or r >= rows or c >= cols or grid[r][c] != '1':
-            return
-        grid[r][c] = '0' # mark visited
-        dfs(r + 1, c)
-        dfs(r - 1, c)
-        dfs(r, c + 1)
-        dfs(r, c - 1)
-        
-    for r in range(rows):
-        for c in range(cols):
-            if grid[r][c] == '1':
-                islands += 1
-                dfs(r, c)
-                
-    return islands`,
+    # Write your solution here
+    pass`,
       javascript: `function numIslands(grid) {
-  if (!grid || grid.length === 0) return 0;
-  const rows = grid.length;
-  const cols = grid[0].length;
-  let islands = 0;
-
-  function dfs(r, c) {
-    if (r < 0 || c < 0 || r >= rows || c >= cols || grid[r][c] !== '1') return;
-    grid[r][c] = '0';
-    dfs(r + 1, c);
-    dfs(r - 1, c);
-    dfs(r, c + 1);
-    dfs(r, c - 1);
-  }
-
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      if (grid[r][c] === '1') {
-        islands++;
-        dfs(r, c);
-      }
-    }
-  }
-  return islands;
+  // Write your solution here
+  
 }`,
       typescript: `function numIslands(grid: string[][]): number {
-  if (!grid || grid.length === 0) return 0;
-  const rows = grid.length;
-  const cols = grid[0].length;
-  let islands = 0;
-
-  function dfs(r: number, c: number) {
-    if (r < 0 || c < 0 || r >= rows || c >= cols || grid[r][c] !== '1') return;
-    grid[r][c] = '0';
-    dfs(r + 1, c);
-    dfs(r - 1, c);
-    dfs(r, c + 1);
-    dfs(r, c - 1);
-  }
-
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      if (grid[r][c] === '1') {
-        islands++;
-        dfs(r, c);
-      }
-    }
-  }
-  return islands;
+  // Write your solution here
+  
 }`,
       cpp: `#include <vector>
 
-void dfs(std::vector<std::vector<char>>& grid, int r, int c) {
-    int rows = grid.size();
-    int cols = grid[0].size();
-    if (r < 0 || c < 0 || r >= rows || c >= cols || grid[r][c] != '1') return;
-    grid[r][c] = '0';
-    dfs(grid, r + 1, c);
-    dfs(grid, r - 1, c);
-    dfs(grid, r, c + 1);
-    dfs(grid, r, c - 1);
-}
-
-int numIslands(std::vector<std::vector<char>>& grid) {
-    if (grid.empty()) return 0;
-    int islands = 0;
-    for (int r = 0; r < grid.size(); ++r) {
-        for (int c = 0; c < grid[0].size(); ++c) {
-            if (grid[r][c] == '1') {
-                islands++;
-                dfs(grid, r, c);
-            }
-        }
+class Solution {
+public:
+    int numIslands(std::vector<std::vector<char>>& grid) {
+        // Write your solution here
+        
     }
-    return islands;
-}`,
+};`,
       java: `class Solution {
     public int numIslands(char[][] grid) {
-        if (grid == null || grid.length == 0) return 0;
-        int islands = 0;
-        for (int r = 0; r < grid.length; r++) {
-            for (int c = 0; c < grid[0].length; c++) {
-                if (grid[r][c] == '1') {
-                    islands++;
-                    dfs(grid, r, c);
-                }
-            }
-        }
-        return islands;
-    }
-    
-    private void dfs(char[][] grid, int r, int c) {
-        if (r < 0 || c < 0 || r >= grid.length || c >= grid[0].length || grid[r][c] != '1') return;
-        grid[r][c] = '0';
-        dfs(grid, r + 1, c);
-        dfs(grid, r - 1, c);
-        dfs(grid, r, c + 1);
-        dfs(grid, r, c - 1);
+        // Write your solution here
+        
     }
 }`
     },
@@ -1366,194 +926,162 @@ myQueue.Rear();     // return 4`,
       { id: 3, input: 'deQ() on full k=3, then enQ(4)', expectedOutput: '[true, true]' }
     ],
     starterTemplates: {
-      python: `class CircularQueue:
+      python: `class MyCircularQueue:
     def __init__(self, k: int):
-        self.k = k
-        self.queue = [0] * k
-        self.head = 0
-        self.count = 0
+        # Write your solution here
+        pass
 
     def enQueue(self, value: int) -> bool:
-        if self.isFull():
-            return False
-        tail = (self.head + self.count) % self.k
-        self.queue[tail] = value
-        self.count += 1
-        return True
+        pass
 
     def deQueue(self) -> bool:
-        if self.isEmpty():
-            return False
-        self.head = (self.head + 1) % self.k
-        self.count -= 1
-        return True
+        pass
 
     def Front(self) -> int:
-        return -1 if self.isEmpty() else self.queue[self.head]
+        pass
 
     def Rear(self) -> int:
-        if self.isEmpty():
-            return -1
-        tail = (self.head + self.count - 1) % self.k
-        return self.queue[tail]
+        pass
 
     def isEmpty(self) -> bool:
-        return self.count == 0
+        pass
 
     def isFull(self) -> bool:
-        return self.count == self.k`,
-      javascript: `class CircularQueue {
+        pass`,
+      javascript: `class MyCircularQueue {
   constructor(k) {
-    this.k = k;
-    this.queue = new Array(k);
-    this.head = 0;
-    this.count = 0;
+    // Write your solution here
   }
 
   enQueue(value) {
-    if (this.isFull()) return false;
-    const tail = (this.head + this.count) % this.k;
-    this.queue[tail] = value;
-    this.count++;
-    return true;
+    // Write your solution here
   }
 
   deQueue() {
-    if (this.isEmpty()) return false;
-    this.head = (this.head + 1) % this.k;
-    this.count--;
-    return true;
+    // Write your solution here
   }
 
   Front() {
-    return this.isEmpty() ? -1 : this.queue[this.head];
+    // Write your solution here
   }
 
   Rear() {
-    if (this.isEmpty()) return -1;
-    const tail = (this.head + this.count - 1) % this.k;
-    return this.queue[tail];
+    // Write your solution here
   }
 
   isEmpty() {
-    return this.count === 0;
+    // Write your solution here
   }
 
   isFull() {
-    return this.count === this.k;
+    // Write your solution here
   }
 }`,
-      typescript: `class CircularQueue {
-  private k: number;
-  private queue: number[];
-  private head: number = 0;
-  private count: number = 0;
-
+      typescript: `class MyCircularQueue {
   constructor(k: number) {
-    this.k = k;
-    this.queue = new Array(k);
+    // Write your solution here
   }
 
   enQueue(value: number): boolean {
-    if (this.isFull()) return false;
-    const tail = (this.head + this.count) % this.k;
-    this.queue[tail] = value;
-    this.count++;
-    return true;
+    // Write your solution here
+    return false;
   }
 
   deQueue(): boolean {
-    if (this.isEmpty()) return false;
-    this.head = (this.head + 1) % this.k;
-    this.count--;
-    return true;
+    // Write your solution here
+    return false;
   }
 
   Front(): number {
-    return this.isEmpty() ? -1 : this.queue[this.head];
+    // Write your solution here
+    return -1;
   }
 
   Rear(): number {
-    if (this.isEmpty()) return -1;
-    const tail = (this.head + this.count - 1) % this.k;
-    return this.queue[tail];
+    // Write your solution here
+    return -1;
   }
 
   isEmpty(): boolean {
-    return this.count === 0;
+    // Write your solution here
+    return true;
   }
 
   isFull(): boolean {
-    return this.count === this.k;
+    // Write your solution here
+    return false;
   }
 }`,
-      cpp: `#include <vector>
-
-class MyCircularQueue {
-private:
-    std::vector<int> q;
-    int head, count, capacity;
+      cpp: `class MyCircularQueue {
 public:
-    MyCircularQueue(int k) : capacity(k), head(0), count(0), q(k) {}
+    MyCircularQueue(int k) {
+        // Write your solution here
+    }
     
     bool enQueue(int value) {
-        if (isFull()) return false;
-        q[(head + count) % capacity] = value;
-        count++;
-        return true;
+        // Write your solution here
+        return false;
     }
     
     bool deQueue() {
-        if (isEmpty()) return false;
-        head = (head + 1) % capacity;
-        count--;
-        return true;
+        // Write your solution here
+        return false;
     }
     
     int Front() {
-        return isEmpty() ? -1 : q[head];
+        // Write your solution here
+        return -1;
     }
     
     int Rear() {
-        return isEmpty() ? -1 : q[(head + count - 1) % capacity];
+        // Write your solution here
+        return -1;
     }
     
-    bool isEmpty() { return count == 0; }
-    bool isFull() { return count == capacity; }
+    bool isEmpty() {
+        // Write your solution here
+        return true;
+    }
+    
+    bool isFull() {
+        // Write your solution here
+        return false;
+    }
 };`,
       java: `class MyCircularQueue {
-    private int[] q;
-    private int head = 0, count = 0, capacity;
-    
     public MyCircularQueue(int k) {
-        this.capacity = k;
-        this.q = new int[k];
+        // Write your solution here
     }
     
     public boolean enQueue(int value) {
-        if (isFull()) return false;
-        q[(head + count) % capacity] = value;
-        count++;
-        return true;
+        // Write your solution here
+        return false;
     }
     
     public boolean deQueue() {
-        if (isEmpty()) return false;
-        head = (head + 1) % capacity;
-        count--;
-        return true;
+        // Write your solution here
+        return false;
     }
     
     public int Front() {
-        return isEmpty() ? -1 : q[head];
+        // Write your solution here
+        return -1;
     }
     
     public int Rear() {
-        return isEmpty() ? -1 : q[(head + count - 1) % capacity];
+        // Write your solution here
+        return -1;
     }
     
-    public boolean isEmpty() { return count == 0; }
-    public boolean isFull() { return count == capacity; }
+    public boolean isEmpty() {
+        // Write your solution here
+        return true;
+    }
+    
+    public boolean isFull() {
+        // Write your solution here
+        return false;
+    }
 }`
     },
     hints: [
@@ -1599,42 +1127,29 @@ public:
     ],
     starterTemplates: {
       python: `def single_number(nums: list[int]) -> int:
-    result = 0
-    for num in nums:
-        result ^= num
-    return result
-
-print(single_number([4, 1, 2, 1, 2]))`,
+    # Write your solution here
+    pass`,
       javascript: `function singleNumber(nums) {
-  let result = 0;
-  for (const num of nums) {
-    result ^= num;
-  }
-  return result;
-}
-
-console.log(singleNumber([4, 1, 2, 1, 2]));`,
+  // Write your solution here
+  
+}`,
       typescript: `function singleNumber(nums: number[]): number {
-  let result = 0;
-  for (const num of nums) {
-    result ^= num;
-  }
-  return result;
-}
-
-console.log(singleNumber([4, 1, 2, 1, 2]));`,
+  // Write your solution here
+  
+}`,
       cpp: `#include <vector>
 
-int singleNumber(std::vector<int>& nums) {
-    int res = 0;
-    for (int n : nums) res ^= n;
-    return res;
-}`,
+class Solution {
+public:
+    int singleNumber(std::vector<int>& nums) {
+        // Write your solution here
+        
+    }
+};`,
       java: `class Solution {
     public int singleNumber(int[] nums) {
-        int res = 0;
-        for (int n : nums) res ^= n;
-        return res;
+        // Write your solution here
+        
     }
 }`
     },
@@ -1705,73 +1220,38 @@ Department:
       { id: 1, input: 'Standard 7 employees, 2 departments', expectedOutput: '6 high earners returned' }
     ],
     starterTemplates: {
-      sql: `/* Write your PL/pgSQL or standard SQL query below */
-WITH RankedSalaries AS (
-    SELECT 
-        d.name AS Department,
-        e.name AS Employee,
-        e.salary AS Salary,
-        DENSE_RANK() OVER (
-            PARTITION BY e.departmentId 
-            ORDER BY e.salary DESC
-        ) AS rank_num
-    FROM Employee e
-    JOIN Department d ON e.departmentId = d.id
-)
-SELECT Department, Employee, Salary
-FROM RankedSalaries
-WHERE rank_num <= 3;`,
-      python: `# Python / Pandas Data Engineering equivalence
-import pandas as pd
-
-def top_three_salaries(employee: pd.DataFrame, department: pd.DataFrame) -> pd.DataFrame:
-    df = employee.merge(department, left_on='departmentId', right_on='id', suffixes=('_emp', '_dept'))
-    df['rank'] = df.groupby('departmentId')['salary'].rank(method='dense', ascending=False)
-    result = df[df['rank'] <= 3][['name_dept', 'name_emp', 'salary']]
-    result.columns = ['Department', 'Employee', 'Salary']
-    return result`,
-      javascript: `// In-memory JavaScript simulation for interview questions
-function departmentTopThreeSalaries(employees, departments) {
-  const deptMap = Object.fromEntries(departments.map(d => [d.id, d.name]));
-  const grouped = {};
-  for (const emp of employees) {
-    if (!grouped[emp.departmentId]) grouped[emp.departmentId] = [];
-    grouped[emp.departmentId].push(emp);
-  }
-  const result = [];
-  for (const [deptId, empList] of Object.entries(grouped)) {
-    const uniqueSalaries = Array.from(new Set(empList.map(e => e.salary))).sort((a, b) => b - a).slice(0, 3);
-    for (const emp of empList) {
-      if (uniqueSalaries.includes(emp.salary)) {
-        result.push({ Department: deptMap[deptId], Employee: emp.name, Salary: emp.salary });
-      }
-    }
-  }
-  return result;
+      python: `def find_top_three_salaries(department_df, employee_df):
+    # Write your solution here
+    pass`,
+      javascript: `function findTopThreeSalaries(departments, employees) {
+  // Write your solution here
+  
 }`,
-      typescript: `interface Employee { id: number; name: string; salary: number; departmentId: number; }
-interface Department { id: number; name: string; }
-
-function topThreeSalaries(employees: Employee[], departments: Department[]) {
-  const deptMap = new Map(departments.map(d => [d.id, d.name]));
-  const grouped = new Map<number, Employee[]>();
-  for (const e of employees) {
-    if (!grouped.has(e.departmentId)) grouped.set(e.departmentId, []);
-    grouped.get(e.departmentId)!.push(e);
-  }
-  const res: { Department: string; Employee: string; Salary: number }[] = [];
-  for (const [deptId, list] of grouped.entries()) {
-    const topSalaries = Array.from(new Set(list.map(x => x.salary))).sort((a, b) => b - a).slice(0, 3);
-    for (const emp of list) {
-      if (topSalaries.includes(emp.salary)) {
-        res.push({ Department: deptMap.get(deptId) || '', Employee: emp.name, Salary: emp.salary });
-      }
-    }
-  }
-  return res;
+      typescript: `function findTopThreeSalaries(departments: any[], employees: any[]): any[] {
+  // Write your solution here
+  
 }`,
-      cpp: `// SQL analytical problem`,
-      java: `// SQL analytical problem`
+      cpp: `// SQL analytical problem - Select SQL tab or implement in C++
+#include <vector>
+#include <string>
+
+struct Employee {
+    int id;
+    std::string name;
+    int salary;
+    int departmentId;
+};`,
+      java: `// SQL analytical problem - Select SQL tab or implement in Java
+import java.util.*;`,
+      sql: `-- Write your PostgreSQL analytical query here
+SELECT
+    d.name AS Department,
+    e.name AS Employee,
+    e.salary AS Salary
+FROM Employee e
+JOIN Department d ON e.departmentId = d.id
+-- Add your DENSE_RANK() / ranking condition here
+;`
     },
     hints: [
       'Use the window function `DENSE_RANK()` because ties in salary must share the same rank without skipping subsequent ranks.',
@@ -1824,66 +1304,29 @@ function topThreeSalaries(employees: Employee[], departments: Department[]) {
     ],
     starterTemplates: {
       python: `def search(nums: list[int], target: int) -> int:
-    left, right = 0, len(nums) - 1
-    while left <= right:
-        mid = left + (right - left) // 2
-        if nums[mid] == target:
-            return mid
-        elif nums[mid] < target:
-            left = mid + 1
-        else:
-            right = mid - 1
-    return -1
-
-print(search([-1, 0, 3, 5, 9, 12], 9))`,
+    # Write your solution here
+    pass`,
       javascript: `function search(nums, target) {
-  let left = 0;
-  let right = nums.length - 1;
-  while (left <= right) {
-    const mid = Math.floor(left + (right - left) / 2);
-    if (nums[mid] === target) return mid;
-    else if (nums[mid] < target) left = mid + 1;
-    else right = mid - 1;
-  }
-  return -1;
-}
-
-console.log(search([-1, 0, 3, 5, 9, 12], 9));`,
+  // Write your solution here
+  
+}`,
       typescript: `function search(nums: number[], target: number): number {
-  let left = 0;
-  let right = nums.length - 1;
-  while (left <= right) {
-    const mid = Math.floor(left + (right - left) / 2);
-    if (nums[mid] === target) return mid;
-    else if (nums[mid] < target) left = mid + 1;
-    else right = mid - 1;
-  }
-  return -1;
-}
-
-console.log(search([-1, 0, 3, 5, 9, 12], 9));`,
+  // Write your solution here
+  
+}`,
       cpp: `#include <vector>
 
-int search(std::vector<int>& nums, int target) {
-    int left = 0, right = nums.size() - 1;
-    while (left <= right) {
-        int mid = left + (right - left) / 2;
-        if (nums[mid] == target) return mid;
-        else if (nums[mid] < target) left = mid + 1;
-        else right = mid - 1;
+class Solution {
+public:
+    int search(std::vector<int>& nums, int target) {
+        // Write your solution here
+        
     }
-    return -1;
-}`,
+};`,
       java: `class Solution {
     public int search(int[] nums, int target) {
-        int left = 0, right = nums.length - 1;
-        while (left <= right) {
-            int mid = left + (right - left) / 2;
-            if (nums[mid] == target) return mid;
-            else if (nums[mid] < target) left = mid + 1;
-            else right = mid - 1;
-        }
-        return -1;
+        // Write your solution here
+        
     }
 }`
     },
@@ -1910,7 +1353,7 @@ int search(std::vector<int>& nums, int target) {
     tags: ['Robotics', 'Control Theory', 'Calculus', 'Embedded Systems'],
     companies: ['Tesla', 'Boston Dynamics', 'DJI', 'Lockheed Martin', 'ABB'],
     acceptanceRate: 64.0,
-    description: `Implement a discrete **Proportional-Integral-Derivative (PID)** controller update step function.\n\nThe PID control signal is given by:\n$$u(t) = K_p \\cdot e(t) + K_i \\cdot \\int_0^t e(\\tau) d\\tau + K_d \\cdot \\frac{de(t)}{dt}$$\n\nIn discrete time with sampling interval \`dt\`:\n- Error: \`error = setpoint - current_value\`\n- Integral: \`integral += error * dt\` (with anti-windup clamping \`[-clamp, clamp]\`)\n- Derivative: \`derivative = (error - prev_error) / dt\`\n- Output: \`Kp * error + Ki * integral + Kd * derivative\`\n\nReturn the control effort \`output\` clamped within \`[-max_output, max_output]\`.`,
+    description: `Implement a discrete **Proportional-Integral-Derivative (PID)** controller update step function.\n\nThe PID control signal is given by:\n$u(t) = K_p \\cdot e(t) + K_i \\cdot \\int_0^t e(\\tau) d\\tau + K_d \\cdot \\frac{de(t)}{dt}$\n\nIn discrete time with sampling interval \`dt\`:\n- Error: \`error = setpoint - current_value\`\n- Integral: \`integral += error * dt\` (with anti-windup clamping \`[-clamp, clamp]\`)\n- Derivative: \`derivative = (error - prev_error) / dt\`\n- Output: \`Kp * error + Ki * integral + Kd * derivative\`\n\nReturn the control effort \`output\` clamped within \`[-max_output, max_output]\`.`,
     constraints: [
       'dt > 0.0001',
       'All gains Kp, Ki, Kd >= 0',
@@ -1930,71 +1373,28 @@ int search(std::vector<int>& nums, int target) {
       }
     ],
     starterTemplates: {
-      python: `def pid_update(setpoint, current, kp, ki, kd, dt, integral, prev_error, max_out=100.0):
-    error = setpoint - current
-    new_integral = integral + error * dt
-    # Anti-windup clamping
-    new_integral = max(-50.0, min(50.0, new_integral))
-    derivative = (error - prev_error) / dt if dt > 0 else 0
-    output = kp * error + ki * new_integral + kd * derivative
-    clamped_output = max(-max_out, min(max_out, output))
-    return round(clamped_output, 2), round(new_integral, 2)
-
-print(pid_update(100.0, 80.0, 1.5, 0.2, 0.05, 0.1, 0.0, 20.0))`,
-      javascript: `function pidUpdate(setpoint, current, kp, ki, kd, dt, integral, prevError, maxOut = 100) {
-  const error = setpoint - current;
-  let newIntegral = integral + error * dt;
-  newIntegral = Math.max(-50, Math.min(50, newIntegral)); // anti-windup
-  const derivative = dt > 0 ? (error - prevError) / dt : 0;
-  const output = kp * error + ki * newIntegral + kd * derivative;
-  const clamped = Math.max(-maxOut, Math.min(maxOut, output));
-  return { output: Number(clamped.toFixed(2)), integral: Number(newIntegral.toFixed(2)) };
-}
-
-console.log(pidUpdate(100, 80, 1.5, 0.2, 0.05, 0.1, 0, 20));`,
-      typescript: `interface PIDResult {
-  output: number;
-  integral: number;
-}
-
-function pidUpdate(
-  setpoint: number,
-  current: number,
-  kp: number,
-  ki: number,
-  kd: number,
-  dt: number,
-  integral: number,
-  prevError: number,
-  maxOut: number = 100
-): PIDResult {
-  const error = setpoint - current;
-  let newIntegral = integral + error * dt;
-  newIntegral = Math.max(-50, Math.min(50, newIntegral));
-  const derivative = dt > 0 ? (error - prevError) / dt : 0;
-  const output = kp * error + ki * newIntegral + kd * derivative;
-  const clamped = Math.max(-maxOut, Math.min(maxOut, output));
-  return { output: Number(clamped.toFixed(2)), integral: Number(newIntegral.toFixed(2)) };
+      python: `def update_pid(setpoint: float, measured: float, dt: float, kp: float = 2.0, ki: float = 0.5, kd: float = 0.1) -> float:
+    # Write your PID controller logic here
+    pass`,
+      javascript: `function updatePid(setpoint, measured, dt, kp = 2.0, ki = 0.5, kd = 0.1) {
+  // Write your PID controller logic here
+  
 }`,
-      cpp: `#include <algorithm>
-
-struct PIDResult { double output; double integral; };
-
-PIDResult pidUpdate(double setpoint, double current, double kp, double ki, double kd, double dt, double integral, double prevError, double maxOut = 100.0) {
-    double error = setpoint - current;
-    double newIntegral = std::max(-50.0, std::min(50.0, integral + error * dt));
-    double derivative = (dt > 0) ? (error - prevError) / dt : 0;
-    double out = kp * error + ki * newIntegral + kd * derivative;
-    double clamped = std::max(-maxOut, std::min(maxOut, out));
-    return {clamped, newIntegral};
+      typescript: `function updatePid(setpoint: number, measured: number, dt: number, kp: number = 2.0, ki: number = 0.5, kd: number = 0.1): number {
+  // Write your PID controller logic here
+  
 }`,
+      cpp: `class PIDController {
+public:
+    double update(double setpoint, double measured, double dt, double kp = 2.0, double ki = 0.5, double kd = 0.1) {
+        // Write your PID controller logic here
+        return 0.0;
+    }
+};`,
       java: `class PIDController {
-    public static double[] update(double setpoint, double current, double kp, double ki, double kd, double dt, double integral, double prevError) {
-        double error = setpoint - current;
-        double newInt = Math.max(-50.0, Math.min(50.0, integral + error * dt));
-        double deriv = dt > 0 ? (error - prevError) / dt : 0;
-        double out = Math.max(-100.0, Math.min(100.0, kp * error + ki * newInt + kd * deriv));
-        return new double[] { out, newInt };
+    public double update(double setpoint, double measured, double dt, double kp, double ki, double kd) {
+        // Write your PID controller logic here
+        return 0.0;
     }
 }`
     },
@@ -2053,59 +1453,69 @@ PIDResult pidUpdate(double setpoint, double current, double kp, double ki, doubl
         self.left = left
         self.right = right
 
-def invert_tree(root):
-    if not root:
-        return None
-    root.left, root.right = invert_tree(root.right), invert_tree(root.left)
-    return root`,
-      javascript: `function invertTree(root) {
-  if (!root) return null;
-  const temp = root.left;
-  root.left = invertTree(root.right);
-  root.right = invertTree(temp);
-  return root;
+def invert_tree(root: TreeNode) -> TreeNode:
+    # Write your solution here
+    pass`,
+      javascript: `/**
+ * Definition for a binary tree node.
+ * function TreeNode(val, left, right) {
+ *     this.val = (val===undefined ? 0 : val)
+ *     this.left = (left===undefined ? null : left)
+ *     this.right = (right===undefined ? null : right)
+ * }
+ */
+function invertTree(root) {
+  // Write your solution here
+  
 }`,
-      typescript: `interface TreeNode {
+      typescript: `class TreeNode {
   val: number;
   left: TreeNode | null;
   right: TreeNode | null;
+  constructor(val?: number, left?: TreeNode | null, right?: TreeNode | null) {
+    this.val = (val === undefined ? 0 : val);
+    this.left = (left === undefined ? null : left);
+    this.right = (right === undefined ? null : right);
+  }
 }
 
 function invertTree(root: TreeNode | null): TreeNode | null {
-  if (!root) return null;
-  const temp = root.left;
-  root.left = invertTree(root.right);
-  root.right = invertTree(temp);
-  return root;
+  // Write your solution here
+  
 }`,
       cpp: `struct TreeNode {
     int val;
     TreeNode *left;
     TreeNode *right;
+    TreeNode() : val(0), left(nullptr), right(nullptr) {}
     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+    TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
 };
 
-TreeNode* invertTree(TreeNode* root) {
-    if (!root) return nullptr;
-    TreeNode* temp = root->left;
-    root->left = invertTree(root->right);
-    root->right = invertTree(temp);
-    return root;
-}`,
+class Solution {
+public:
+    TreeNode* invertTree(TreeNode* root) {
+        // Write your solution here
+        
+    }
+};`,
       java: `public class TreeNode {
     int val;
     TreeNode left;
     TreeNode right;
-    TreeNode(int x) { val = x; }
+    TreeNode() {}
+    TreeNode(int val) { this.val = val; }
+    TreeNode(int val, TreeNode left, TreeNode right) {
+        this.val = val;
+        this.left = left;
+        this.right = right;
+    }
 }
 
 class Solution {
     public TreeNode invertTree(TreeNode root) {
-        if (root == null) return null;
-        TreeNode temp = root.left;
-        root.left = invertTree(root.right);
-        root.right = invertTree(temp);
-        return root;
+        // Write your solution here
+        
     }
 }`
     },
@@ -2160,128 +1570,31 @@ class Solution {
     ],
     starterTemplates: {
       python: `def three_sum(nums: list[int]) -> list[list[int]]:
-    nums.sort()
-    result = []
-    n = len(nums)
-    
-    for i in range(n - 2):
-        if i > 0 and nums[i] == nums[i - 1]:
-            continue
-        left, right = i + 1, n - 1
-        while left < right:
-            total = nums[i] + nums[left] + nums[right]
-            if total == 0:
-                result.append([nums[i], nums[left], nums[right]])
-                while left < right and nums[left] == nums[left + 1]:
-                    left += 1
-                while left < right and nums[right] == nums[right - 1]:
-                    right -= 1
-                left += 1
-                right -= 1
-            elif total < 0:
-                left += 1
-            else:
-                right -= 1
-                
-    return result
-
-print(three_sum([-1, 0, 1, 2, -1, -4]))`,
+    # Write your solution here
+    pass`,
       javascript: `function threeSum(nums) {
-  nums.sort((a, b) => a - b);
-  const result = [];
-  const n = nums.length;
-
-  for (let i = 0; i < n - 2; i++) {
-    if (i > 0 && nums[i] === nums[i - 1]) continue;
-    let left = i + 1, right = n - 1;
-    while (left < right) {
-      const sum = nums[i] + nums[left] + nums[right];
-      if (sum === 0) {
-        result.push([nums[i], nums[left], nums[right]]);
-        while (left < right && nums[left] === nums[left + 1]) left++;
-        while (left < right && nums[right] === nums[right - 1]) right--;
-        left++;
-        right--;
-      } else if (sum < 0) {
-        left++;
-      } else {
-        right--;
-      }
-    }
-  }
-  return result;
-}
-
-console.log(threeSum([-1, 0, 1, 2, -1, -4]));`,
+  // Write your solution here
+  
+}`,
       typescript: `function threeSum(nums: number[]): number[][] {
-  nums.sort((a, b) => a - b);
-  const result: number[][] = [];
-  const n = nums.length;
-
-  for (let i = 0; i < n - 2; i++) {
-    if (i > 0 && nums[i] === nums[i - 1]) continue;
-    let left = i + 1, right = n - 1;
-    while (left < right) {
-      const sum = nums[i] + nums[left] + nums[right];
-      if (sum === 0) {
-        result.push([nums[i], nums[left], nums[right]]);
-        while (left < right && nums[left] === nums[left + 1]) left++;
-        while (left < right && nums[right] === nums[right - 1]) right--;
-        left++;
-        right--;
-      } else if (sum < 0) {
-        left++;
-      } else {
-        right--;
-      }
-    }
-  }
-  return result;
+  // Write your solution here
+  
 }`,
       cpp: `#include <vector>
-#include <algorithm>
 
-std::vector<std::vector<int>> threeSum(std::vector<int>& nums) {
-    std::sort(nums.begin(), nums.end());
-    std::vector<std::vector<int>> res;
-    int n = nums.size();
-    for (int i = 0; i < n - 2; ++i) {
-        if (i > 0 && nums[i] == nums[i - 1]) continue;
-        int l = i + 1, r = n - 1;
-        while (l < r) {
-            int s = nums[i] + nums[l] + nums[r];
-            if (s == 0) {
-                res.push_back({nums[i], nums[l], nums[r]});
-                while (l < r && nums[l] == nums[l + 1]) l++;
-                while (l < r && nums[r] == nums[r - 1]) r--;
-                l++; r--;
-            } else if (s < 0) l++;
-            else r--;
-        }
+class Solution {
+public:
+    std::vector<std::vector<int>> threeSum(std::vector<int>& nums) {
+        // Write your solution here
+        
     }
-    return res;
-}`,
+};`,
       java: `import java.util.*;
 
 class Solution {
     public List<List<Integer>> threeSum(int[] nums) {
-        Arrays.sort(nums);
-        List<List<Integer>> res = new ArrayList<>();
-        for (int i = 0; i < nums.length - 2; i++) {
-            if (i > 0 && nums[i] == nums[i - 1]) continue;
-            int l = i + 1, r = nums.length - 1;
-            while (l < r) {
-                int s = nums[i] + nums[l] + nums[r];
-                if (s == 0) {
-                    res.add(Arrays.asList(nums[i], nums[l], nums[r]));
-                    while (l < r && nums[l] == nums[l + 1]) l++;
-                    while (l < r && nums[r] == nums[r - 1]) r--;
-                    l++; r--;
-                } else if (s < 0) l++;
-                else r--;
-            }
-        }
-        return res;
+        // Write your solution here
+        
     }
 }`
     },
@@ -2331,88 +1644,29 @@ class Solution {
     ],
     starterTemplates: {
       python: `def product_except_self(nums: list[int]) -> list[int]:
-    n = len(nums)
-    output = [1] * n
-    
-    # Left prefix product
-    prefix = 1
-    for i in range(n):
-        output[i] = prefix
-        prefix *= nums[i]
-        
-    # Right suffix product
-    suffix = 1
-    for i in range(n - 1, -1, -1):
-        output[i] *= suffix
-        suffix *= nums[i]
-        
-    return output
-
-print(product_except_self([1, 2, 3, 4]))`,
+    # Write your solution here
+    pass`,
       javascript: `function productExceptSelf(nums) {
-  const n = nums.length;
-  const output = new Array(n).fill(1);
-  let prefix = 1;
-  for (let i = 0; i < n; i++) {
-    output[i] = prefix;
-    prefix *= nums[i];
-  }
-  let suffix = 1;
-  for (let i = n - 1; i >= 0; i--) {
-    output[i] *= suffix;
-    suffix *= nums[i];
-  }
-  return output;
-}
-
-console.log(productExceptSelf([1, 2, 3, 4]));`,
+  // Write your solution here
+  
+}`,
       typescript: `function productExceptSelf(nums: number[]): number[] {
-  const n = nums.length;
-  const output = new Array<number>(n).fill(1);
-  let prefix = 1;
-  for (let i = 0; i < n; i++) {
-    output[i] = prefix;
-    prefix *= nums[i];
-  }
-  let suffix = 1;
-  for (let i = n - 1; i >= 0; i--) {
-    output[i] *= suffix;
-    suffix *= nums[i];
-  }
-  return output;
+  // Write your solution here
+  
 }`,
       cpp: `#include <vector>
 
-std::vector<int> productExceptSelf(std::vector<int>& nums) {
-    int n = nums.size();
-    std::vector<int> output(n, 1);
-    int prefix = 1;
-    for (int i = 0; i < n; ++i) {
-        output[i] = prefix;
-        prefix *= nums[i];
+class Solution {
+public:
+    std::vector<int> productExceptSelf(std::vector<int>& nums) {
+        // Write your solution here
+        
     }
-    int suffix = 1;
-    for (int i = n - 1; i >= 0; --i) {
-        output[i] *= suffix;
-        suffix *= nums[i];
-    }
-    return output;
-}`,
+};`,
       java: `class Solution {
     public int[] productExceptSelf(int[] nums) {
-        int n = nums.length;
-        int[] output = new int[n];
-        int prefix = 1;
-        for (int i = 0; i < n; i++) {
-            output[i] = prefix;
-            prefix *= nums[i];
-        }
-        int suffix = 1;
-        for (int i = n - 1; i >= 0; i--) {
-            output[i] *= suffix;
-            suffix *= nums[i];
-        }
-        return output;
+        // Write your solution here
+        
     }
 }`
     },
@@ -2462,53 +1716,75 @@ std::vector<int> productExceptSelf(std::vector<int>& nums) {
       { id: 3, input: '[2, 2, 2]', expectedOutput: 'false', isHidden: true }
     ],
     starterTemplates: {
-      python: `def is_valid_bst(root) -> bool:
-    def validate(node, low=float('-inf'), high=float('inf')):
-        if not node:
-            return True
-        if not (low < node.val < high):
-            return False
-        return validate(node.left, low, node.val) and validate(node.right, node.val, high)
-    return validate(root)`,
-      javascript: `function isValidBST(root) {
-  function validate(node, low, high) {
-    if (!node) return true;
-    if (node.val <= low || node.val >= high) return false;
-    return validate(node.left, low, node.val) && validate(node.right, node.val, high);
-  }
-  return validate(root, -Infinity, Infinity);
+      python: `class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+def is_valid_bst(root: TreeNode) -> bool:
+    # Write your solution here
+    pass`,
+      javascript: `/**
+ * Definition for a binary tree node.
+ * function TreeNode(val, left, right) {
+ *     this.val = (val===undefined ? 0 : val)
+ *     this.left = (left===undefined ? null : left)
+ *     this.right = (right===undefined ? null : right)
+ * }
+ */
+function isValidBST(root) {
+  // Write your solution here
+  
 }`,
-      typescript: `interface TreeNode { val: number; left: TreeNode | null; right: TreeNode | null; }
-
-function isValidBST(root: TreeNode | null): boolean {
-  function validate(node: TreeNode | null, low: number, high: number): boolean {
-    if (!node) return true;
-    if (node.val <= low || node.val >= high) return false;
-    return validate(node.left, low, node.val) && validate(node.right, node.val, high);
+      typescript: `class TreeNode {
+  val: number;
+  left: TreeNode | null;
+  right: TreeNode | null;
+  constructor(val?: number, left?: TreeNode | null, right?: TreeNode | null) {
+    this.val = (val === undefined ? 0 : val);
+    this.left = (left === undefined ? null : left);
+    this.right = (right === undefined ? null : right);
   }
-  return validate(root, -Infinity, Infinity);
-}`,
-      cpp: `#include <climits>
-
-struct TreeNode { int val; TreeNode *left; TreeNode *right; };
-
-bool validate(TreeNode* node, long long low, long long high) {
-    if (!node) return true;
-    if (node->val <= low || node->val >= high) return false;
-    return validate(node->left, low, node->val) && validate(node->right, node->val, high);
 }
 
-bool isValidBST(TreeNode* root) {
-    return validate(root, -1e18, 1e18);
+function isValidBST(root: TreeNode | null): boolean {
+  // Write your solution here
+  
 }`,
-      java: `class Solution {
-    public boolean isValidBST(TreeNode root) {
-        return validate(root, Long.MIN_VALUE, Long.MAX_VALUE);
+      cpp: `struct TreeNode {
+    int val;
+    TreeNode *left;
+    TreeNode *right;
+    TreeNode() : val(0), left(nullptr), right(nullptr) {}
+    TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+    TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+};
+
+class Solution {
+public:
+    bool isValidBST(TreeNode* root) {
+        // Write your solution here
+        
     }
-    private boolean validate(TreeNode node, long low, long high) {
-        if (node == null) return true;
-        if (node.val <= low || node.val >= high) return false;
-        return validate(node.left, low, node.val) && validate(node.right, node.val, high);
+};`,
+      java: `public class TreeNode {
+    int val;
+    TreeNode left;
+    TreeNode right;
+    TreeNode() {}
+    TreeNode(int val) { this.val = val; }
+    TreeNode(int val, TreeNode left, TreeNode right) {
+        this.val = val;
+        this.left = left;
+        this.right = right;
+    }
+}
+
+class Solution {
+    public boolean isValidBST(TreeNode root) {
+        // Write your solution here
+        
     }
 }`
     },
@@ -2553,92 +1829,30 @@ bool isValidBST(TreeNode* root) {
       { id: 2, input: 'A=[[1,0],[0,1]], B=[[7,9],[4,2]]', expectedOutput: '[[7,9],[4,2]]' }
     ],
     starterTemplates: {
-      python: `def multiply_matrices(A: list[list[float]], B: list[list[float]]) -> list[list[float]]:
-    if not A or not B or len(A[0]) != len(B):
-        return []
-    
-    m, k, n = len(A), len(A[0]), len(B[0])
-    C = [[0.0] * n for _ in range(m)]
-    
-    for i in range(m):
-        for p in range(k):
-            if A[i][p] != 0:
-                for j in range(n):
-                    C[i][j] += A[i][p] * B[p][j]
-                    
-    return C
-
-print(multiply_matrices([[1, 2], [3, 4]], [[5, 6], [7, 8]]))`,
-      javascript: `function multiplyMatrices(A, B) {
-  if (!A.length || !B.length || A[0].length !== B.length) return [];
-  const m = A.length;
-  const k = A[0].length;
-  const n = B[0].length;
-  const C = Array.from({ length: m }, () => new Array(n).fill(0));
-
-  for (let i = 0; i < m; i++) {
-    for (let p = 0; p < k; p++) {
-      if (A[i][p] !== 0) {
-        for (let j = 0; j < n; j++) {
-          C[i][j] += A[i][p] * B[p][j];
-        }
-      }
-    }
-  }
-  return C;
-}
-
-console.log(multiplyMatrices([[1, 2], [3, 4]], [[5, 6], [7, 8]]));`,
-      typescript: `function multiplyMatrices(A: number[][], B: number[][]): number[][] {
-  if (!A.length || !B.length || A[0].length !== B.length) return [];
-  const m = A.length;
-  const k = A[0].length;
-  const n = B[0].length;
-  const C: number[][] = Array.from({ length: m }, () => new Array(n).fill(0));
-
-  for (let i = 0; i < m; i++) {
-    for (let p = 0; p < k; p++) {
-      if (A[i][p] !== 0) {
-        for (let j = 0; j < n; j++) {
-          C[i][j] += A[i][p] * B[p][j];
-        }
-      }
-    }
-  }
-  return C;
+      python: `def matmul(A: list[list[float]], B: list[list[float]]) -> list[list[float]]:
+    # Write your matrix multiplication solution here
+    pass`,
+      javascript: `function matmul(A, B) {
+  // Write your matrix multiplication solution here
+  
+}`,
+      typescript: `function matmul(A: number[][], B: number[][]): number[][] {
+  // Write your matrix multiplication solution here
+  
 }`,
       cpp: `#include <vector>
 
-std::vector<std::vector<double>> multiplyMatrices(const std::vector<std::vector<double>>& A, const std::vector<std::vector<double>>& B) {
-    if (A.empty() || B.empty() || A[0].size() != B.size()) return {};
-    int m = A.size(), k = A[0].size(), n = B[0].size();
-    std::vector<std::vector<double>> C(m, std::vector<double>(n, 0.0));
-    for (int i = 0; i < m; ++i) {
-        for (int p = 0; p < k; ++p) {
-            if (A[i][p] != 0.0) {
-                for (int j = 0; j < n; ++j) {
-                    C[i][j] += A[i][p] * B[p][j];
-                }
-            }
-        }
+class Solution {
+public:
+    std::vector<std::vector<double>> matmul(const std::vector<std::vector<double>>& A, const std::vector<std::vector<double>>& B) {
+        // Write your matrix multiplication solution here
+        
     }
-    return C;
-}`,
+};`,
       java: `class Solution {
-    public double[][] multiplyMatrices(double[][] A, double[][] B) {
-        if (A.length == 0 || B.length == 0 || A[0].length != B.length) return new double[0][0];
-        int m = A.length, k = A[0].length, n = B[0].length;
-        double[][] C = new double[m][n];
-        for (int i = 0; i < m; i++) {
-            for (int p = 0; p < k; p++) {
-                if (A[i][p] != 0.0) {
-                    for (int j = 0; j < n; j++) {
-                        C[i][j] += A[i][p] * B[p][j];
-                    }
-                }
-            }
-        }
-        return C;
+    public double[][] matmul(double[][] A, double[][] B) {
+        // Write your matrix multiplication solution here
+        
     }
 }`
     },
@@ -2687,71 +1901,70 @@ lRUCache.get(4);    // returns 4`,
     starterTemplates: {
       python: `class LRUCache:
     def __init__(self, capacity: int):
-        self.capacity = capacity
-        self.cache = {}
+        # Write your solution here
+        pass
 
     def get(self, key: int) -> int:
-        if key not in self.cache:
-            return -1
-        val = self.cache.pop(key)
-        self.cache[key] = val
-        return val
+        pass
 
     def put(self, key: int, value: int) -> None:
-        if key in self.cache:
-            self.cache.pop(key)
-        elif len(self.cache) >= self.capacity:
-            oldest_key = next(iter(self.cache))
-            del self.cache[oldest_key]
-        self.cache[key] = value`,
+        pass`,
       javascript: `class LRUCache {
   constructor(capacity) {
-    this.capacity = capacity;
-    this.map = new Map();
+    // Write your solution here
   }
+
   get(key) {
-    if (!this.map.has(key)) return -1;
-    const val = this.map.get(key);
-    this.map.delete(key);
-    this.map.set(key, val);
-    return val;
+    // Write your solution here
   }
+
   put(key, value) {
-    if (this.map.has(key)) {
-      this.map.delete(key);
-    } else if (this.map.size >= this.capacity) {
-      const oldestKey = this.map.keys().next().value;
-      this.map.delete(oldestKey);
-    }
-    this.map.set(key, value);
+    // Write your solution here
   }
 }`,
       typescript: `class LRUCache {
-  private capacity: number;
-  private map: Map<number, number>;
   constructor(capacity: number) {
-    this.capacity = capacity;
-    this.map = new Map<number, number>();
+    // Write your solution here
   }
+
   get(key: number): number {
-    if (!this.map.has(key)) return -1;
-    const val = this.map.get(key)!;
-    this.map.delete(key);
-    this.map.set(key, val);
-    return val;
+    // Write your solution here
+    return -1;
   }
+
   put(key: number, value: number): void {
-    if (this.map.has(key)) {
-      this.map.delete(key);
-    } else if (this.map.size >= this.capacity) {
-      const oldestKey = this.map.keys().next().value;
-      if (oldestKey !== undefined) this.map.delete(oldestKey);
-    }
-    this.map.set(key, value);
+    // Write your solution here
   }
 }`,
-      cpp: `// C++ LRU Cache with std::list and std::unordered_map`,
-      java: `// Java LinkedHashMap Solution`
+      cpp: `class LRUCache {
+public:
+    LRUCache(int capacity) {
+        // Write your solution here
+    }
+    
+    int get(int key) {
+        // Write your solution here
+        return -1;
+    }
+    
+    void put(int key, int value) {
+        // Write your solution here
+    }
+};`,
+      java: `class LRUCache {
+    public LRUCache(int capacity) {
+        // Write your solution here
+    }
+    
+    public int get(int key) {
+        // Write your solution here
+        return -1;
+    }
+    
+    public void put(int key, int value) {
+        // Write your solution here
+    }
+}`
     },
     hints: [
       'Hash table gives O(1) key lookup, and Doubly Linked List gives O(1) node removal and insertion at head.',
@@ -2784,50 +1997,33 @@ lRUCache.get(4);    // returns 4`,
     ],
     starterTemplates: {
       python: `def merge(intervals: list[list[int]]) -> list[list[int]]:
-    intervals.sort(key=lambda x: x[0])
-    merged = []
-    for interval in intervals:
-        if not merged or merged[-1][1] < interval[0]:
-            merged.append(interval)
-        else:
-            merged[-1][1] = max(merged[-1][1], interval[1])
-    return merged
-
-print(merge([[1,3],[2,6],[8,10],[15,18]]))`,
+    # Write your solution here
+    pass`,
       javascript: `function merge(intervals) {
-  if (intervals.length <= 1) return intervals;
-  intervals.sort((a, b) => a[0] - b[0]);
-  const result = [intervals[0]];
-  for (let i = 1; i < intervals.length; i++) {
-    const current = intervals[i];
-    const prev = result[result.length - 1];
-    if (current[0] <= prev[1]) {
-      prev[1] = Math.max(prev[1], current[1]);
-    } else {
-      result.push(current);
-    }
-  }
-  return result;
-}
-
-console.log(merge([[1,3],[2,6],[8,10],[15,18]]));`,
-      typescript: `function merge(intervals: number[][]): number[][] {
-  if (intervals.length <= 1) return intervals;
-  intervals.sort((a, b) => a[0] - b[0]);
-  const result: number[][] = [intervals[0]];
-  for (let i = 1; i < intervals.length; i++) {
-    const current = intervals[i];
-    const prev = result[result.length - 1];
-    if (current[0] <= prev[1]) {
-      prev[1] = Math.max(prev[1], current[1]);
-    } else {
-      result.push(current);
-    }
-  }
-  return result;
+  // Write your solution here
+  
 }`,
-      cpp: `// C++ Merge Intervals with std::sort`,
-      java: `// Java Solution`
+      typescript: `function merge(intervals: number[][]): number[][] {
+  // Write your solution here
+  
+}`,
+      cpp: `#include <vector>
+
+class Solution {
+public:
+    std::vector<std::vector<int>> merge(std::vector<std::vector<int>>& intervals) {
+        // Write your solution here
+        
+    }
+};`,
+      java: `import java.util.*;
+
+class Solution {
+    public int[][] merge(int[][] intervals) {
+        // Write your solution here
+        
+    }
+}`
     },
     hints: [
       'Sort intervals by their starting timestamp.',
@@ -2858,61 +2054,31 @@ console.log(merge([[1,3],[2,6],[8,10],[15,18]]));`,
     ],
     starterTemplates: {
       python: `def trap(height: list[int]) -> int:
-    left, right = 0, len(height) - 1
-    left_max, right_max = 0, 0
-    water = 0
-    while left < right:
-        if height[left] < height[right]:
-            if height[left] >= left_max:
-                left_max = height[left]
-            else:
-                water += left_max - height[left]
-            left += 1
-        else:
-            if height[right] >= right_max:
-                right_max = height[right]
-            else:
-                water += right_max - height[right]
-            right -= 1
-    return water
-
-print(trap([0,1,0,2,1,0,1,3,2,1,2,1]))`,
+    # Write your solution here
+    pass`,
       javascript: `function trap(height) {
-  let left = 0, right = height.length - 1;
-  let leftMax = 0, rightMax = 0;
-  let water = 0;
-  while (left < right) {
-    if (height[left] < height[right]) {
-      if (height[left] >= leftMax) leftMax = height[left];
-      else water += leftMax - height[left];
-      left++;
-    } else {
-      if (height[right] >= rightMax) rightMax = height[right];
-      else water += rightMax - height[right];
-      right--;
-    }
-  }
-  return water;
+  // Write your solution here
+  
 }`,
       typescript: `function trap(height: number[]): number {
-  let left = 0, right = height.length - 1;
-  let leftMax = 0, rightMax = 0;
-  let water = 0;
-  while (left < right) {
-    if (height[left] < height[right]) {
-      if (height[left] >= leftMax) leftMax = height[left];
-      else water += leftMax - height[left];
-      left++;
-    } else {
-      if (height[right] >= rightMax) rightMax = height[right];
-      else water += rightMax - height[right];
-      right--;
-    }
-  }
-  return water;
+  // Write your solution here
+  
 }`,
-      cpp: `// C++ solution`,
-      java: `// Java solution`
+      cpp: `#include <vector>
+
+class Solution {
+public:
+    int trap(std::vector<int>& height) {
+        // Write your solution here
+        
+    }
+};`,
+      java: `class Solution {
+    public int trap(int[] height) {
+        // Write your solution here
+        
+    }
+}`
     },
     hints: ['Two pointers tracking leftMax and rightMax inwards achieves O(1) extra space.'],
     optimalComplexity: { time: 'O(n)', space: 'O(1)' },
