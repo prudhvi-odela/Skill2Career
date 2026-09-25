@@ -4,8 +4,8 @@ FROM node:20-bookworm-slim AS builder
 WORKDIR /app
 
 # Copy dependency specifications
-COPY package*.json ./
-RUN npm install --include=optional
+COPY package.json ./
+RUN npm install --no-package-lock --include=optional
 
 # Copy source code and build production assets
 COPY . .
@@ -21,8 +21,8 @@ ENV NODE_ENV=production
 ENV PORT=3000
 
 # Install production dependencies only
-COPY package*.json ./
-RUN npm install --omit=dev --include=optional
+COPY package.json ./
+RUN npm install --omit=dev --no-package-lock --include=optional
 
 # Copy compiled frontend and bundled backend server
 COPY --from=builder /app/dist ./dist

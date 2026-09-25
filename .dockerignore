@@ -6,3 +6,5 @@ dist
 .DS_Store
 .dev.env.json
 .dev.pid
+package-lock.json
+
