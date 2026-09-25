@@ -319,5 +319,169 @@
       "usr_qrrq2wq",
       []
     ]
+  ],
+  "savedJobs": [
+    [
+      "usr_demo_01",
+      []
+    ]
+  ],
+  "cachedJobs": [
+    [
+      "adzuna_in_99887766",
+      {
+        "id": "adzuna_in_99887766",
+        "source_id": "99887766",
+        "source": "adzuna",
+        "title": "Junior Software Engineer - Python / React",
+        "company_name": "TechCorp India Solutions",
+        "company_initials": "TI",
+        "description": "We are seeking a Junior Software Developer with hands-on skills in Python, FastAPI, Docker, and React. Must understand SQL and Git. Freshers with B.Tech in CS/IT are welcome. 100% Remote flexibility.",
+        "required_skills": [
+          "Python",
+          "SQL",
+          "React",
+          "FastAPI",
+          "Docker & Containerization",
+          "Git & Version Control",
+          "Docker",
+          "Git"
+        ],
+        "employment_type": "Full-Time",
+        "experience_level": "Entry-Level / Fresher",
+        "education_requirements": "B.Tech",
+        "salary_min": 650000,
+        "salary_max": 950000,
+        "salary_currency": "INR",
+        "salary_is_predicted": false,
+        "salary_formatted": "₹6.5 – ₹9.5 LPA",
+        "city": "Bengaluru",
+        "state": "Karnataka",
+        "country": "IN",
+        "location_display": "Bengaluru, Karnataka",
+        "work_mode": "Remote",
+        "application_url": "https://www.adzuna.in/land/ad/99887766?se=test",
+        "original_url": "https://www.adzuna.in/land/ad/99887766?se=test",
+        "posting_date": "2026-03-20T10:00:00.000Z",
+        "application_deadline": null,
+        "fetched_at": "2026-09-25T18:21:13.508Z",
+        "status": "active",
+        "category_tag": "it-jobs",
+        "category_label": "IT Jobs"
+      }
+    ],
+    [
+      "99887766",
+      {
+        "id": "adzuna_in_99887766",
+        "source_id": "99887766",
+        "source": "adzuna",
+        "title": "Junior Software Engineer - Python / React",
+        "company_name": "TechCorp India Solutions",
+        "company_initials": "TI",
+        "description": "We are seeking a Junior Software Developer with hands-on skills in Python, FastAPI, Docker, and React. Must understand SQL and Git. Freshers with B.Tech in CS/IT are welcome. 100% Remote flexibility.",
+        "required_skills": [
+          "Python",
+          "SQL",
+          "React",
+          "FastAPI",
+          "Docker & Containerization",
+          "Git & Version Control",
+          "Docker",
+          "Git"
+        ],
+        "employment_type": "Full-Time",
+        "experience_level": "Entry-Level / Fresher",
+        "education_requirements": "B.Tech",
+        "salary_min": 650000,
+        "salary_max": 950000,
+        "salary_currency": "INR",
+        "salary_is_predicted": false,
+        "salary_formatted": "₹6.5 – ₹9.5 LPA",
+        "city": "Bengaluru",
+        "state": "Karnataka",
+        "country": "IN",
+        "location_display": "Bengaluru, Karnataka",
+        "work_mode": "Remote",
+        "application_url": "https://www.adzuna.in/land/ad/99887766?se=test",
+        "original_url": "https://www.adzuna.in/land/ad/99887766?se=test",
+        "posting_date": "2026-03-20T10:00:00.000Z",
+        "application_deadline": null,
+        "fetched_at": "2026-09-25T18:21:13.508Z",
+        "status": "active",
+        "category_tag": "it-jobs",
+        "category_label": "IT Jobs"
+      }
+    ],
+    [
+      "test_job_1",
+      {
+        "id": "test_job_1",
+        "source_id": "1",
+        "source": "adzuna",
+        "title": "Full Stack Developer",
+        "company_name": "Infosys",
+        "company_initials": "IN",
+        "description": "React and Node.js developer",
+        "required_skills": [
+          "React",
+          "Node.js"
+        ],
+        "employment_type": "Full-Time",
+        "experience_level": "Junior",
+        "education_requirements": "B.Tech",
+        "salary_min": 600000,
+        "salary_max": 900000,
+        "salary_currency": "INR",
+        "salary_is_predicted": false,
+        "salary_formatted": "₹6.0 – ₹9.0 LPA",
+        "city": "Bengaluru",
+        "state": "Karnataka",
+        "country": "IN",
+        "location_display": "Bengaluru, Karnataka",
+        "work_mode": "On-Site",
+        "application_url": "https://example.com/apply",
+        "original_url": "https://example.com/apply",
+        "posting_date": "2026-03-25T00:00:00Z",
+        "application_deadline": null,
+        "fetched_at": "2026-03-25T00:00:00Z",
+        "status": "active"
+      }
+    ],
+    [
+      "1",
+      {
+        "id": "test_job_1",
+        "source_id": "1",
+        "source": "adzuna",
+        "title": "Full Stack Developer",
+        "company_name": "Infosys",
+        "company_initials": "IN",
+        "description": "React and Node.js developer",
+        "required_skills": [
+          "React",
+          "Node.js"
+        ],
+        "employment_type": "Full-Time",
+        "experience_level": "Junior",
+        "education_requirements": "B.Tech",
+        "salary_min": 600000,
+        "salary_max": 900000,
+        "salary_currency": "INR",
+        "salary_is_predicted": false,
+        "salary_formatted": "₹6.0 – ₹9.0 LPA",
+        "city": "Bengaluru",
+        "state": "Karnataka",
+        "country": "IN",
+        "location_display": "Bengaluru, Karnataka",
+        "work_mode": "On-Site",
+        "application_url": "https://example.com/apply",
+        "original_url": "https://example.com/apply",
+        "posting_date": "2026-03-25T00:00:00Z",
+        "application_deadline": null,
+        "fetched_at": "2026-03-25T00:00:00Z",
+        "status": "active"
+      }
+    ]
   ]
 }

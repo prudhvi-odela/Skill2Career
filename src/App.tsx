@@ -24,11 +24,11 @@ import { BranchCurriculumPage } from './pages/BranchCurriculumPage';
 import { OAuthCallbackPage } from './pages/OAuthCallbackPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 
-// Placement-Ops-AI Reference Pages
 import { PlacementOpsPage } from './pages/PlacementOpsPage';
 import { ResumeAIPage } from './pages/ResumeAIPage';
 import { AssessmentsPage } from './pages/AssessmentsPage';
 import { AICopilotPage } from './pages/AICopilotPage';
+import { JobsPage } from './pages/JobsPage';
 import FacultyDiscoveryDashboard from './components/dashboards/FacultyDiscoveryDashboard';
 import { LogoLoader } from './components/LogoLoader';
 
@@ -97,11 +97,13 @@ export const App: React.FC = () => {
             <Route path="/chat" element={<Navigate to="/app/chat" replace />} />
             <Route path="/placement-ops" element={<Navigate to="/app/placement-ops" replace />} />
             <Route path="/agent-13" element={<Navigate to="/app/agent-13" replace />} />
+            <Route path="/jobs" element={<Navigate to="/app/jobs" replace />} />
 
             {/* Protected Student Portal & Placement Operations Suite */}
             <Route path="/app" element={<ProtectedLayout />}>
               <Route index element={<Navigate to="/app/dashboard" replace />} />
               <Route path="dashboard" element={<DashboardPage />} />
+              <Route path="jobs" element={<JobsPage />} />
               <Route path="careers" element={<CareerExplorerPage />} />
               <Route path="careers/:careerId" element={<CareerDetailPage />} />
               <Route path="skill-gap" element={<SkillGapPage />} />

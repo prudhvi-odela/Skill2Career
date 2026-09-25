@@ -8,6 +8,8 @@
     "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
     "start": "node dist/server.cjs",
     "lint": "oxlint",
+    "test": "tsx tests/jobsModule.test.ts",
+    "test:jobs": "tsx tests/jobsModule.test.ts",
     "preview": "vite preview"
   },
   "dependencies": {

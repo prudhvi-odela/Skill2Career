@@ -11,8 +11,18 @@ import {
   Skill,
   CareerRole
 } from './seedData.js';
+import type { NormalizedJob } from './jobNormalization.js';
 
 const DB_FILE = path.resolve(process.cwd(), 'server', 'db_storage.json');
+
+export interface SavedJobRecord {
+  job_id: string;
+  saved_at: string;
+  job: NormalizedJob;
+  application_status: 'Interested' | 'Applied' | 'Interview' | 'Offer' | 'Rejected' | 'Withdrawn';
+  status_updated_at: string;
+  notes?: string;
+}
 
 export interface User {
   id: string;
@@ -93,6 +103,8 @@ class DataStore {
   peerReviews: Map<string, any[]> = new Map();
   conversations: Map<string, { id: string; title: string; messages: any[] }[]> = new Map();
   practiceAttempts: Map<string, any[]> = new Map();
+  savedJobs: Map<string, Map<string, SavedJobRecord>> = new Map();
+  cachedNormalizedJobs: Map<string, NormalizedJob> = new Map();
 
   constructor() {
     this.seedInitialData();
@@ -101,6 +113,11 @@ class DataStore {
 
   saveToDisk() {
     try {
+      const serializedSavedJobs: [string, [string, SavedJobRecord][]][] = [];
+      this.savedJobs.forEach((userMap, uid) => {
+        serializedSavedJobs.push([uid, Array.from(userMap.entries())]);
+      });
+
       const data = {
         users: Array.from(this.users.entries()),
         profiles: Array.from(this.profiles.entries()),
@@ -108,6 +125,8 @@ class DataStore {
         certifications: Array.from(this.certifications.entries()),
         workExperiences: Array.from(this.workExperiences.entries()),
         roadmaps: Array.from(this.roadmaps.entries()),
+        savedJobs: serializedSavedJobs,
+        cachedJobs: Array.from(this.cachedNormalizedJobs.entries()).slice(0, 150),
       };
       fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
     } catch (e) {
@@ -126,6 +145,19 @@ class DataStore {
         if (Array.isArray(data.certifications)) data.certifications.forEach(([k, v]: any) => this.certifications.set(k, v));
         if (Array.isArray(data.workExperiences)) data.workExperiences.forEach(([k, v]: any) => this.workExperiences.set(k, v));
         if (Array.isArray(data.roadmaps)) data.roadmaps.forEach(([k, v]: any) => this.roadmaps.set(k, v));
+
+        if (Array.isArray(data.savedJobs)) {
+          data.savedJobs.forEach(([uid, entries]: any) => {
+            if (Array.isArray(entries)) {
+              const userMap = new Map<string, SavedJobRecord>();
+              entries.forEach(([jid, rec]: any) => userMap.set(jid, rec));
+              this.savedJobs.set(uid, userMap);
+            }
+          });
+        }
+        if (Array.isArray(data.cachedJobs)) {
+          data.cachedJobs.forEach(([k, v]: any) => this.cachedNormalizedJobs.set(k, v));
+        }
       }
     } catch (e) {
       console.warn('Could not load data store from disk:', e);
@@ -645,6 +677,113 @@ class DataStore {
         { week: 12, milestone: 'Pass Senior ML Engineer Mock Technical Interview' }
       ]
     };
+  }
+
+  // -------------------------------------------------------------
+  // Jobs & Internships Persistence Methods
+  // -------------------------------------------------------------
+
+  cacheJob(job: NormalizedJob) {
+    if (!job || !job.id) return;
+    this.cachedNormalizedJobs.set(job.id, job);
+    if (job.source_id) {
+      this.cachedNormalizedJobs.set(job.source_id, job);
+    }
+  }
+
+  getCachedJob(jobId: string): NormalizedJob | null {
+    if (!jobId) return null;
+    return this.cachedNormalizedJobs.get(jobId) || null;
+  }
+
+  saveJob(userId: string, job: NormalizedJob): SavedJobRecord {
+    this.cacheJob(job);
+    let userSaved = this.savedJobs.get(userId);
+    if (!userSaved) {
+      userSaved = new Map();
+      this.savedJobs.set(userId, userSaved);
+    }
+
+    const existing = userSaved.get(job.id);
+    const now = new Date().toISOString();
+    const record: SavedJobRecord = {
+      job_id: job.id,
+      saved_at: existing?.saved_at || now,
+      job,
+      application_status: existing?.application_status || 'Interested',
+      status_updated_at: now,
+      notes: existing?.notes || '',
+    };
+
+    userSaved.set(job.id, record);
+    this.saveToDisk();
+    return record;
+  }
+
+  unsaveJob(userId: string, jobId: string): boolean {
+    const userSaved = this.savedJobs.get(userId);
+    if (!userSaved) return false;
+    const deleted = userSaved.delete(jobId);
+    if (deleted) {
+      this.saveToDisk();
+    }
+    return deleted;
+  }
+
+  isJobSaved(userId: string, jobId: string): boolean {
+    const userSaved = this.savedJobs.get(userId);
+    if (!userSaved) return false;
+    return userSaved.has(jobId);
+  }
+
+  getSavedJobs(userId: string): SavedJobRecord[] {
+    const userSaved = this.savedJobs.get(userId);
+    if (!userSaved) return [];
+    return Array.from(userSaved.values()).sort(
+      (a, b) => new Date(b.saved_at).getTime() - new Date(a.saved_at).getTime()
+    );
+  }
+
+  updateJobApplicationStatus(
+    userId: string,
+    jobId: string,
+    status: 'Interested' | 'Applied' | 'Interview' | 'Offer' | 'Rejected' | 'Withdrawn',
+    notes?: string
+  ): SavedJobRecord | null {
+    let userSaved = this.savedJobs.get(userId);
+    if (!userSaved) {
+      userSaved = new Map();
+      this.savedJobs.set(userId, userSaved);
+    }
+
+    let record = userSaved.get(jobId);
+    const now = new Date().toISOString();
+
+    if (!record) {
+      // If not previously saved, check cached job
+      const cached = this.getCachedJob(jobId);
+      if (!cached) {
+        return null;
+      }
+      record = {
+        job_id: jobId,
+        saved_at: now,
+        job: cached,
+        application_status: status,
+        status_updated_at: now,
+        notes: notes || '',
+      };
+    } else {
+      record.application_status = status;
+      record.status_updated_at = now;
+      if (notes !== undefined) {
+        record.notes = notes;
+      }
+    }
+
+    userSaved.set(jobId, record);
+    this.saveToDisk();
+    return record;
   }
 }
 

@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, Compass, GitCommit, Target, Trophy,
-  Sparkles, Award, User, Bot, ShieldCheck
+  Sparkles, Award, User, Bot, ShieldCheck, Briefcase
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -22,6 +22,7 @@ const SIDEBAR_SECTIONS: SidebarSection[] = [
     title: 'SKILL-TO-CAREER',
     items: [
       { path: '/app/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { path: '/app/jobs', label: 'Jobs & Internships', icon: Briefcase },
       { path: '/app/careers', label: 'Career Explorer', icon: Compass },
       { path: '/app/skill-gap', label: 'Skill Gap Engine', icon: Target },
       { path: '/app/trajectory', label: 'Learning Trajectory', icon: GitCommit },

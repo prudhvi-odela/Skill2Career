@@ -29,6 +29,7 @@ import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI } from '@google/genai';
 import { store } from './server/store.js';
 import { placementOpsRouter } from './server/placementOpsRoutes.js';
+import { jobsRouter } from './server/jobsRoutes.js';
 import {
   SKILLS_CATALOG,
   CAREER_ROLES,
@@ -59,6 +60,10 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 // Mount Placement-Ops-AI Multi-Agent router
 app.use(placementOpsRouter);
 app.use('/api/v1', placementOpsRouter);
+
+// Mount Skill2Career Real-Time Jobs & Internships router
+app.use('/api/jobs', jobsRouter);
+app.use('/api/v1/jobs', jobsRouter);
 
 // Helper for user extraction from Bearer token
 function getUserIdFromReq(req: express.Request): string {
