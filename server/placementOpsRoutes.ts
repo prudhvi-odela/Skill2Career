@@ -1047,12 +1047,16 @@ function withTimeout<T>(promise: Promise<T>, ms = 2000): Promise<T> {
 
 // ── Multi-Agent AI Chat Co-Pilot ────────────────────────────────
 placementOpsRouter.post(['/ai/chat', '/api/ai/chat'], async (req, res) => {
-  const { message, model, history } = req.body || {};
+  const { message, model, history, branch, subject, role } = req.body || {};
   const query = (message || '').trim();
 
   if (!query) {
     return res.status(400).json({ error: 'Message cannot be empty.' });
   }
+
+  const activeBranch = branch || 'Engineering';
+  const activeRole = role || 'Engineering Specialist';
+  const activeSubject = subject || 'Core Engineering Subject';
 
   // Real Gemini AI Integration
   const ai = getAI();
@@ -1079,21 +1083,28 @@ placementOpsRouter.post(['/ai/chat', '/api/ai/chat'], async (req, res) => {
         parts: [{ text: query }]
       });
 
-      const systemInstruction = `You are Skill2Career AI, a conversational technical mentor, CS tutor, and career copilot powered by Google Gemini (providing deep, real, and helpful responses like ChatGPT and Gemini).
+      const systemInstruction = `You are Skill2Career Universal AI Engineering & Educational Mentor, an elite, comprehensive conversational tutor and advisor across ALL engineering branches (Computer Science, Electronics & Communication, Mechanical, Civil, Electrical, Chemical, Biotechnology, Aerospace, Robotics, and Data Science).
 
-Guidelines:
-1. Provide real, natural, deep, and conversational answers just like ChatGPT and Gemini. Never use repetitive or static template responses.
-2. If asked about programming or technical topics (Python, TypeScript, React, SQL, FastAPI, Docker, Algorithms, System Design), provide clean, production-grade code, clear explanations, and complexity analysis.
-3. If asked about career preparation, daily study routines, or interview prep, provide realistic, actionable advice with structured guidance and official learning resources.
-4. If asked general or open-ended questions, respond warmly, intelligently, and helpfully.
-5. Format with clean GitHub Markdown (headings, bullet points, bolding, syntax-highlighted code blocks).`;
+Active Student Context:
+- Discipline / Branch: ${activeBranch}
+- Focus Subject / Topic: ${activeSubject}
+- Target Career Role: ${activeRole}
+
+Educational & Conversational Guidelines:
+1. Provide rich, deep, and conversational answers just like ChatGPT or Gemini across ANY engineering discipline.
+2. If asked about an engineering concept or theory, explain the physical intuition, mathematical governing equations, thermodynamic/fluid/electrical laws, and real-world industrial relevance.
+3. If asked for formula derivations or mathematical problems, provide step-by-step proofs with clear notation, boundary conditions, and units.
+4. If asked about lab/simulation software (MATLAB, Simulink, ANSYS, SolidWorks, AutoCAD, ETABS, Revit, Cadence, Aspen Plus, ROS2, PyTorch, Docker, etc.), provide clear step-by-step software workflows.
+5. If asked about semester exam preparation or competitive exams (GATE, ESE, FE/PE), provide high-yield question patterns, formulas, and shortcut techniques.
+6. If asked for resume advice, formulate high-impact Google STAR / X-Y-Z bullet points tailored specifically to their engineering branch.
+7. Format responses cleanly with GitHub Markdown headers, LaTeX-style equations, and bullet points.`;
 
       const candidateModels = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'];
-      for (const model of candidateModels) {
+      for (const modelCandidate of candidateModels) {
         try {
           const response = await withTimeout(
             ai.models.generateContent({
-              model,
+              model: modelCandidate,
               contents,
               config: {
                 systemInstruction,
@@ -1108,186 +1119,41 @@ Guidelines:
             return res.json({ reply: text, message: text });
           }
         } catch (mErr: any) {
-          console.warn(`Model ${model} in placementOpsRouter failed:`, mErr?.message || mErr);
+          console.warn(`Model ${modelCandidate} in placementOpsRouter failed:`, mErr?.message || mErr);
         }
       }
     } catch (err: any) {
       console.error('Gemini Chat in placementOpsRouter encountered an error:', err?.message || err);
-      // Continue to intelligent fallback
     }
   }
 
-  // Grounded Deterministic Intelligence Engine
+  // Grounded Deterministic Multi-Branch Intelligence Engine
   const msgLower = query.toLowerCase();
   let reply = '';
 
-  if (
-    msgLower.includes('what to prepare today') ||
-    msgLower.includes('what should i prepare') ||
-    msgLower.includes('today schedule') ||
-    msgLower.includes('daily plan') ||
-    msgLower.includes('study plan today') ||
-    msgLower === 'today'
-  ) {
-    reply = `### 📅 High-Yield Daily Preparation Plan for Today
-
-Here is your structured 4-stage placement readiness schedule engineered for maximum retention and interview performance:
-
----
-
-#### ⏱️ **Block 1: Data Structures & Algorithms (60 Minutes)**
-- **Focus Topic**: Binary Search & Two-Pointer Patterns (e.g., Search in Rotated Sorted Array, Container With Most Water)
-- **Goal**: Solve 2 LeetCode Medium problems under 25 minutes each without looking at hints.
-- **Resource Link**: 🌐 [NeetCode 150 Blind Roadmap](https://neetcode.io/roadmap) | 🌐 [LeetCode Algorithms Plan](https://leetcode.com/studyplan/blind-75/)
-
----
-
-#### ⏱️ **Block 2: Core Engineering Stack & System Building (90 Minutes)**
-- **Focus Topic**: Asynchronous APIs & Database Indexing (FastAPI / Node.js + PostgreSQL)
-- **Goal**: Implement a clean CRUD service with input validation (Pydantic / Zod) and connection pooling.
-- **Resource Links**: 
-  - 🌐 [FastAPI Official Async Tutorial](https://fastapi.tiangolo.com/tutorial/)
-  - 🌐 [MDN JavaScript Event Loop & Microtasks](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Event_loop)
-  - 🌐 [PostgreSQL Indexing & B-Tree Guide](https://use-the-index-luke.com/)
-
----
-
-#### ⏱️ **Block 3: System Design & CS Fundamentals (45 Minutes)**
-- **Focus Topic**: Distributed Caching (Redis LRU Eviction & Write-Through vs Write-Back Caching)
-- **Goal**: Understand the CAP theorem tradeoffs and draw a high-level architecture diagram.
-- **Resource Links**:
-  - 🌐 [System Design Primer (GitHub)](https://github.com/donnemartin/system-design-primer)
-  - 🌐 [ByteByteGo Scalable Architecture Articles](https://bytebytego.com/)
-
----
-
-#### ⏱️ **Block 4: Diagnostic Assessment Verification (15 Minutes)**
-- **Goal**: Complete today's topic assessment to benchmark your retention and earn a verified skill badge on your profile!
-- **Recommended Quiz**: **Python Core & OOP Assessment** or **React Architecture Assessment** in the **Assessment Center**.
-
-*Would you like me to quiz you right now on any of these topics, or generate a customized schedule for a specific tech stack (e.g. AI/ML or Cloud/DevOps)?*`;
-  } else if (
-    msgLower.includes('how to prepare today') ||
-    msgLower.includes('how to prepare') ||
-    msgLower.includes('preparation strategy') ||
-    msgLower.includes('how should i study')
-  ) {
-    reply = `### 🚀 Step-by-Step Technical Preparation Blueprint
-
-To maximize your placement readiness and ace top-tier technical interviews, follow this proven 5-step methodology:
-
----
-
-#### 1️⃣ **Active Recall over Passive Reading (25m Pomodoro Blocks)**
-Avoid passively reading tutorials. Instead, immediately write code from scratch after reading a concept. Test edge cases manually in your terminal.
-
-#### 2️⃣ **Solve Problems with the UMPIRE Technique**
-- **Understand**: Clarify input constraints (e.g. integer ranges, empty arrays).
-- **Match**: Identify the algorithmic paradigm (Hash Map, Two Pointers, Sliding Window, BFS/DFS).
-- **Plan**: Write pseudocode before typing executable code.
-- **Implement**: Write clean, modular functions.
-- **Review**: Dry run with custom test vectors.
-- **Evaluate**: State exact Big-O time and space complexity.
-
-#### 🌐 **Essential Chrome Learning Links & Documentation**:
-- 🔗 [Python 3 Official Tutorial](https://docs.python.org/3/tutorial/) — Core standard library and data structures.
-- 🔗 [React.dev Official Guide](https://react.dev/learn) — Modern hooks, component lifecycle, and state immutability.
-- 🔗 [FastAPI User Guide](https://fastapi.tiangolo.com) — High-performance REST APIs with automatic OpenAPI specs.
-- 🔗 [PyTorch Official Tutorials](https://pytorch.org/tutorials/) — Tensors, autograd, and deep neural nets.
-- 🔗 [NeetCode Algorithms Roadmap](https://neetcode.io/roadmap) — Visual problem categorization.
-- 🔗 [System Design Primer](https://github.com/donnemartin/system-design-primer) — Scalable distributed system patterns.
-
----
-
-#### 3️⃣ **Take a Daily Diagnostic Assessment**
-Head over to our **Assessment Center** to test your knowledge on **Python, SQL, React, Docker, or DSA**. Scoring $\\ge 70\\%$ automatically updates your verified candidate badge!`;
-  } else if (msgLower.includes('fastapi') || msgLower.includes('api')) {
-    reply = `### ⚡ FastAPI High-Performance Backend Architecture
-
-FastAPI is a modern, high-performance web framework for building APIs with Python 3.10+ based on standard Python type hints.
-
-#### Key Highlights:
-1. **Pydantic Validation**: Automatic serialization and deserialization with runtime type validation.
-2. **Async Support**: Native 'async def' route handlers running concurrently on the 'asyncio' event loop.
-3. **Dependency Injection**: Powerful 'Depends()' system for auth, DB sessions, and rate limiting.
-
-Example Endpoint:
-from fastapi import FastAPI, Depends, HTTPException
-from pydantic import BaseModel, EmailStr
-
-app = FastAPI(title="Skill2Career Placement API")
-
-class StudentSchema(BaseModel):
-    name: str
-    email: EmailStr
-    target_role: str
-
-@app.post("/students", status_code=201)
-async def create_student(student: StudentSchema):
-    return {"message": "Student created", "data": student}
-
-#### 🌐 Official Chrome Links:
-- 🔗 [FastAPI Official Docs](https://fastapi.tiangolo.com/)
-- 🔗 [Pydantic V2 Documentation](https://docs.pydantic.dev/latest/)
-
-👉 *Ready to verify your knowledge? Try the **FastAPI & Async APIs Assessment** in the Assessment Center!*`;
-  } else if (msgLower.includes('python') || msgLower.includes('py')) {
-    reply = `### 🐍 Python Core & OOP Mastery
-
-Python is the leading language for AI/ML, backend microservices, data engineering, and automation.
-
-#### Key Topics to Master for Interviews:
-- **Hash Table Internals**: Dictionaries and Sets have O(1) average lookup and amortized insertion time.
-- **Generators & Iterators**: Memory-efficient stream processing with yield.
-- **List Comprehensions vs Loops**: Run in optimized C bytecode inside CPython.
-- **Object-Oriented Design**: @property, __dunder__ methods, and inheritance.
-
-#### 🌐 Chrome Resources:
-- 🔗 [Python 3 Official Documentation](https://docs.python.org/3/tutorial/)
-- 🔗 [Real Python In-Depth Guides](https://realpython.com/)
-
-👉 *Test your skills now: Take the **Python Core & OOP Proficiency Assessment** (10 questions, 10 min)!*`;
-  } else if (msgLower.includes('react') || msgLower.includes('frontend')) {
-    reply = `### ⚛️ React 19 & Modern Frontend Architecture
-
-React is the industry standard declarative UI library for modern web applications.
-
-#### Core Concepts Tested in Interviews:
-1. **State Immutability**: Always treat state as immutable; React uses shallow reference comparisons (Object.is) to trigger re-renders.
-2. **Hook Rules & Dependencies**: useEffect, useMemo, useCallback, and custom hooks.
-3. **Virtual DOM Diffing**: Fiber reconciliation tree algorithm with key-based element tracking.
-
-#### 🌐 Recommended Chrome Documentation:
-- 🔗 [React.dev Official Interactive Tutorials](https://react.dev/learn)
-- 🔗 [MDN JavaScript Reference](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
-
-👉 *Verify your skills: Take the **React Architecture & Hooks Assessment** in the Assessment Center!*`;
+  if (/\b(rankine|brayton|carnot|thermodynamic|thermodynamics)\b/i.test(msgLower)) {
+    reply = `### ⚙️ Mechanical Engineering: Rankine vs. Brayton Power Cycles\n\n- **Rankine Cycle (Vapor Power)**: Theoretical basis for steam turbine power plants. Operating stages: 1-2 Isentropic pumping, 2-3 Constant-pressure boiler heating, 3-4 Isentropic expansion in turbine, 4-1 Constant-pressure condensation. Thermal efficiency $\\eta = 1 - \\frac{q_{out}}{q_{in}} = \\frac{w_{net}}{q_{in}}$.\n- **Brayton Cycle (Gas Power)**: Basis of jet aircraft engines and gas turbines. Uses continuous adiabatic compression, isobaric combustion, and expansion. Pressure ratio $r_p = P_2/P_1$ dictates efficiency: $\\eta_{Brayton} = 1 - \\frac{1}{r_p^{(\\gamma-1)/\\gamma}}$.`;
+  } else if (/\b(concrete|structural|beam|truss|is 456|eurocode|soil mechanics|terzaghi|etabs|staad|civil)\b/i.test(msgLower)) {
+    reply = `### 🏗️ Civil Engineering: Reinforced Concrete Limit State Design\n\n- **Governing Bending Equation**: $\\frac{M}{I} = \\frac{\\sigma}{y} = \\frac{E}{R}$.\n- **Simply Supported UDL**: Maximum bending moment $M_{max} = \\frac{w L^2}{8}$ at mid-span; Maximum shear force $V_{max} = \\frac{w L}{2}$ at support faces.\n- **Limit State Method (LSM)**: Structures are designed for ultimate limit states of collapse (flexure, shear, compression) using partial safety factors for concrete (1.5) and steel (1.15), and serviceability limit states (deflection, cracking).`;
+  } else if (/\b(vlsi|verilog|timing closure|setup time|hold time|asic|cmos|fpga)\b/i.test(msgLower)) {
+    reply = `### ⚡ ECE: Static Timing Analysis & Setup/Hold Slack\n\n- **Setup Time ($T_{setup}$)**: Minimum time data must be stable *before* active clock edge. Condition: $T_{clk} + T_{skew} \\ge T_{cq} + T_{comb(max)} + T_{setup}$. Slack = Required Time - Arrival Time (must be $\\ge 0$).\n- **Hold Time ($T_{hold}$)**: Minimum time data must be stable *after* active clock edge. Condition: $T_{cq} + T_{comb(min)} \\ge T_{hold} + T_{skew}$. Hold violations are independent of clock period and must be resolved by adding delay buffers in fast data paths.`;
+  } else if (/\b(power system|transformer|buck|boost|inverter|grid|scada|bldc|substation)\b/i.test(msgLower)) {
+    reply = `### 🔌 Electrical Engineering: Power Conversion & Grid Analysis\n\n- **DC-DC Buck Converter**: $V_{out} = D \\cdot V_{in}$. Inductor sizing $L = \\frac{(V_{in} - V_{out}) D}{\\Delta I_L \\cdot f_{sw}}$ ensures Continuous Conduction Mode (CCM).\n- **Load Flow Analysis**: Solves non-linear nodal power balance equations $P_i - jQ_i = V_i^* \\sum Y_{ik} V_k$ using Newton-Raphson (quadratic convergence) or Fast Decoupled Load Flow.`;
+  } else if (/\b(cstr|pfr|distillation|mccabe|aspen|reflux|hazop|kinetics)\b/i.test(msgLower)) {
+    reply = `### ⚗️ Chemical Engineering: Reactor Design & Mass Transfer\n\n- **CSTR Design Equation**: $V = \\frac{F_{A0} X}{-r_A}$. Operating continuously at exit concentration, requiring larger volume for positive-order kinetics.\n- **PFR Design Equation**: $V = F_{A0} \\int_0^X \\frac{dX}{-r_A}$. Progressive conversion along reactor length minimizes volume requirements.\n- **McCabe-Thiele Distillation**: Relates operating lines to vapor-liquid equilibrium (VLE). Minimum reflux $R_{min}$ intersects equilibrium curve at feed pinch point.`;
+  } else if (/\b(crispr|monod|bioreactor|blast|fermentation|protein|fplc)\b/i.test(msgLower)) {
+    reply = `### 🧬 Biotechnology: Bioprocess Kinetics & Molecular Tools\n\n- **Monod Microbial Growth Kinetics**: $\\mu = \\mu_{max} \\frac{S}{K_s + S}$. At high substrate ($S \\gg K_s$), growth follows zero-order kinetics; at low substrate, it follows first-order kinetics.\n- **CRISPR-Cas9 Mechanism**: 20-nt guide RNA targets genomic DNA adjacent to NGG PAM sequence, inducing double-strand breaks for NHEJ or HDR repair.`;
+  } else if (/\b(rocket|propulsion|aerodynamics|airfoil|mach|orbital|hohmann|nozzle)\b/i.test(msgLower)) {
+    reply = `### 🚀 Aerospace Engineering: Propulsion & Astrodynamics\n\n- **Tsiolkovsky Rocket Equation**: $\\Delta v = I_{sp} g_0 \\ln \\left(\\frac{m_0}{m_f}\\right)$.\n- **de Laval Supersonic Nozzle**: Area-Mach relation $\\frac{dA}{A} = (M^2 - 1) \\frac{dV}{V}$. In diverging section ($dA > 0$), fluid accelerates to supersonic ($M > 1$) because compressible density decreases faster than velocity increases.`;
+  } else if (/\b(kinematics|ros|ros2|slam|robot|dh parameter|actuator)\b/i.test(msgLower)) {
+    reply = `### 🤖 Robotics Engineering: Kinematics & Autonomous Systems\n\n- **Denavit-Hartenberg (DH) Transformation**: Homogeneous matrix $T = Rot_z(\\theta) \\cdot Trans_z(d) \\cdot Trans_x(a) \\cdot Rot_x(\\alpha)$.\n- **ROS2 Navigation Stack (Nav2)**: Employs costmaps (global/local), behavior trees, and motion planners (A*, DWB) with real-time sensor fusion via Extended Kalman Filter (EKF).`;
+  } else if (msgLower.includes('what to prepare today') || msgLower.includes('daily plan') || msgLower.includes('study plan today')) {
+    reply = `### 📅 High-Yield Daily Preparation Plan (${activeBranch})\n\n1. **Core Governing Theory (60 min)**: Review the physical laws and mathematical derivations for your current subject.\n2. **Engineering Simulation / Tool Workflow (90 min)**: Execute hands-on drills in domain CAE / IDE / CAD software (MATLAB, ANSYS, SolidWorks, Revit, Cadence, ROS2, etc.).\n3. **GATE & Placement Problem Solving (45 min)**: Solve 3-4 numerical problems checking dimensional analysis.\n4. **Diagnostic Verification (15 min)**: Take today's topic assessment in the **Assessment Center** to prove competency!`;
   } else if (msgLower.includes('resume') || msgLower.includes('ats') || msgLower.includes('bullet')) {
-    reply = `### 📄 Resume AI & Quantified STAR Bullets
-
-A top-tier engineering resume should score $\\ge 85$ on ATS (Applicant Tracking Systems) and feature quantifiable impact metrics.
-
-#### The Google X-Y-Z / STAR Formula:
-> *"Accomplished [X], as measured by [Y], by doing [Z]"*
-
-#### Example Transformation:
-- ❌ **Before**: *"Created backend APIs for student portal using Python and Docker."*
-- ✅ **After**: *"Architected high-throughput REST APIs using **FastAPI** and **PostgreSQL**, containerizing with multi-stage **Docker** builds to reduce deployment latency by **38%** and serve **5,000+** daily student queries."*
-
-👉 *Head over to the **Resume AI Studio** tab to run real-time ATS scoring and STAR bullet enhancements!*`;
+    reply = `### 📄 Engineering Resume Optimization (${activeBranch})\n\nStructure your resume bullets using the **Google X-Y-Z / STAR Formula**:\n> *"Accomplished [X], as measured by [Y], by doing [Z]"*\n\n- ❌ **Before**: *"Designed mechanical components and ran simulations."*\n- ✅ **After**: *"Engineered high-pressure die cast battery housing using **SolidWorks** and **ANSYS FEA**, reducing structural weight by **18%** while maintaining a safety factor of **2.4** under 50g dynamic crash load requirements."*`;
   } else {
-    reply = `### 🤖 Skill2Career AI Placement Mentor
-
-Hello! I am your AI Career Copilot, built to guide your end-to-end technical placement preparation.
-
-#### Here is how I can assist you right now:
-1. 📅 **Daily Study Routine**: Ask *"What should I prepare today?"* or *"How to prepare today?"* for a time-blocked study schedule.
-2. 🌐 **Chrome Documentation Links**: Ask for curated official documentation and roadmaps on Python, React, FastAPI, PyTorch, Docker, or SQL.
-3. 📝 **Topic Assessments**: Take diagnostic quizzes across 15+ engineering skills with instant badge verification.
-4. 📄 **Resume Optimization**: Transform your project points into quantifiable Google/Amazon-style STAR bullet points.
-
-*What topic or role would you like to prepare for today?*`;
+    reply = `### 🎓 Skill2Career Universal Engineering Advisor (${activeBranch})\n\nI am configured for your discipline (**${activeBranch}**) and target role (**${activeRole}**).\n\nYou can ask me for:\n1. 📐 **Formula Derivations & Calculations**: Governing differential equations, proofs, and unit consistency.\n2. 🔬 **Lab & Simulation Software**: Guidance on MATLAB, Simulink, ANSYS, SolidWorks, Revit, ETABS, Cadence, Aspen Plus, ROS2, etc.\n3. 🎯 **Semester Exams & GATE / Competitive Exams**: Key formulas, high-weightage topics, and problem-solving patterns.\n4. 💼 **Resume STAR Bullets & Interview Preparation**: Tailored project descriptions highlighting measurable engineering impact.`;
   }
 
-  res.json({ reply });
+  res.json({ reply, message: reply });
 });

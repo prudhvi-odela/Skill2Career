@@ -87,9 +87,10 @@ export const SKILLS_CATALOG: Skill[] = [
 export const CAREER_ROLES: CareerRole[] = ALL_CAREER_ROLES;
 
 
-import { TOPIC_ASSESSMENTS } from './assessmentData.js';
+import { TOPIC_ASSESSMENTS, createDynamicTopicAssessment } from './assessmentData.js';
 
 export const ASSESSMENT_DATA = TOPIC_ASSESSMENTS;
+export { createDynamicTopicAssessment };
 
 export const ACADEMIC_PROGRAMS = [
   { program_code: 'BTECH', name: 'Bachelor of Technology (B.Tech)', duration_years: 4, description: 'Undergraduate engineering and technology degree program spanning 8 semesters.' },

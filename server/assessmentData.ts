@@ -23,6 +23,11 @@ export interface TopicAssessment {
   time_limit_minutes: number;
   pass_score: number;
   is_active: boolean;
+  branch_code?: string;
+  branch_name?: string;
+  role?: string;
+  subject?: string;
+  topic?: string;
   learning_resources: LearningResource[];
   questions: AssessmentQuestion[];
 }
@@ -819,3 +824,10 @@ export const TOPIC_ASSESSMENTS: TopicAssessment[] = [
     ]
   }
 ];
+
+import { MULTI_BRANCH_ASSESSMENTS, createDynamicTopicAssessment } from './multiBranchAssessments.js';
+
+// Combine base CSE assessments with all Multi-Branch engineering assessments
+TOPIC_ASSESSMENTS.push(...MULTI_BRANCH_ASSESSMENTS);
+
+export { createDynamicTopicAssessment };

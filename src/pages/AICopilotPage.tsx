@@ -1,9 +1,10 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Send, Bot, User, Sparkles, Copy, Check, RotateCcw, Plus,
   MessageSquare, BookOpen, ExternalLink, Award, Compass, Target,
-  ArrowRight, ShieldCheck, HelpCircle, Code, Layers, FileText
+  ArrowRight, ShieldCheck, HelpCircle, Code, Layers, FileText,
+  Cpu, Wrench, Building2, Zap, TestTube, Dna, Rocket, Bot as RobotIcon, BarChart2
 } from 'lucide-react';
 import { apiFetch } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
@@ -18,23 +19,58 @@ interface ChatMessage {
 interface ChatThread {
   id: string;
   title: string;
+  branch: string;
   lastMessage: string;
   date: string;
 }
 
+interface BranchInfo {
+  code: string;
+  name: string;
+  emoji: string;
+  defaultRole: string;
+  defaultSubject: string;
+}
+
+const COPILOT_BRANCHES: BranchInfo[] = [
+  { code: 'CSE', name: 'Computer Science (CSE)', emoji: '💻', defaultRole: 'Software Engineer', defaultSubject: 'Algorithms & Distributed Systems' },
+  { code: 'ECE', name: 'Electronics & Comm (ECE)', emoji: '⚡', defaultRole: 'VLSI / Embedded Systems Engineer', defaultSubject: 'Digital System Design & VLSI' },
+  { code: 'MECH', name: 'Mechanical (MECH)', emoji: '⚙️', defaultRole: 'CAD/CAE & Thermal Systems Engineer', defaultSubject: 'Applied Thermodynamics & FEA' },
+  { code: 'CIVIL', name: 'Civil & Infrastructure (CIVIL)', emoji: '🏗️', defaultRole: 'Structural & BIM Engineer', defaultSubject: 'Structural Analysis & Concrete' },
+  { code: 'EE', name: 'Electrical & Power (EE)', emoji: '🔌', defaultRole: 'Power Systems & Drives Engineer', defaultSubject: 'Power Transmission & Electronics' },
+  { code: 'CHEM', name: 'Chemical (CHEM)', emoji: '⚗️', defaultRole: 'Process & Reaction Kinetics Engineer', defaultSubject: 'Chemical Reaction Engineering & Aspen' },
+  { code: 'BIOTECH', name: 'Biotechnology (BIOTECH)', emoji: '🧬', defaultRole: 'Bioinformatics & Bioprocess Engineer', defaultSubject: 'Genomics & Bioreactor Kinetics' },
+  { code: 'AERO', name: 'Aerospace (AERO)', emoji: '🚀', defaultRole: 'Rocket Propulsion & Aerodynamics Engineer', defaultSubject: 'Flight Dynamics & Supersonic Nozzles' },
+  { code: 'ROBOTICS', name: 'Robotics & Automation', emoji: '🤖', defaultRole: 'Autonomous Mobile Robotics Engineer', defaultSubject: 'Robot Kinematics & ROS2' },
+  { code: 'DS', name: 'Data Science & AI', emoji: '📊', defaultRole: 'Lead Data Scientist / AI Architect', defaultSubject: 'Deep Learning & Statistics' }
+];
+
 export const AICopilotPage: React.FC = () => {
   const { profile } = useAuth();
   const navigate = useNavigate();
+
+  // Active discipline selection (defaults to user's branch if matches, or CSE)
+  const [activeBranchCode, setActiveBranchCode] = useState<string>(() => {
+    const profMajor = profile?.major_or_branch?.toUpperCase() || '';
+    const match = COPILOT_BRANCHES.find((b) => profMajor.includes(b.code));
+    return match ? match.code : 'CSE';
+  });
+
+  const activeBranch = useMemo(
+    () => COPILOT_BRANCHES.find((b) => b.code === activeBranchCode) || COPILOT_BRANCHES[0],
+    [activeBranchCode]
+  );
 
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const [threads, setThreads] = useState<ChatThread[]>([
-    { id: 'th_1', title: "Today's Placement Preparation", lastMessage: 'What to prepare today...', date: 'Today' },
-    { id: 'th_2', title: 'React Hooks & Frontend Architecture', lastMessage: 'useEffect, state immutability...', date: 'Yesterday' },
-    { id: 'th_3', title: 'Google X-Y-Z STAR Resume Bullets', lastMessage: 'Quantified impact metrics...', date: '2 days ago' },
-    { id: 'th_4', title: 'FastAPI & Distributed Caching', lastMessage: 'Async endpoints & Redis...', date: 'Last week' }
+    { id: 'th_1', title: "Universal Daily Placement Timetable", branch: 'All', lastMessage: 'Structured study routine...', date: 'Today' },
+    { id: 'th_2', title: 'MECH: Rankine vs. Brayton Power Cycles', branch: 'MECH', lastMessage: 'Isentropic pumping, turbine...', date: 'Yesterday' },
+    { id: 'th_3', title: 'ECE: Static Timing Analysis & Setup/Hold', branch: 'ECE', lastMessage: 'Slack calculations in STA...', date: 'Yesterday' },
+    { id: 'th_4', title: 'CIVIL: Limit State Concrete Design (IS 456)', branch: 'CIVIL', lastMessage: 'Moment curvature & LSM...', date: '2 days ago' },
+    { id: 'th_5', title: 'CSE: React 19 & Distributed Caching', branch: 'CSE', lastMessage: 'Async endpoints & Redis...', date: 'Last week' }
   ]);
   const [activeThreadId, setActiveThreadId] = useState<string>('th_1');
 
@@ -43,38 +79,40 @@ export const AICopilotPage: React.FC = () => {
       {
         id: 'msg_1_1',
         role: 'user',
-        content: 'What should I prepare today for my placement schedule?',
+        content: 'What should I prepare today for my engineering placement schedule?',
         timestamp: '09:30 AM'
       },
       {
         id: 'msg_1_2',
         role: 'assistant',
-        content: `### 📅 High-Yield Daily Preparation Plan for Today
-
-Here is your structured 4-stage placement readiness routine:
-
-#### ⏱️ **Block 1: Data Structures & Algorithms (60 Minutes)**
-- **Topic**: Two-Pointer Patterns & Binary Search (Search in Rotated Sorted Array, Container With Most Water).
-- **Goal**: Solve 2 LeetCode Medium problems in under 25 minutes each.
-- **Resource**: 🌐 [NeetCode 150 Blind Roadmap](https://neetcode.io/roadmap) | 🌐 [LeetCode Blind 75](https://leetcode.com/studyplan/blind-75/)
+        content: `### 📅 High-Yield Universal Engineering Placement Schedule
+        
+Here is your structured 4-stage technical preparation plan:
 
 ---
 
-#### ⏱️ **Block 2: Core Stack & System APIs (90 Minutes)**
-- **Topic**: Asynchronous APIs & Database Indexing (FastAPI / Node.js + PostgreSQL).
-- **Goal**: Implement clean CRUD endpoints with input validation and connection pooling.
-- **Resources**: 🌐 [FastAPI Async Documentation](https://fastapi.tiangolo.com/tutorial/)
+#### ⏱️ **Block 1: Core Mathematical & Engineering Fundamentals (60 Minutes)**
+- **Objective**: Master the theoretical governing equations of your active discipline (**${activeBranch.name}**).
+- **Key Task**: Derive core physical formulas, examine boundary conditions, and test numerical edge cases.
+- **Reference**: Official academic textbooks, NPTEL video lectures, and lecture notes.
 
 ---
 
-#### ⏱️ **Block 3: System Design & CS Fundamentals (45 Minutes)**
-- **Topic**: Distributed Caching (Redis LRU Eviction & Write-Through vs Write-Back Caching).
-- **Goal**: Understand CAP Theorem tradeoffs and partition tolerance.
+#### ⏱️ **Block 2: Industry Software & Simulation Toolchains (90 Minutes)**
+- **Objective**: Hands-on workflow execution in standard engineering packages.
+- **Tools**: MATLAB / Simulink, ANSYS, SolidWorks, Autodesk Revit, Cadence EDA, Aspen Plus, ROS2, or IDEs.
+- **Goal**: Build and verify a concrete simulation model or software module with documented results.
 
 ---
 
-#### ⏱️ **Block 4: Diagnostic Assessment Verification (15 Minutes)**
-- **Goal**: Complete today's topic assessment in our **Assessment Center** to earn a verified skill badge on your profile!`,
+#### ⏱️ **Block 3: Competitive Exam & Technical Interview Problem Solving (45 Minutes)**
+- **Objective**: Solve 3-4 numerical problems typical of GATE, ESE, and top engineering placement rounds.
+- **Pattern**: Apply first principles $\\rightarrow$ check dimensional consistency $\\rightarrow$ calculate numerical margins.
+
+---
+
+#### ⏱️ **Block 4: Diagnostic Skill Verification (15 Minutes)**
+- **Objective**: Take a verified diagnostic quiz in our **Assessment Center** to prove competency in today's topic and update your profile!`,
         timestamp: '09:31 AM'
       }
     ],
@@ -82,26 +120,38 @@ Here is your structured 4-stage placement readiness routine:
       {
         id: 'msg_2_1',
         role: 'user',
-        content: 'Explain React hooks and frontend architecture best practices with official Chrome docs links.',
+        content: 'Explain Rankine vs Brayton thermodynamic power cycles with formulas and diagrams.',
         timestamp: 'Yesterday'
       },
       {
         id: 'msg_2_2',
         role: 'assistant',
-        content: `### ⚛️ React 19 Architecture, Hooks & Modern Best Practices
+        content: `### ⚙️ Mechanical Engineering: Rankine vs. Brayton Power Cycles
 
-React builds dynamic web interfaces through declarative components and state reactivity.
+Thermodynamic power cycles convert input heat into useful shaft work.
 
-#### 1. Core Hooks Every Engineer Must Master:
-- **\`useState\`**: Declares local component state. Always treat state as **immutable**; React uses shallow reference equality (\`Object.is\`) to trigger re-renders.
-- **\`useEffect\`**: Synchronizes with external systems (APIs, subscriptions, DOM mutations). Empty dependency array \`[]\` executes only on mount; omit dependencies carefully to avoid stale closures.
-- **\`useMemo\` & \`useCallback\`**: Cache CPU-intensive calculations and callback function instances between re-renders.
-- **\`useRef\`**: Persists mutable values without triggering re-renders (useful for DOM access and interval timers).
+#### 1. The Ideal Rankine Cycle (Vapor Power Cycle)
+Models steam turbine power plants (coal, nuclear, geothermal):
+- **1 $\\rightarrow$ 2 (Isentropic Pumping)**: Reversible adiabatic compression of liquid water ($w_p = v(P_2 - P_1)$).
+- **2 $\\rightarrow$ 3 (Isobaric Heat Addition)**: High-pressure water heated in boiler to superheated steam ($q_{in} = h_3 - h_2$).
+- **3 $\\rightarrow$ 4 (Isentropic Expansion)**: Steam expands through turbine generating shaft power ($w_t = h_3 - h_4$).
+- **4 $\\rightarrow$ 1 (Isobaric Condensation)**: Low-pressure steam condensed into water in surface condenser ($q_{out} = h_4 - h_1$).
 
-#### 🌐 Official Chrome Documentation & Learning Links:
-- 🔗 [React.dev Official Interactive Tutorials](https://react.dev/learn) — Official modern docs with interactive sandboxes.
-- 🔗 [MDN JavaScript Guide](https://developer.mozilla.org/en-US/docs/Web/JavaScript) — Core closures, promises, and async event loop.
-- 🔗 [React Patterns & Custom Hooks Guide](https://reactpatterns.js.org/) — Real-world architectural composition patterns.`,
+**Thermal Efficiency**:
+$$\\eta_{Rankine} = \\frac{w_{net}}{q_{in}} = \\frac{(h_3 - h_4) - (h_2 - h_1)}{h_3 - h_2}$$
+
+---
+
+#### 2. The Ideal Brayton Cycle (Gas Turbine Cycle)
+Models aircraft jet propulsion and stationary gas turbine generators:
+- Operates using open/closed gas loop with constant pressure ratio $r_p = \\frac{P_2}{P_1}$.
+- **Thermal Efficiency as a function of pressure ratio**:
+$$\\eta_{Brayton} = 1 - \\frac{1}{r_p^{(\\gamma - 1)/\\gamma}}$$
+*(where $\\gamma = C_p / C_v \\approx 1.4$ for air)*.
+
+#### 🌐 Recommended Engineering Learning Links:
+- 🔗 [MIT OpenCourseWare Thermodynamics](https://ocw.mit.edu/courses/mechanical-engineering/)
+- 🔗 [NIST Chemistry WebBook Thermophysical Fluid Tables](https://webbook.nist.gov/chemistry/fluid/)`,
         timestamp: 'Yesterday'
       }
     ],
@@ -109,53 +159,90 @@ React builds dynamic web interfaces through declarative components and state rea
       {
         id: 'msg_3_1',
         role: 'user',
-        content: 'How do I convert my project notes into Google STAR resume bullets for ATS?',
-        timestamp: '2 days ago'
+        content: 'Explain Static Timing Analysis (STA) setup and hold slack calculation formulas.',
+        timestamp: 'Yesterday'
       },
       {
         id: 'msg_3_2',
         role: 'assistant',
-        content: `### 📄 Resume Architecture & High-Scoring ATS Strategy
+        content: `### ⚡ ECE: Static Timing Analysis (STA) & Timing Closure
 
-To pass automated Applicant Tracking Systems (ATS) and impress technical interviewers at top tech firms, structure your resume using the **Google X-Y-Z / STAR Formula**:
+In synchronous digital VLSI circuits, every data path between flip-flops must satisfy both setup and hold timing constraints.
 
-> *"Accomplished [X], as measured by [Y], by doing [Z]"*
+#### 1. Setup Time ($T_{setup}$) & Maximum Delay Constraint
+Data must arrive and stabilize at the destination flip-flop before the active clock edge:
+- **Data Arrival Time**: $T_{arrival} = T_{launch\_clk} + T_{cq} + T_{comb(max)}$
+- **Data Required Time**: $T_{required} = T_{capture\_clk} + T_{period} - T_{setup} - T_{uncertainty}$
+- **Setup Slack**:
+$$\\text{Setup Slack} = T_{required} - T_{arrival} \\ge 0$$
+*A negative setup slack violates maximum frequency. Solution: lower clock frequency or optimize combinational logic.*
 
-#### Project Bullet Before & After:
-- ❌ **Before**: *"Made an e-commerce backend API using Python and Docker."*
-- ✅ **After**: *"Architected high-throughput RESTful backend service using **FastAPI** and **PostgreSQL**, containerizing deployment with **Docker** multi-stage builds to serve **5,000+** daily requests with **<80ms** response latency."*
+---
 
-#### 🌐 Recommended Resume & Career Tools:
-- 🔗 [Resume AI Studio](/app/resume-ai) — Run real-time ATS scoring, generate STAR bullets, and tailor cold emails.
-- 🔗 [Google Technical Resume Guide](https://www.techinterviewhandbook.org/resume/) — Comprehensive format rules.`,
-        timestamp: '2 days ago'
+#### 2. Hold Time ($T_{hold}$) & Minimum Delay Constraint
+Data must remain stable after the clock edge to prevent premature overwrite:
+- **Data Arrival Time**: $T_{arrival} = T_{launch\_clk} + T_{cq} + T_{comb(min)}$
+- **Data Required Time**: $T_{required} = T_{capture\_clk} + T_{hold} + T_{uncertainty}$
+- **Hold Slack**:
+$$\\text{Hold Slack} = T_{arrival} - T_{required} \\ge 0$$
+*Hold time violations are independent of clock period. Solution: insert delay buffer cells into fast data paths.*
+
+#### 🌐 Recommended VLSI Documentation Links:
+- 🔗 [Cadence VLSI Timing Closure Guides](https://www.cadence.com/)
+- 🔗 [Synopsys PrimeTime STA Reference](https://www.synopsys.com/)`,
+        timestamp: 'Yesterday'
       }
     ],
     th_4: [
       {
         id: 'msg_4_1',
         role: 'user',
-        content: 'How does Redis distributed caching improve FastAPI response times?',
-        timestamp: 'Last week'
+        content: 'Explain the Limit State Method for reinforced concrete beam design per IS 456 / Eurocode 2.',
+        timestamp: '2 days ago'
       },
       {
         id: 'msg_4_2',
         role: 'assistant',
-        content: `### ⚡ FastAPI & Redis Distributed Caching Architecture
+        content: `### 🏗️ Civil Engineering: Reinforced Concrete Limit State Design
 
-Redis acts as an in-memory key-value data structure store used as a database, cache, and message broker.
+The Limit State Method (LSM) ensures that structures fulfill safety (Ultimate Limit State) and usability (Serviceability Limit State) criteria throughout their design life.
 
-#### Key Architectural Benefits:
-1. **Sub-millisecond Latency**: Serving pre-computed queries from RAM drops p99 latency from ~120ms to <4ms.
-2. **Cache-Aside Pattern**:
-   - Application checks Redis for key.
-   - If *Cache Hit*, return data immediately.
-   - If *Cache Miss*, fetch from PostgreSQL, write to Redis with TTL (e.g. 300s), and return.
-3. **Connection Pooling**: Use \`redis.asyncio\` connection pool in FastAPI startup event.
+#### 1. Fundamental Design Principles:
+- **Partial Safety Factors for Materials**:
+  - Concrete: $\\gamma_c = 1.5$ (accounting for site batching variability).
+  - Steel: $\\gamma_s = 1.15$ (high factory quality control).
+- **Maximum Compressive Strain in Concrete**: $\\epsilon_{cu} = 0.0035$ at the extreme outer fiber.
+- **Stress Block**: Rectangular-parabolic stress block with design compressive strength $0.446 f_{ck}$.
 
-#### Official Documentation:
-- 🔗 [FastAPI Advanced Caching](https://fastapi.tiangolo.com/advanced/custom-response/)
-- 🔗 [Redis Official Documentation](https://redis.io/docs/)`,
+#### 2. Moment of Resistance ($M_u$) for Under-Reinforced Section:
+$$\\frac{x_u}{d} = \\frac{0.87 f_y A_{st}}{0.36 f_{ck} b d}$$
+$$M_u = 0.87 f_y A_{st} d \\left(1 - \\frac{f_y A_{st}}{f_{ck} b d}\\right)$$
+
+*Under-reinforced design ensures ductile failure: tensile steel yields before concrete reaches crushing strain, giving visible cracking and deflection warning!*`,
+        timestamp: '2 days ago'
+      }
+    ],
+    th_5: [
+      {
+        id: 'msg_5_1',
+        role: 'user',
+        content: 'Explain React hooks and distributed Redis caching for high-performance software engineering.',
+        timestamp: 'Last week'
+      },
+      {
+        id: 'msg_5_2',
+        role: 'assistant',
+        content: `### 💻 Computer Science: Modern Web Architecture & Distributed Caching
+
+High-throughput applications combine declarative client interfaces with in-memory caching layers:
+
+#### 1. Core React 19 Patterns:
+- **\`useState\` & State Immutability**: React relies on shallow reference equality (\`Object.is\`) to schedule micro-task re-renders.
+- **\`useEffect\` vs \`useMemo\`**: Synchronize with external APIs with deterministic dependency arrays; memoize expensive transforms ($O(n \\log n)$ algorithms).
+
+#### 2. Distributed Caching with Redis:
+- **Sub-millisecond Latency**: Serving pre-computed queries from RAM drops p99 latency from ~140ms down to <4ms.
+- **Cache-Aside Pattern**: Application checks Redis; on cache miss, queries PostgreSQL, populates Redis with Time-To-Live (TTL), and returns.`,
         timestamp: 'Last week'
       }
     ]
@@ -181,159 +268,91 @@ Redis acts as an in-memory key-value data structure store used as a database, ca
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
 
-  // Comprehensive Client-Side Intelligence Engine (Resilient fallback for all query types)
-  const getSmartResponse = (queryText: string): string => {
-    const q = queryText.toLowerCase();
-
-    if (q.includes('react') || q.includes('hook') || q.includes('frontend')) {
-      return `### ⚛️ React 19 Architecture, Hooks & Modern Best Practices
-
-React builds dynamic web interfaces through declarative components and state reactivity.
-
-#### 1. Core Hooks Every Engineer Must Master:
-- **\`useState\`**: Declares local component state. Always treat state as **immutable**; React uses shallow reference equality (\`Object.is\`) to trigger re-renders.
-- **\`useEffect\`**: Synchronizes with external systems (APIs, subscriptions, DOM mutations). Empty dependency array \`[]\` executes only on mount; omit dependencies carefully to avoid stale closures.
-- **\`useMemo\` & \`useCallback\`**: Cache CPU-intensive calculations and callback function instances between re-renders.
-- **\`useRef\`**: Persists mutable values without triggering re-renders (useful for DOM access and interval timers).
-
-#### 2. Component Performance Principles:
-- Avoid inline arrow functions inside high-frequency mapped lists.
-- Keep state local to where it is needed instead of lifting everything globally.
-
-#### 🌐 Official Chrome Documentation & Learning Links:
-- 🔗 [React.dev Official Interactive Tutorials](https://react.dev/learn) — Official modern docs with interactive sandboxes.
-- 🔗 [MDN JavaScript Guide](https://developer.mozilla.org/en-US/docs/Web/JavaScript) — Core closures, promises, and async event loop.
-- 🔗 [React Patterns & Custom Hooks Guide](https://reactpatterns.js.org/) — Real-world architectural composition patterns.
-
-👉 *Ready to benchmark your knowledge? Take the **React Architecture & Hooks Assessment** in the Assessment Center!*`;
+  // Branch-specific quick prompt recommendations
+  const branchQuickPrompts = useMemo(() => {
+    switch (activeBranchCode) {
+      case 'MECH':
+        return [
+          { label: '📐 Rankine vs Brayton Formulas', query: 'Derive the thermal efficiency formulas for Rankine and Brayton power cycles step-by-step.' },
+          { label: '⚙️ FEA Von Mises Stress Calculation', query: 'Explain the Von Mises yield criterion tensor math and how to conduct a mesh convergence study in ANSYS.' },
+          { label: '🌊 Navier-Stokes & Boundary Layers', query: 'Explain the Navier-Stokes equations and boundary layer separation in aerodynamics.' },
+          { label: '🛠️ SolidWorks vs CATIA CAD Workflow', query: 'Compare SolidWorks and CATIA for automotive mechanical design and GD&T per ASME Y14.5.' },
+          { label: '🎯 GATE Mechanical Syllabus Strategy', query: 'Give me a high-weightage study roadmap and key formulas for GATE Mechanical Engineering.' }
+        ];
+      case 'CIVIL':
+        return [
+          { label: '📐 Indeterminate Beam Bending Moments', query: 'Explain moment distribution method and shear force diagrams for continuous concrete beams.' },
+          { label: '🏗️ Limit State Concrete Design (IS 456)', query: 'Explain under-reinforced vs over-reinforced beam design equations and neutral axis depth per IS 456 / Eurocodes.' },
+          { label: '🌍 Terzaghi Effective Stress & Geotech', query: 'Explain Terzaghi effective stress equation and shallow foundation bearing capacity formulas.' },
+          { label: '🏢 Autodesk Revit & BIM Clash Detection', query: 'Explain the ISO 19650 BIM execution protocol and Revit/Navisworks clash detection workflows.' },
+          { label: '🎯 GATE Civil Engineering Roadmap', query: 'Provide a structured study blueprint for GATE Civil Engineering covering structures, geotech, and hydrology.' }
+        ];
+      case 'ECE':
+        return [
+          { label: '📐 STA Setup & Hold Slack Formulas', query: 'Derive the Static Timing Analysis (STA) setup and hold slack formulas with clock skew and jitter.' },
+          { label: '⚡ Verilog HDL State Machine Design', query: 'Show how to write a Mealy and Moore finite state machine (FSM) in clean, synthesizable Verilog HDL.' },
+          { label: '📡 5G OFDM Modulation & Beamforming', query: 'Explain Orthogonal Frequency Division Multiplexing (OFDM) and massive MIMO beamforming in 5G NR.' },
+          { label: '🔌 ARM Cortex-M FreeRTOS Tasks', query: 'Explain task scheduling, semaphores, and interrupt priority handling on ARM Cortex-M microcontrollers.' },
+          { label: '🎯 GATE ECE High-Yield Prep Plan', query: 'What are the top scoring topics and formulas for GATE Electronics and Communication Engineering?' }
+        ];
+      case 'EE':
+        return [
+          { label: '📐 DC-DC Buck Converter Ripple Derivation', query: 'Derive the inductor and capacitor ripple equations for a DC-DC Buck converter in continuous conduction mode.' },
+          { label: '🔌 Newton-Raphson Load Flow Analysis', query: 'Explain the Newton-Raphson method for power system load flow analysis with Jacobian matrix formation.' },
+          { label: '⚡ Field-Oriented Control (FOC) of Motors', query: 'Explain Field-Oriented Control (FOC) and Space Vector PWM for brushless DC (BLDC) motors.' },
+          { label: '🏭 Substation Automation & IEC 61850', query: 'Explain IEC 61850 protocol standards, GOOSE messaging, and SCADA architectures in modern electrical substations.' },
+          { label: '🎯 GATE Electrical Engineering Plan', query: 'Provide a high-yield study plan and key formula checklist for GATE Electrical Engineering.' }
+        ];
+      case 'CHEM':
+        return [
+          { label: '📐 CSTR vs PFR Reactor Design Equations', query: 'Derive and compare the performance equations for CSTR and PFR chemical reactors with positive-order kinetics.' },
+          { label: '⚗️ McCabe-Thiele Distillation Sizing', query: 'Explain the step-by-step graphical McCabe-Thiele method for binary distillation column tray calculation.' },
+          { label: '🔥 LMTD vs NTU Heat Exchanger Sizing', query: 'Compare the Log Mean Temperature Difference (LMTD) and NTU-effectiveness methods for shell-and-tube heat exchangers.' },
+          { label: '💻 Aspen Plus Fluid Property Packages', query: 'How do you select appropriate thermodynamic fluid packages (NRTL, Peng-Robinson, UNIQUAC) in Aspen Plus?' },
+          { label: '🎯 GATE Chemical Engineering Blueprint', query: 'Provide an intensive preparation guide for GATE Chemical Engineering covering reaction kinetics and thermodynamics.' }
+        ];
+      case 'BIOTECH':
+        return [
+          { label: '🧬 CRISPR-Cas9 sgRNA & PAM Mechanism', query: 'Explain the molecular mechanism of CRISPR-Cas9 genome editing, sgRNA design, and PAM sequence recognition.' },
+          { label: '🔬 Monod Bioreactor Growth Kinetics', query: 'Explain Monod microbial growth kinetics and mass transfer of oxygen (kLa) in industrial fermentation bioreactors.' },
+          { label: '💻 BLAST Algorithm & Alignment Scoring', query: 'Explain how the BLAST algorithm searches genomic databases using heuristic scoring and BLOSUM matrices.' },
+          { label: '🧪 FPLC Downstream Protein Purification', query: 'Explain fast protein liquid chromatography (FPLC) workflows: affinity, ion-exchange, and size-exclusion chromatography.' },
+          { label: '🎯 GATE Biotechnology Roadmap', query: 'Give me a high-yield preparation plan for GATE Biotechnology covering molecular biology and bioprocess technology.' }
+        ];
+      case 'AERO':
+        return [
+          { label: '📐 Tsiolkovsky Rocket Equation Derivation', query: 'Derive the Tsiolkovsky rocket equation and calculate delta-v budgets for orbital insertion.' },
+          { label: '🚀 de Laval Supersonic Nozzle Physics', query: 'Explain compressible gas dynamics in converging-diverging (de Laval) nozzles with the Area-Mach relation.' },
+          { label: '🛰️ Hohmann Transfer Orbit Math', query: 'Show the step-by-step calculation for a Hohmann transfer orbit between Earth and Mars with delta-v requirements.' },
+          { label: '✈️ Longitudinal Flight Stability & Trim', query: 'Explain aircraft longitudinal static stability, neutral point, and static margin calculations.' },
+          { label: '🎯 GATE Aerospace Engineering Roadmap', query: 'Provide a structured preparation roadmap for GATE Aerospace Engineering covering aerodynamics and propulsion.' }
+        ];
+      case 'ROBOTICS':
+        return [
+          { label: '📐 Denavit-Hartenberg (DH) Kinematics', query: 'Explain how to assign coordinate frames and derive DH parameter transformation matrices for a 3-DOF robot arm.' },
+          { label: '🤖 ROS2 Nav2 Stack & Behavior Trees', query: 'Explain the ROS2 Nav2 navigation architecture, global/local costmaps, and behavior tree execution.' },
+          { label: '📡 2D/3D LiDAR SLAM & EKF State Estimation', query: 'Explain Simultaneous Localization and Mapping (SLAM) and sensor fusion with Extended Kalman Filters (EKF).' },
+          { label: '🕹️ Industrial PLC Ladder Logic & SCADA', query: 'Explain PLC ladder logic programming for industrial robot arm safety interlocks and SCADA integration.' },
+          { label: '💼 Robotics Portfolio Projects Guide', query: 'What portfolio robotics projects will impress autonomous vehicle and robotics employers like Boston Dynamics and Tesla?' }
+        ];
+      case 'DS':
+        return [
+          { label: '📐 Transformer Self-Attention Formula', query: 'Derive the Scaled Dot-Product Attention equation in Transformers and explain multi-head attention.' },
+          { label: '📊 Hypothesis Testing & p-value Intuition', query: 'Explain null hypothesis significance testing, p-values, Type I/II errors, and power in A/B testing.' },
+          { label: '🧠 PyTorch Production Training Loop', query: 'Write a production-grade PyTorch training loop with mixed precision (AMP), gradient clipping, and learning rate scheduling.' },
+          { label: '🚀 MLOps Docker Serving & Drift Monitoring', query: 'Explain how to containerize and serve ML models with Docker, FastAPI, and monitor feature drift in production.' },
+          { label: '🎯 Data Science Technical Interview Questions', query: 'What are the top 10 machine learning and statistics technical interview questions asked at FAANG/Tier-1 firms?' }
+        ];
+      default: // CSE
+        return [
+          { label: '📅 What should I prepare today?', query: 'What should I prepare today for my target career goal?' },
+          { label: '⚛️ React 19 Architecture & Hooks', query: 'Explain React 19 architecture, hooks (useState, useEffect, useMemo), and performance best practices.' },
+          { label: '📄 Google STAR Resume Bullets', query: 'How to build a high-scoring ATS resume with Google STAR / X-Y-Z bullet points?' },
+          { label: '⚡ FastAPI & Distributed Caching', query: 'Explain FastAPI async architecture and Redis distributed caching with code examples.' },
+          { label: '📝 Recommend an Assessment', query: 'Recommend a diagnostic assessment for me to verify my technical competencies today.' }
+        ];
     }
-
-    if (q.includes('resume') || q.includes('ats') || q.includes('build a new resume') || q.includes('bullet') || q.includes('cv')) {
-      return `### 📄 Resume Architecture & High-Scoring ATS Strategy
-
-To pass automated Applicant Tracking Systems (ATS) and impress technical interviewers at top tech firms, structure your resume using the **Google X-Y-Z / STAR Formula**:
-
-> *"Accomplished [X], as measured by [Y], by doing [Z]"*
-
-#### 1. The 4 Essential Resume Sections:
-1. **Header**: Name, Email, LinkedIn, GitHub, Portfolio URL, and Contact.
-2. **Technical Skills**: Grouped by *Languages* (Python, JS, C++), *Frameworks* (FastAPI, React), *Databases* (PostgreSQL, Redis), and *DevOps* (Docker, Git, AWS).
-3. **Featured Projects**: 2-3 deep projects with live demo and GitHub links + 3 quantified bullet points per project.
-4. **Education & Certifications**: Degree, GPA, relevant coursework, and verified certificates.
-
-#### 2. Project Bullet Before & After:
-- ❌ **Before**: *"Made an e-commerce backend API using Python and Docker."*
-- ✅ **After**: *"Architected high-throughput RESTful backend service using **FastAPI** and **PostgreSQL**, containerizing deployment with **Docker** multi-stage builds to serve **5,000+** daily requests with **<80ms** response latency."*
-
-#### 🌐 Recommended Resume & Career Tools:
-- 🔗 [Resume AI Studio](/app/resume-ai) — Run real-time ATS scoring, generate STAR bullets, and tailor cold emails.
-- 🔗 [Google Technical Resume Guide](https://www.techinterviewhandbook.org/resume/) — Comprehensive format rules.
-
-👉 *Would you like me to rewrite a specific project description for you right now?*`;
-    }
-
-    if (q.includes('what to prepare today') || q.includes('what should i prepare') || q.includes('daily schedule') || q.includes('today')) {
-      return `### 📅 High-Yield Daily Preparation Plan for Today
-
-Here is your structured 4-stage placement readiness routine:
-
----
-
-#### ⏱️ **Block 1: Data Structures & Algorithms (60 Minutes)**
-- **Topic**: Two-Pointer Patterns & Binary Search (e.g., Search in Rotated Sorted Array, Container With Most Water).
-- **Goal**: Solve 2 LeetCode Medium problems in under 25 minutes each.
-- **Resource**: 🌐 [NeetCode 150 Blind Roadmap](https://neetcode.io/roadmap) | 🌐 [LeetCode Blind 75](https://leetcode.com/studyplan/blind-75/)
-
----
-
-#### ⏱️ **Block 2: Core Stack & System APIs (90 Minutes)**
-- **Topic**: Asynchronous APIs & Database Indexing (FastAPI / Node.js + PostgreSQL).
-- **Goal**: Implement clean CRUD endpoints with input validation and connection pooling.
-- **Resources**:
-  - 🌐 [FastAPI Async Documentation](https://fastapi.tiangolo.com/tutorial/)
-  - 🌐 [PostgreSQL Indexing & B-Tree Guide](https://use-the-index-luke.com/)
-
----
-
-#### ⏱️ **Block 3: System Design & CS Fundamentals (45 Minutes)**
-- **Topic**: Distributed Caching (Redis LRU Eviction & Write-Through vs Write-Back Caching).
-- **Goal**: Understand CAP Theorem tradeoffs and partition tolerance.
-- **Resource**: 🌐 [System Design Primer (GitHub)](https://github.com/donnemartin/system-design-primer)
-
----
-
-#### ⏱️ **Block 4: Diagnostic Assessment Verification (15 Minutes)**
-- **Goal**: Complete today's topic assessment in our **Assessment Center** to earn a verified skill badge on your profile!`;
-    }
-
-    if (q.includes('how to prepare') || q.includes('study plan') || q.includes('preparation strategy')) {
-      return `### 🚀 Step-by-Step Technical Placement Blueprint
-
-Follow this 5-step engineering study method:
-
-1. **Active Recall & Implementation**: Never passively read tutorials. Immediately write runnable code in your IDE to test edge cases.
-2. **The UMPIRE Problem-Solving Pattern**:
-   - **U**nderstand constraints $\\rightarrow$ **M**atch pattern (Hash Map, Sliding Window, BFS) $\\rightarrow$ **P**lan pseudocode $\\rightarrow$ **I**mplement $\\rightarrow$ **R**eview test cases $\\rightarrow$ **E**valuate Big-O time/space complexity.
-3. **Build Complete End-to-End Projects**: Implement backend authentication, relational database migrations, Docker containerization, and unit tests.
-4. **Daily Diagnostic Verification**: Take topic assessments on Skill2Career to prove competencies.
-
-#### 🌐 Essential Chrome Learning Links:
-- 🔗 [Python 3 Official Docs](https://docs.python.org/3/tutorial/)
-- 🔗 [FastAPI Official Docs](https://fastapi.tiangolo.com)
-- 🔗 [React.dev Interactive Guides](https://react.dev/learn)
-- 🔗 [NeetCode Algorithms Roadmap](https://neetcode.io/roadmap)
-- 🔗 [System Design Primer](https://github.com/donnemartin/system-design-primer)`;
-    }
-
-    if (q.includes('fastapi') || q.includes('backend') || q.includes('api')) {
-      return `### ⚡ FastAPI High-Performance Backend Architecture
-
-FastAPI is a modern, high-performance web framework for Python 3.10+ based on standard Python type hints.
-
-#### Key Architecture Principles:
-1. **Pydantic Data Validation**: Automatic serialization, deserialization, and JSON schema validation.
-2. **Async I/O Support**: Native \`async def\` route handlers running concurrently on the \`asyncio\` event loop.
-3. **Dependency Injection**: Modular \`Depends()\` system for database connection pooling, JWT auth validation, and rate limiting.
-
-#### 🌐 Official Chrome Links:
-- 🔗 [FastAPI Official Documentation](https://fastapi.tiangolo.com/)
-- 🔗 [Pydantic V2 Documentation](https://docs.pydantic.dev/latest/)
-
-👉 *Test your skills: Try the **FastAPI & Async APIs Assessment** in the Assessment Center!*`;
-    }
-
-    if (q.includes('python') || q.includes('py')) {
-      return `### 🐍 Python Core & OOP Mastery
-
-Python is the leading language for AI/ML, backend microservices, and algorithmic interviews.
-
-#### High-Frequency Interview Concepts:
-- **Dictionary & Set Internals**: Hash tables providing $O(1)$ average lookup and amortized insertion.
-- **Generators & Iterators**: Memory-efficient stream processing with \`yield\` ($O(1)$ auxiliary memory).
-- **List Comprehensions**: Execute in optimized C bytecode inside CPython.
-- **Object-Oriented Design**: \`@property\`, \`__dunder__\` methods, and abstract base classes (\`abc\`).
-
-#### 🌐 Official Chrome Links:
-- 🔗 [Python 3 Official Tutorial](https://docs.python.org/3/tutorial/)
-- 🔗 [Real Python Advanced Tutorials](https://realpython.com/)
-
-👉 *Test your skills: Take the **Python Core & OOP Assessment** in the Assessment Center!*`;
-    }
-
-    // Default intelligent greeting & guide
-    return `### 🤖 Skill2Career AI Placement Advisor
-
-I analyzed your question: **"${queryText}"**.
-
-Here are targeted recommendations based on your target role (**${profile?.target_career_title || 'Software Engineer'}**):
-
-1. 📅 **Daily Timetable**: Ask *"What should I prepare today?"* to get a 4-hour prioritized study routine.
-2. 🌐 **Chrome Documentation Links**: Ask for official documentation on Python, React, FastAPI, PyTorch, Docker, or SQL.
-3. 📝 **Topic Assessments**: Take quizzes in our **Assessment Center** across 16+ competencies to earn verified badges.
-4. 📄 **Resume Optimization**: Check the **Resume AI Studio** to score your resume on ATS and craft Google STAR bullets.
-
-*What specific technical topic or project would you like to explore next?*`;
-  };
+  }, [activeBranchCode]);
 
   const handleSend = async (queryText?: string) => {
     const query = (queryText || input).trim();
@@ -356,6 +375,9 @@ Here are targeted recommendations based on your target role (**${profile?.target
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: query,
+          branch: activeBranch.name,
+          role: activeBranch.defaultRole,
+          subject: activeBranch.defaultSubject,
           history: messages.slice(-6).map((m) => ({ role: m.role, content: m.content }))
         })
       });
@@ -365,7 +387,7 @@ Here are targeted recommendations based on your target role (**${profile?.target
         const aiMessage: ChatMessage = {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
-          content: data.reply || data.message || 'I am ready to help you with any questions or code!',
+          content: data.reply || data.message || 'I am ready to help you with any engineering topic, formula, or code!',
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         };
         setMessages((prev) => [...prev, aiMessage]);
@@ -377,7 +399,7 @@ Here are targeted recommendations based on your target role (**${profile?.target
       const aiMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: `I encountered a temporary connection issue. Please try sending your message again!`,
+        content: `I encountered a momentary connection issue. Please try sending your query again!`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       setMessages((prev) => [...prev, aiMessage]);
@@ -397,17 +419,21 @@ Here are targeted recommendations based on your target role (**${profile?.target
     const initMessage: ChatMessage = {
       id: 'init_msg_' + newId,
       role: 'assistant',
-      content: `### 🚀 New Session Started
+      content: `### 🚀 New Session Started (${activeBranch.emoji} ${activeBranch.name})
 
-How can I help you prepare today? You can ask for:
-- 📅 **"What should I prepare today?"**
-- ⚛️ **"Explain React hooks and give official Chrome documentation links"**
-- 📄 **"How do I build a strong engineering resume?"**
-- 📝 **"Test my skills with a quiz"**`,
+I am your Universal Engineering AI Copilot configured for **${activeBranch.name}**.
+
+Ask me anything regarding:
+- 📐 **Formula Derivations & Mathematical Proofs**
+- 📖 **Core Concept Explanations & Physical Intuition**
+- 🔬 **Lab & Simulation Software** (MATLAB, ANSYS, SolidWorks, Revit, Cadence, Aspen, ROS2, etc.)
+- 🎯 **Semester Exams & GATE / Competitive Exam Problem Solving**
+- 💼 **Career Roadmaps & Google STAR Resume Bullets**`,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
+
     setThreads((prev) => [
-      { id: newId, title: 'New Conversation', lastMessage: 'Starting new prep session...', date: 'Just now' },
+      { id: newId, title: `${activeBranch.code} Study Session`, branch: activeBranch.code, lastMessage: 'Starting new engineering session...', date: 'Just now' },
       ...prev
     ]);
     setActiveThreadId(newId);
@@ -426,14 +452,14 @@ How can I help you prepare today? You can ask for:
         {lines.map((line, idx) => {
           if (line.startsWith('### ')) {
             return (
-              <h3 key={idx} style={{ fontSize: '16px', fontWeight: 800, color: '#0f172a', margin: '6px 0 2px' }}>
+              <h3 key={idx} style={{ fontSize: '16px', fontWeight: 800, color: '#0f172a', margin: '8px 0 2px' }}>
                 {line.replace('### ', '')}
               </h3>
             );
           }
           if (line.startsWith('#### ')) {
             return (
-              <h4 key={idx} style={{ fontSize: '14px', fontWeight: 700, color: '#1e3a8a', margin: '4px 0 2px' }}>
+              <h4 key={idx} style={{ fontSize: '14px', fontWeight: 700, color: '#1e3a8a', margin: '6px 0 2px' }}>
                 {line.replace('#### ', '')}
               </h4>
             );
@@ -451,40 +477,23 @@ How can I help you prepare today? You can ask for:
                 {parts[0]}
                 <a
                   href={linkMatch[2]}
-                  target={linkMatch[2].startsWith('http') ? '_blank' : '_self'}
+                  target="_blank"
                   rel="noreferrer"
-                  onClick={(e) => {
-                    if (linkMatch[2].startsWith('/')) {
-                      e.preventDefault();
-                      navigate(linkMatch[2]);
-                    }
-                  }}
-                  style={{
-                    color: '#006EFF',
-                    fontWeight: 700,
-                    textDecoration: 'none',
-                    background: '#eff6ff',
-                    padding: '2px 6px',
-                    borderRadius: '4px',
-                    border: '1px solid #bfdbfe',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '4px'
-                  }}
+                  style={{ color: '#006EFF', fontWeight: 600, textDecoration: 'underline' }}
                 >
-                  <span>{linkMatch[1]}</span>
-                  <ExternalLink size={12} />
+                  {linkMatch[1]}
                 </a>
-                {parts[3]}
+                {parts[3] || ''}
               </div>
             );
           }
 
-          if (line.trim().startsWith('- ') || line.trim().startsWith('• ')) {
+          // Bullet points
+          if (line.trim().startsWith('- ') || line.trim().startsWith('* ')) {
             return (
-              <div key={idx} style={{ display: 'flex', gap: '8px', fontSize: '13px', paddingLeft: '8px' }}>
-                <span style={{ color: '#006EFF', fontWeight: 700 }}>•</span>
-                <span>{line.replace(/^[-•]\s*/, '')}</span>
+              <div key={idx} style={{ display: 'flex', gap: '8px', fontSize: '13px', color: '#1e293b' }}>
+                <span style={{ color: '#006EFF', fontWeight: 800 }}>•</span>
+                <span>{line.replace(/^[-*]\s+/, '')}</span>
               </div>
             );
           }
@@ -494,30 +503,22 @@ How can I help you prepare today? You can ask for:
           }
 
           return (
-            <div key={idx} style={{ fontSize: '13px' }}>
+            <p key={idx} style={{ fontSize: '13px', color: '#1e293b', margin: 0 }}>
               {line}
-            </div>
+            </p>
           );
         })}
       </div>
     );
   };
 
-  const quickPrompts = [
-    { label: '📅 What should I prepare today?', query: 'What should I prepare today for my target career goal?' },
-    { label: '⚛️ Explain React Hooks & Chrome Docs', query: 'Explain React hooks and give official Chrome documentation links' },
-    { label: '📄 How to Build a Strong Resume', query: 'How to build a high-scoring ATS resume with STAR bullet points?' },
-    { label: '⚡ FastAPI & Async Microservices', query: 'Explain FastAPI async architecture and give official Chrome docs links' },
-    { label: '📝 Recommend an Assessment', query: 'Recommend a diagnostic assessment for me to verify my skills today' }
-  ];
-
   return (
     <div style={{ display: 'flex', height: 'calc(100vh - 62px)', background: '#f8fafc', overflow: 'hidden' }}>
-      {/* ── Left Sidebar (Chat Sessions) ── */}
+      {/* ── Left Sidebar (Chat Sessions & Branch Navigation) ── */}
       <aside
         style={{
-          width: '260px',
-          minWidth: '260px',
+          width: '270px',
+          minWidth: '270px',
           background: '#ffffff',
           borderRight: '1px solid #e2e8f0',
           display: 'flex',
@@ -540,17 +541,31 @@ How can I help you prepare today? You can ask for:
               background: '#006EFF',
               color: '#ffffff',
               borderRadius: '8px',
-              fontSize: '13px',
-              fontWeight: 700,
               border: 'none',
+              fontWeight: 700,
+              fontSize: '13px',
               cursor: 'pointer',
               marginBottom: '16px',
-              boxShadow: '0 2px 6px rgba(0, 110, 255, 0.2)'
+              boxShadow: '0 2px 6px rgba(0, 110, 255, 0.25)'
             }}
           >
             <Plus size={16} />
             <span>New Chat Session</span>
           </button>
+
+          {/* Active Discipline Indicator */}
+          <div style={{ background: '#f8fafc', padding: '10px 12px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '16px' }}>
+            <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: '4px' }}>
+              Active Engineering Discipline
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 800, color: '#0f172a' }}>
+              <span>{activeBranch.emoji}</span>
+              <span>{activeBranch.name.split('(')[0]}</span>
+            </div>
+            <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
+              Track: <strong>{activeBranch.defaultRole}</strong>
+            </div>
+          </div>
 
           <div style={{ fontSize: '11px', fontWeight: 800, color: '#94a3b8', padding: '0 8px', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             Recent Sessions
@@ -604,10 +619,10 @@ How can I help you prepare today? You can ask for:
             }}
           >
             <ShieldCheck size={15} className="text-emerald-600" />
-            <span>Topic Assessments (16+)</span>
+            <span>Multi-Branch Assessments (35+)</span>
           </button>
           <button
-            onClick={() => navigate('/app/resume-ai')}
+            onClick={() => navigate('/app/skill-gap')}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -623,75 +638,110 @@ How can I help you prepare today? You can ask for:
               textAlign: 'left'
             }}
           >
-            <Sparkles size={15} className="text-blue-600" />
-            <span>Resume AI Studio</span>
+            <Compass size={15} className="text-blue-600" />
+            <span>Skill Gap & Hierarchy Pathway</span>
           </button>
         </div>
       </aside>
 
       {/* ── Center Conversation Area ── */}
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', minWidth: 0 }}>
-        {/* Header */}
+        {/* Top Header */}
         <header
           style={{
-            height: '56px',
             background: '#ffffff',
             borderBottom: '1px solid #e2e8f0',
-            padding: '0 24px',
+            padding: '10px 24px',
             display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between'
+            flexDirection: 'column',
+            gap: '8px'
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div
-              style={{
-                width: '34px',
-                height: '34px',
-                borderRadius: '8px',
-                background: 'linear-gradient(135deg, #1e40af 0%, #006EFF 100%)',
-                color: '#ffffff',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 2px 6px rgba(0, 110, 255, 0.25)'
-              }}
-            >
-              <Bot size={18} />
-            </div>
-            <div>
-              <h1 style={{ fontSize: '15px', fontWeight: 800, color: '#0f172a', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                Skill2Career AI Mentor
-                <span style={{ fontSize: '10px', background: '#dbeafe', color: '#1e40af', padding: '2px 8px', borderRadius: '12px', fontWeight: 700 }}>
-                  Gemini & Multi-Agent Active
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div
+                style={{
+                  width: '34px',
+                  height: '34px',
+                  borderRadius: '8px',
+                  background: 'linear-gradient(135deg, #1e40af 0%, #006EFF 100%)',
+                  color: '#ffffff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 2px 6px rgba(0, 110, 255, 0.25)'
+                }}
+              >
+                <Bot size={18} />
+              </div>
+              <div>
+                <h1 style={{ fontSize: '15px', fontWeight: 800, color: '#0f172a', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  Skill2Career Universal AI Engineering & Educational Copilot
+                  <span style={{ fontSize: '10px', background: '#dbeafe', color: '#1e40af', padding: '2px 8px', borderRadius: '12px', fontWeight: 700 }}>
+                    Gemini Multi-Discipline
+                  </span>
+                </h1>
+                <span style={{ fontSize: '11px', color: '#64748b' }}>
+                  Branch: <strong>{activeBranch.name}</strong> • Role Track: <strong>{activeBranch.defaultRole}</strong>
                 </span>
-              </h1>
-              <span style={{ fontSize: '11px', color: '#64748b' }}>
-                Target: <strong>{profile?.target_career_title || 'Software Engineer'}</strong> • Student: <strong>{profile?.full_name || 'Alex Chen'}</strong>
-              </span>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button
+                onClick={() => navigate('/app/assessments')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '6px 12px',
+                  background: '#ecfdf5',
+                  border: '1px solid #a7f3d0',
+                  borderRadius: '6px',
+                  color: '#065f46',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  cursor: 'pointer'
+                }}
+              >
+                <ShieldCheck size={14} />
+                <span>Take {activeBranch.code} Assessment</span>
+              </button>
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <button
-              onClick={() => navigate('/app/assessments')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '6px 12px',
-                background: '#ecfdf5',
-                border: '1px solid #a7f3d0',
-                borderRadius: '6px',
-                color: '#065f46',
-                fontSize: '12px',
-                fontWeight: 700,
-                cursor: 'pointer'
-              }}
-            >
-              <ShieldCheck size={14} />
-              <span>Skill Assessments</span>
-            </button>
+          {/* Discipline Selector Ribbon */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflowX: 'auto', paddingBottom: '2px' }}>
+            <span style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', whiteSpace: 'nowrap' }}>
+              Switch Discipline:
+            </span>
+            {COPILOT_BRANCHES.map((b) => {
+              const isSelected = activeBranchCode === b.code;
+              return (
+                <button
+                  key={b.code}
+                  onClick={() => setActiveBranchCode(b.code)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: '4px 10px',
+                    borderRadius: '12px',
+                    fontSize: '11px',
+                    fontWeight: isSelected ? 700 : 500,
+                    background: isSelected ? '#006EFF' : '#f1f5f9',
+                    color: isSelected ? '#ffffff' : '#334155',
+                    border: isSelected ? '1px solid #006EFF' : '1px solid #e2e8f0',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    transition: 'all 0.15s'
+                  }}
+                >
+                  <span>{b.emoji}</span>
+                  <span>{b.code}</span>
+                </button>
+              );
+            })}
           </div>
         </header>
 
@@ -703,7 +753,7 @@ How can I help you prepare today? You can ask for:
               style={{
                 display: 'flex',
                 gap: '14px',
-                maxWidth: msg.role === 'user' ? '80%' : '88%',
+                maxWidth: '84%',
                 alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start'
               }}
             >
@@ -718,8 +768,8 @@ How can I help you prepare today? You can ask for:
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    flexShrink: 0,
-                    boxShadow: '0 2px 6px rgba(0, 110, 255, 0.2)'
+                    boxShadow: '0 2px 6px rgba(0, 110, 255, 0.2)',
+                    flexShrink: 0
                   }}
                 >
                   <Bot size={18} />
@@ -729,37 +779,45 @@ How can I help you prepare today? You can ask for:
               <div
                 style={{
                   background: msg.role === 'user' ? '#006EFF' : '#ffffff',
-                  color: msg.role === 'user' ? '#ffffff' : '#1e293b',
-                  borderRadius: '14px',
-                  padding: '16px 20px',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+                  color: msg.role === 'user' ? '#ffffff' : '#0f172a',
                   border: msg.role === 'user' ? 'none' : '1px solid #e2e8f0',
-                  fontSize: '14px'
+                  borderRadius: msg.role === 'user' ? '14px 14px 2px 14px' : '14px 14px 14px 2px',
+                  padding: '16px 20px',
+                  boxShadow: msg.role === 'user' ? '0 2px 8px rgba(0, 110, 255, 0.25)' : '0 1px 3px rgba(0,0,0,0.05)',
+                  position: 'relative'
                 }}
               >
-                {renderFormattedContent(msg.content)}
+                {msg.role === 'assistant' ? (
+                  renderFormattedContent(msg.content)
+                ) : (
+                  <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.5 }}>{msg.content}</p>
+                )}
 
                 <div
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'space-between',
-                    marginTop: '12px',
-                    paddingTop: '8px',
-                    borderTop: msg.role === 'user' ? '1px solid rgba(255,255,255,0.2)' : '1px solid #f1f5f9',
+                    justifyContent: 'flex-end',
+                    gap: '8px',
+                    marginTop: '8px',
                     fontSize: '11px',
-                    color: msg.role === 'user' ? '#dbeafe' : '#94a3b8'
+                    color: msg.role === 'user' ? '#bfdbfe' : '#94a3b8'
                   }}
                 >
                   <span>{msg.timestamp}</span>
                   {msg.role === 'assistant' && (
                     <button
                       onClick={() => handleCopy(msg.id, msg.content)}
-                      style={{ background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
-                      title="Copy message"
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        color: copiedId === msg.id ? '#10b981' : '#94a3b8',
+                        padding: 0
+                      }}
+                      title="Copy response"
                     >
-                      {copiedId === msg.id ? <Check size={13} className="text-emerald-600" /> : <Copy size={13} />}
-                      <span>{copiedId === msg.id ? 'Copied' : 'Copy'}</span>
+                      {copiedId === msg.id ? <Check size={12} /> : <Copy size={12} />}
                     </button>
                   )}
                 </div>
@@ -771,8 +829,8 @@ How can I help you prepare today? You can ask for:
                     width: '34px',
                     height: '34px',
                     borderRadius: '8px',
-                    background: '#cbd5e1',
-                    color: '#334155',
+                    background: '#e2e8f0',
+                    color: '#475569',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -804,7 +862,7 @@ How can I help you prepare today? You can ask for:
               </div>
               <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '14px', padding: '14px 20px', display: 'flex', alignItems: 'center', gap: '10px', color: '#64748b', fontSize: '13px' }}>
                 <RotateCcw size={15} className="animate-spin text-blue-600" />
-                <span>Formulating personalized response and fetching Chrome docs…</span>
+                <span>Formulating personalized engineering response for {activeBranch.name}…</span>
               </div>
             </div>
           )}
@@ -812,9 +870,9 @@ How can I help you prepare today? You can ask for:
           <div ref={chatEndRef} />
         </div>
 
-        {/* Quick Suggestion Chips */}
+        {/* Quick Suggestion Chips (Dynamically based on active engineering branch) */}
         <div style={{ padding: '8px 32px', background: '#ffffff', borderTop: '1px solid #f1f5f9', display: 'flex', gap: '8px', overflowX: 'auto' }}>
-          {quickPrompts.map((p, idx) => (
+          {branchQuickPrompts.map((p, idx) => (
             <button
               key={idx}
               onClick={() => handleSend(p.query)}
@@ -865,17 +923,16 @@ How can I help you prepare today? You can ask for:
                   handleSend();
                 }
               }}
-              placeholder="Ask anything: Explain React hooks, what to prepare today, build a new resume, get Chrome docs..."
+              placeholder={`Ask any question about ${activeBranch.name}, formulas, lab software, exams, or career advice...`}
               style={{
                 flex: 1,
-                background: 'transparent',
                 border: 'none',
-                resize: 'none',
-                outline: 'none',
-                fontSize: '14px',
+                background: 'transparent',
+                fontSize: '13px',
                 color: '#0f172a',
-                lineHeight: 1.4,
-                maxHeight: '120px'
+                outline: 'none',
+                resize: 'none',
+                fontFamily: 'inherit'
               }}
             />
 
@@ -883,31 +940,29 @@ How can I help you prepare today? You can ask for:
               type="submit"
               disabled={!input.trim() || loading}
               style={{
-                background: '#006EFF',
+                width: '36px',
+                height: '36px',
+                borderRadius: '8px',
+                background: input.trim() && !loading ? '#006EFF' : '#cbd5e1',
                 color: '#ffffff',
                 border: 'none',
-                borderRadius: '8px',
-                padding: '10px 18px',
-                fontSize: '13px',
-                fontWeight: 700,
-                cursor: !input.trim() || loading ? 'not-allowed' : 'pointer',
-                opacity: !input.trim() || loading ? 0.4 : 1,
+                cursor: input.trim() && !loading ? 'pointer' : 'not-allowed',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px'
+                justifyContent: 'center',
+                transition: 'background 0.15s'
               }}
             >
-              <span>Send</span>
-              <Send size={15} />
+              <Send size={16} />
             </button>
           </form>
-
-          <div style={{ fontSize: '11px', color: '#94a3b8', textAlign: 'center', marginTop: '8px' }}>
-            Skill2Career AI provides structured guidance, verified documentation links, and real-time assessments.
+          <div style={{ fontSize: '11px', color: '#94a3b8', textAlign: 'center', marginTop: '6px' }}>
+            Skill2Career Universal AI supports all branches • Formula derivations, verified academic concepts & lab workflows
           </div>
         </div>
       </main>
     </div>
   );
 };
+
 export default AICopilotPage;

@@ -20,7 +20,7 @@ export function AIChatbox() {
   const initialAssistantMessage: Message = {
     id: 'init',
     role: 'assistant',
-    content: `Hello! 👋 I am your **Skill2Career AI Mentor** powered by Google Gemini.\n\nAsk me anything: solve & debug code, practice DSA or System Design, write STAR-method resume points, or get personalized placement guidance!`,
+    content: `Hello! 👋 I am your **Skill2Career Universal AI Engineering Copilot** powered by Google Gemini.\n\nAsk me anything: formula derivations, engineering concepts across all branches (**CSE, ECE, MECH, CIVIL, EE, CHEM, BIOTECH, AERO, ROBOTICS, DS**), semester exam & GATE problem solving, or tailored resume guidance!`,
     timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
   };
 
