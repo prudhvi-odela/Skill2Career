@@ -4,10 +4,10 @@ import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import { KPICard } from '../components/KPICard';
 import { SkeletonLoader, EmptyState, ErrorState } from '../components/StateFeedback';
-import { BranchCareerGoalNavigator } from '../components/BranchCareerGoalNavigator';
-import { getCareersForBranch } from '../data/branchCareerRoles';
+import { ALL_CAREER_ROLES, getCareersForBranch } from '../data/branchCareerRoles';
 import { JobDescriptionMatcher } from '../components/skillbridge/JobDescriptionMatcher';
 import { InteractiveLearningPath } from '../components/skillbridge/InteractiveLearningPath';
+import { BranchCareerGoalNavigator } from '../components/BranchCareerGoalNavigator';
 import {
   Target, FileText, Sparkles, ChevronRight, Zap
 } from 'lucide-react';
@@ -26,14 +26,14 @@ export const SkillGapPage: React.FC = () => {
 
   useEffect(() => {
     loadCareersAndGap();
-  }, [profile?.target_career_id, userBranch]);
+  }, [profile?.target_career_id, profile?.target_career_title, userBranch]);
 
   const loadCareersAndGap = async () => {
     setLoading(true);
     setError(null);
     try {
       const res = await careersApi.getCareers(undefined, userBranch);
-      let list = res.data;
+      let list: any[] = res.data || [];
       if (!list || list.length === 0) {
         list = getCareersForBranch(userBranch).map(c => ({
           career_id: c.career_id,
@@ -41,8 +41,23 @@ export const SkillGapPage: React.FC = () => {
           domain: c.domain,
         }));
       }
+
+      // Ensure the student's target career (e.g. Process Engineer) is always in the dropdown
+      const targetId = profile?.target_career_id;
+      const targetTitle = profile?.target_career_title;
+      if (targetId && !list.some(c => (c.career_id || c.id) === targetId)) {
+        const found = ALL_CAREER_ROLES.find(c => (c.career_id || c.id) === targetId || c.career_title?.toLowerCase() === targetTitle?.toLowerCase());
+        if (found) {
+          list.unshift({
+            career_id: found.career_id,
+            career_title: found.career_title,
+            domain: found.domain,
+          });
+        }
+      }
+
       setCareers(list);
-      const initialId = profile?.target_career_id || (list.length > 0 ? (list[0].career_id || list[0].id) : '');
+      const initialId = targetId || (list.length > 0 ? (list[0].career_id || list[0].id) : '');
       setSelectedCareerId(initialId);
       if (initialId) {
         const gapRes = await analysisApi.getSkillGap(initialId);
@@ -96,44 +111,82 @@ export const SkillGapPage: React.FC = () => {
 
   return (
     <div className="animate-fade-in" style={{ padding: '24px', maxWidth: '1400px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {/* SkillBridge Header */}
-      <div
-        className="skillbridge-card"
-        style={{
-          padding: '24px 28px',
-          background: 'radial-gradient(ellipse at 80% 20%, #eff6ff 0%, #ffffff 80%)',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '16px',
-        }}
-      >
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-            <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#1e40af', background: '#dbeafe', border: '1px solid #bfdbfe', padding: '2px 8px', borderRadius: '4px', textTransform: 'uppercase' }}>
-              SkillBridge Engine
-            </span>
-            <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
-              Competency Diagnosis · Explainable Readiness · Learning Milestones
-            </span>
-          </div>
-          <h1 style={{ fontSize: '1.6rem', fontWeight: 900, color: '#0f172a', margin: '2px 0 6px 0', letterSpacing: '-0.02em' }}>
-            Skill Gap & Learning Path Architecture
-          </h1>
-          <p style={{ color: '#475569', fontSize: '0.875rem', margin: 0, maxWidth: '820px' }}>
-            Transforming broad career aspirations into concrete competency roadmaps. Measure your deficit deltas against hiring benchmarks, test job descriptions, and unlock tailored remediation milestones.
-          </p>
+      {/* Sleek Top Bar with Tabs and Target Role Selector */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px' }}>
+        {/* Main SkillBridge Tabs (Functional Segmented Control) */}
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          <button
+            onClick={() => setActiveTab('matrix')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '10px 18px',
+              borderRadius: '8px',
+              fontSize: '0.875rem',
+              fontWeight: 700,
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+              background: activeTab === 'matrix' ? '#1e40af' : '#f1f5f9',
+              color: activeTab === 'matrix' ? '#ffffff' : '#64748b',
+              boxShadow: activeTab === 'matrix' ? '0 2px 6px rgba(30, 64, 175, 0.2)' : 'none',
+            }}
+          >
+            <Target size={16} /> Skill Gap Matrix
+          </button>
+
+          <button
+            onClick={() => setActiveTab('jd-matcher')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '10px 18px',
+              borderRadius: '8px',
+              fontSize: '0.875rem',
+              fontWeight: 700,
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+              background: activeTab === 'jd-matcher' ? '#1e40af' : '#f1f5f9',
+              color: activeTab === 'jd-matcher' ? '#ffffff' : '#64748b',
+              boxShadow: activeTab === 'jd-matcher' ? '0 2px 6px rgba(30, 64, 175, 0.2)' : 'none',
+            }}
+          >
+            <FileText size={16} /> Job Description Matcher
+          </button>
+
+          <button
+            onClick={() => setActiveTab('roadmap')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '10px 18px',
+              borderRadius: '8px',
+              fontSize: '0.875rem',
+              fontWeight: 700,
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+              background: activeTab === 'roadmap' ? '#1e40af' : '#f1f5f9',
+              color: activeTab === 'roadmap' ? '#ffffff' : '#64748b',
+              boxShadow: activeTab === 'roadmap' ? '0 2px 6px rgba(30, 64, 175, 0.2)' : 'none',
+            }}
+          >
+            <Sparkles size={16} /> Learning Path Milestones
+          </button>
         </div>
 
-        {/* Global Action & Career Picker */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '280px' }}>
-          <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase' }}>
-            Target Benchmark Role:
+        {/* Target Benchmark Role Selector */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
+            Target Benchmark:
           </label>
           <select
             className="select-field"
-            style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontWeight: 600, fontSize: '0.85rem' }}
+            style={{ minWidth: '260px', padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontWeight: 600, fontSize: '0.85rem' }}
             value={selectedCareerId}
             onChange={handleCareerChange}
           >
@@ -148,72 +201,6 @@ export const SkillGapPage: React.FC = () => {
             })}
           </select>
         </div>
-      </div>
-
-      {/* Main SkillBridge Tabs (Functional Segmented Control) */}
-      <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid #e2e8f0', paddingBottom: '4px' }}>
-        <button
-          onClick={() => setActiveTab('matrix')}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '10px 18px',
-            borderRadius: '8px',
-            fontSize: '0.875rem',
-            fontWeight: 700,
-            border: 'none',
-            cursor: 'pointer',
-            transition: 'all 0.15s ease',
-            background: activeTab === 'matrix' ? '#1e40af' : 'transparent',
-            color: activeTab === 'matrix' ? '#ffffff' : '#64748b',
-            boxShadow: activeTab === 'matrix' ? '0 2px 6px rgba(30, 64, 175, 0.2)' : 'none',
-          }}
-        >
-          <Target size={16} /> Skill Gap Matrix
-        </button>
-
-        <button
-          onClick={() => setActiveTab('jd-matcher')}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '10px 18px',
-            borderRadius: '8px',
-            fontSize: '0.875rem',
-            fontWeight: 700,
-            border: 'none',
-            cursor: 'pointer',
-            transition: 'all 0.15s ease',
-            background: activeTab === 'jd-matcher' ? '#1e40af' : 'transparent',
-            color: activeTab === 'jd-matcher' ? '#ffffff' : '#64748b',
-            boxShadow: activeTab === 'jd-matcher' ? '0 2px 6px rgba(30, 64, 175, 0.2)' : 'none',
-          }}
-        >
-          <FileText size={16} /> Job Description Matcher
-        </button>
-
-        <button
-          onClick={() => setActiveTab('roadmap')}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '10px 18px',
-            borderRadius: '8px',
-            fontSize: '0.875rem',
-            fontWeight: 700,
-            border: 'none',
-            cursor: 'pointer',
-            transition: 'all 0.15s ease',
-            background: activeTab === 'roadmap' ? '#1e40af' : 'transparent',
-            color: activeTab === 'roadmap' ? '#ffffff' : '#64748b',
-            boxShadow: activeTab === 'roadmap' ? '0 2px 6px rgba(30, 64, 175, 0.2)' : 'none',
-          }}
-        >
-          <Sparkles size={16} /> Learning Path Milestones
-        </button>
       </div>
 
       {/* Tab 2: Job Description Matcher */}
@@ -233,13 +220,13 @@ export const SkillGapPage: React.FC = () => {
 
       {/* Tab 1: Detailed Skill Gap Matrix */}
       {activeTab === 'matrix' && (
-        <>
-          {/* Interactive Branch -> Career Goal -> Required Skills Hierarchy */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          {/* Complete Career Goal, Required Skills & Subject Gap Pathway Workflow */}
           <BranchCareerGoalNavigator
-            initialBranchCode={profile?.branch || profile?.major_or_branch}
-            onSelectCareer={(id) => {
-              setSelectedCareerId(id);
-              fetchGap(id);
+            initialBranchCode={userBranch}
+            onSelectCareer={(careerId) => {
+              setSelectedCareerId(careerId);
+              fetchGap(careerId);
             }}
           />
 
@@ -425,7 +412,7 @@ export const SkillGapPage: React.FC = () => {
               </div>
             </>
           )}
-        </>
+        </div>
       )}
     </div>
   );

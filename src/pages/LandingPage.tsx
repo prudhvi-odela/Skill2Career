@@ -200,23 +200,15 @@ export const LandingPage: React.FC = () => {
             </p>
           </div>
 
-          {/* Action CTAs */}
+          {/* Action CTA - Single Clear Gateway Button */}
           <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap', alignItems: 'center' }}>
             <Link
-              to="/register"
-              className="btn-primary"
-              style={{ padding: '12px 26px', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '8px' }}
-            >
-              <span>Enroll Student Account Free</span>
-              <ArrowRight size={16} />
-            </Link>
-
-            <Link
               to="/login"
-              className="btn-secondary"
-              style={{ padding: '12px 22px', fontSize: '0.95rem' }}
+              className="btn-primary"
+              style={{ padding: '12px 28px', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '8px' }}
             >
-              Official Sign In
+              <span>Official Sign In / Student Portal</span>
+              <ArrowRight size={16} />
             </Link>
           </div>
 

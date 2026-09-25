@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { careersApi, studentApi } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { SkeletonLoader, ErrorState } from '../components/StateFeedback';
+import { getBranchByCode } from '../data/engineeringBranches';
 
 export const CareerDetailPage: React.FC = () => {
   const { careerId } = useParams<{ careerId: string }>();
@@ -37,7 +38,17 @@ export const CareerDetailPage: React.FC = () => {
     if (!careerId) return;
     setSettingTarget(true);
     try {
-      await studentApi.updateProfile({ target_career_id: careerId });
+      const careerBranchCode = career?.branch_codes?.[0] || career?.branch_code;
+      const branchDef = careerBranchCode ? getBranchByCode(careerBranchCode) : undefined;
+      const payload: any = {
+        target_career_id: careerId,
+        target_career_title: career?.career_title || career?.title,
+      };
+      if (branchDef) {
+        payload.branch = branchDef.code;
+        payload.major_or_branch = `${branchDef.name} (${branchDef.code})`;
+      }
+      await studentApi.updateProfile(payload);
       await refreshProfile();
       navigate('/app/skill-gap');
     } catch (err: any) {

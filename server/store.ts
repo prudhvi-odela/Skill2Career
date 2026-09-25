@@ -487,15 +487,35 @@ class DataStore {
       },
       updated_at: new Date().toISOString()
     };
-    if (data.target_career_id) {
+    if (data.target_career_id || data.target_career_title) {
+      const targetQuery = data.target_career_id || data.target_career_title;
       const career = CAREER_ROLES.find(c =>
-        c.career_id === data.target_career_id ||
-        (c as any).id === data.target_career_id ||
-        c.career_title?.toLowerCase() === data.target_career_id.toLowerCase()
+        c.career_id === targetQuery ||
+        (c as any).id === targetQuery ||
+        c.career_title?.toLowerCase() === String(targetQuery).toLowerCase()
       );
       if (career) {
         updated.target_career_title = career.career_title;
+        updated.target_career_id = career.career_id;
+        // If student does not have an explicit custom branch override passed in this update,
+        // sync the branch to match the career's discipline if the student's branch was generic CSE
+        if (!data.branch && !data.major_or_branch && career.domain) {
+          const code = career.branch_codes?.[0] ? ` (${career.branch_codes[0]})` : '';
+          const fullBranch = `${career.domain}${code}`;
+          if (career.branch_codes?.[0] && career.branch_codes[0] !== 'CSE') {
+            updated.branch = career.branch_codes[0];
+            updated.major_or_branch = fullBranch;
+          }
+        }
       }
+    }
+    if (data.branch) {
+      updated.branch = data.branch;
+      updated.major_or_branch = data.major_or_branch || data.branch;
+    }
+    if (data.major_or_branch) {
+      updated.major_or_branch = data.major_or_branch;
+      if (!data.branch) updated.branch = data.major_or_branch;
     }
     this.profiles.set(userId, updated);
     if (updated.email) {

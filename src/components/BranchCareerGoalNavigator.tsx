@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { studentApi } from '../api/client';
 import { CAREER_GOALS_DATA, getCareerGoalsForBranch } from '../data/careerGoalsHierarchy';
 import type { CareerGoalDefinition } from '../data/careerGoalsHierarchy';
+import { getBranchByCode } from '../data/engineeringBranches';
 import {
   Target,
   ArrowRight,
@@ -11,7 +12,6 @@ import {
   CheckCircle2,
   Sparkles,
   RefreshCw,
-  ChevronRight,
   TrendingUp
 } from 'lucide-react';
 
@@ -28,7 +28,8 @@ export const BranchCareerGoalNavigator: React.FC<Props> = ({ initialBranchCode, 
   // STEP 1: Branch Selection State
   // -------------------------------------------------------------
   const userBranchCode = profile?.branch || profile?.major_or_branch || initialBranchCode || 'CSE';
-  const [selectedBranch, setSelectedBranch] = useState<string>(userBranchCode);
+  const resolvedBranchCode = getBranchByCode(userBranchCode).code;
+  const [selectedBranch, setSelectedBranch] = useState<string>(resolvedBranchCode);
   const [branchSearch, setBranchSearch] = useState<string>('');
 
   // -------------------------------------------------------------
@@ -137,10 +138,15 @@ export const BranchCareerGoalNavigator: React.FC<Props> = ({ initialBranchCode, 
     setSavingTarget(true);
     setSaveSuccessMsg(null);
     try {
-      await studentApi.updateProfile({ target_career_id: goal.id });
+      await studentApi.updateProfile({
+        target_career_id: goal.id,
+        target_career_title: goal.title,
+        branch: goal.branch_code,
+        major_or_branch: `${goal.branch_name} (${goal.branch_code})`
+      });
       await refreshProfile();
       if (onSelectCareer) onSelectCareer(goal.id);
-      setSaveSuccessMsg(`Target career successfully updated to ${goal.title}!`);
+      setSaveSuccessMsg(`Target career successfully updated to ${goal.title} (${goal.branch_name})!`);
       setTimeout(() => setSaveSuccessMsg(null), 4000);
     } catch (err) {
       console.error('Error saving target career goal:', err);
@@ -263,76 +269,6 @@ export const BranchCareerGoalNavigator: React.FC<Props> = ({ initialBranchCode, 
               {selectedBranch}
             </span>
           </div>
-        </div>
-
-        {/* 6-Step Visual Hierarchy Stepper */}
-        <div
-          style={{
-            marginTop: '16px',
-            background: '#f8fafc',
-            border: '1px solid #e2e8f0',
-            borderRadius: '10px',
-            padding: '12px 16px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: '8px'
-          }}
-        >
-          {[
-            { step: 1, label: 'Branch', desc: selectedBranch },
-            { step: 2, label: 'Career Goal', desc: activeGoal?.title || 'Target Role' },
-            { step: 3, label: 'Required Skills', desc: `${activeGoal?.required_skills.length || 0} Skills` },
-            { step: 4, label: 'Skill Level', desc: '1.0 - 5.0 Scale' },
-            { step: 5, label: 'Skill Gap', desc: `${gapAnalysis.readinessPct}% Readiness` },
-            { step: 6, label: 'Learning Roadmap', desc: 'Main Subjects' }
-          ].map((item, idx) => (
-            <React.Fragment key={item.step}>
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '6px 10px',
-                  borderRadius: '6px',
-                  background: '#ffffff',
-                  border: '1px solid #cbd5e1',
-                  boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
-                }}
-              >
-                <span
-                  style={{
-                    width: '22px',
-                    height: '22px',
-                    borderRadius: '50%',
-                    background: '#006EFF',
-                    color: '#ffffff',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '0.72rem',
-                    fontWeight: 800
-                  }}
-                >
-                  {item.step}
-                </span>
-                <div>
-                  <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#0f172a', lineHeight: 1.1 }}>
-                    {item.label}
-                  </div>
-                  <div style={{ fontSize: '0.68rem', color: '#64748b', maxWidth: '110px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {item.desc}
-                  </div>
-                </div>
-              </div>
-              {idx < 5 && (
-                <div style={{ color: '#006EFF', display: 'flex', alignItems: 'center' }}>
-                  <ChevronRight size={16} />
-                </div>
-              )}
-            </React.Fragment>
-          ))}
         </div>
       </div>
 

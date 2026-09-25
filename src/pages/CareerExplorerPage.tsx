@@ -3,9 +3,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { careersApi, studentApi } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { SkeletonLoader, EmptyState, ErrorState } from '../components/StateFeedback';
-import { ALL_BRANCHES, ENGINEERING_CATEGORIES } from '../data/engineeringBranches';
+import { ALL_BRANCHES, ENGINEERING_CATEGORIES, getBranchByCode } from '../data/engineeringBranches';
 import { ALL_CAREER_ROLES, getCareersForBranch } from '../data/branchCareerRoles';
 import { BranchCareerGoalNavigator } from '../components/BranchCareerGoalNavigator';
+import { CheckCircle2, Sparkles, GraduationCap, ArrowRight } from 'lucide-react';
 
 export const CareerExplorerPage: React.FC = () => {
   const { profile, refreshProfile } = useAuth();
@@ -17,18 +18,23 @@ export const CareerExplorerPage: React.FC = () => {
   const [selectedBranch, setSelectedBranch] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [updatingDiscipline, setUpdatingDiscipline] = useState(false);
+  const [feedbackMsg, setFeedbackMsg] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const userBranchCode = profile?.branch || profile?.major_or_branch || 'CSE';
-  const userBranchDef = ALL_BRANCHES.find(
-    b => b.code.toUpperCase() === userBranchCode.toUpperCase() ||
-         b.name.toUpperCase().includes(userBranchCode.toUpperCase())
-  ) || ALL_BRANCHES[0];
+  const userBranchDef = getBranchByCode(userBranchCode);
+  
+  // Active focused branch def
+  const activeFocusDef = selectedBranch && selectedBranch !== 'All' 
+    ? getBranchByCode(selectedBranch) 
+    : userBranchDef;
+  const isExploringDifferentBranch = selectedBranch && selectedBranch !== 'All' && selectedBranch.toUpperCase() !== userBranchDef.code.toUpperCase();
 
   useEffect(() => {
     // Default to student's enrolled branch on first load
     setSelectedBranch(userBranchDef.code);
-  }, [userBranchCode]);
+  }, [userBranchDef.code]);
 
   useEffect(() => {
     loadCareers();
@@ -59,9 +65,42 @@ export const CareerExplorerPage: React.FC = () => {
     }
   };
 
-  const handleSetTarget = async (careerId: string) => {
+  const handleUpdateEnrolledDiscipline = async (branchCode: string) => {
+    const branchDef = getBranchByCode(branchCode);
+    setUpdatingDiscipline(true);
+    setFeedbackMsg(null);
     try {
-      await studentApi.updateProfile({ target_career_id: careerId });
+      await studentApi.updateProfile({
+        branch: branchDef.code,
+        major_or_branch: `${branchDef.name} (${branchDef.code})`
+      });
+      await refreshProfile();
+      setSelectedBranch(branchDef.code);
+      setFeedbackMsg(`Enrolled degree discipline successfully updated to ${branchDef.name} (${branchDef.code})!`);
+      setTimeout(() => setFeedbackMsg(null), 4500);
+    } catch (err) {
+      console.error('Failed to update enrolled branch:', err);
+    } finally {
+      setUpdatingDiscipline(false);
+    }
+  };
+
+  const handleSetTarget = async (careerId: string, careerObj?: any) => {
+    try {
+      const careerBranchCode = careerObj?.branch_codes?.[0] || (selectedBranch && selectedBranch !== 'All' ? selectedBranch : undefined);
+      const branchDef = careerBranchCode ? getBranchByCode(careerBranchCode) : undefined;
+      
+      const payload: any = {
+        target_career_id: careerId,
+        target_career_title: careerObj?.career_title || careerObj?.title,
+      };
+
+      if (branchDef) {
+        payload.branch = branchDef.code;
+        payload.major_or_branch = `${branchDef.name} (${branchDef.code})`;
+      }
+
+      await studentApi.updateProfile(payload);
       await refreshProfile();
       navigate('/app/skill-gap');
     } catch (err) {
@@ -122,6 +161,26 @@ export const CareerExplorerPage: React.FC = () => {
         </p>
       </div>
 
+      {feedbackMsg && (
+        <div
+          style={{
+            background: '#ecfdf5',
+            border: '1px solid #a7f3d0',
+            color: '#065f46',
+            padding: '12px 16px',
+            borderRadius: '8px',
+            fontSize: '0.875rem',
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+          }}
+        >
+          <CheckCircle2 size={18} color="#059669" />
+          <span>{feedbackMsg}</span>
+        </div>
+      )}
+
       {/* Mode Selector Tabs */}
       <div style={{ display: 'flex', gap: '10px', borderBottom: '2px solid #e2e8f0', paddingBottom: '12px', flexWrap: 'wrap' }}>
         <button
@@ -177,69 +236,137 @@ export const CareerExplorerPage: React.FC = () => {
             className="panel-card"
             style={{
               padding: '16px 20px',
-              background: 'linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%)',
-              border: '1px solid #bbf7d0',
+              background: isExploringDifferentBranch ? 'linear-gradient(135deg, #eff6ff 0%, #ffffff 100%)' : 'linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%)',
+              border: isExploringDifferentBranch ? '1px solid #bfdbfe' : '1px solid #bbf7d0',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
               flexWrap: 'wrap',
-              gap: '12px'
+              gap: '16px'
             }}
           >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ fontSize: '1.8rem' }}>{userBranchDef.categoryEmoji || '🎓'}</div>
-          <div>
-            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#15803d', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Your Enrolled Degree Discipline
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flex: 1, minWidth: '280px' }}>
+              <div style={{ fontSize: '2rem' }}>{activeFocusDef.categoryEmoji || '🎓'}</div>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 800, color: isExploringDifferentBranch ? '#1d4ed8' : '#15803d', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    {isExploringDifferentBranch ? 'Current Branch Focus' : 'Your Enrolled Degree Discipline'}
+                  </span>
+                  {isExploringDifferentBranch && (
+                    <span className="badge badge-primary" style={{ fontSize: '0.7rem', padding: '1px 6px' }}>
+                      Exploring {activeFocusDef.code}
+                    </span>
+                  )}
+                </div>
+                <div style={{ fontSize: '1.15rem', fontWeight: 800, color: '#0f172a' }}>
+                  {activeFocusDef.name} ({activeFocusDef.code})
+                </div>
+                <div style={{ fontSize: '0.8rem', color: '#475569', marginTop: '2px' }}>
+                  Specialized Target Roles: <strong>{activeFocusDef.targetRoles?.join(', ') || 'Tailored Engineering Paths'}</strong>
+                </div>
+                {isExploringDifferentBranch && (
+                  <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '3px' }}>
+                    Enrolled Profile Discipline: <strong>{userBranchDef.name} ({userBranchDef.code})</strong>
+                  </div>
+                )}
+              </div>
             </div>
-            <div style={{ fontSize: '1.05rem', fontWeight: 700, color: '#0f172a' }}>
-              {userBranchDef.name} ({userBranchDef.code})
-            </div>
-            <div style={{ fontSize: '0.8rem', color: '#475569' }}>
-              Specialized Target Roles: {userBranchDef.targetRoles?.join(', ') || 'Tailored Engineering Paths'}
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+              {isExploringDifferentBranch && (
+                <button
+                  type="button"
+                  disabled={updatingDiscipline}
+                  onClick={() => handleUpdateEnrolledDiscipline(activeFocusDef.code)}
+                  className="btn-primary"
+                  style={{
+                    padding: '8px 16px',
+                    fontSize: '0.825rem',
+                    fontWeight: 700,
+                    background: '#15803d',
+                    borderColor: '#15803d',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    cursor: updatingDiscipline ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  <GraduationCap size={15} />
+                  <span>Set {activeFocusDef.code} as My Enrolled Discipline</span>
+                </button>
+              )}
+
+              {/* Direct Discipline Switcher Dropdown */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b' }}>Switch Enrolled:</span>
+                <select
+                  disabled={updatingDiscipline}
+                  value={userBranchDef.code}
+                  onChange={(e) => handleUpdateEnrolledDiscipline(e.target.value)}
+                  className="select-field"
+                  style={{
+                    padding: '6px 10px',
+                    fontSize: '0.78rem',
+                    borderRadius: '6px',
+                    border: '1px solid #cbd5e1',
+                    background: '#ffffff',
+                    fontWeight: 600,
+                    maxWidth: '220px'
+                  }}
+                >
+                  {ENGINEERING_CATEGORIES.map((cat) => (
+                    <optgroup key={cat.name} label={`${cat.emoji} ${cat.name}`}>
+                      {cat.branches.map((b) => (
+                        <option key={b.code} value={b.code}>
+                          {b.code} - {b.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedBranch(userBranchDef.code);
+                  setSelectedCategory('All');
+                }}
+                style={{
+                  background: selectedBranch === userBranchDef.code ? '#1e40af' : '#ffffff',
+                  color: selectedBranch === userBranchDef.code ? '#ffffff' : '#334155',
+                  border: selectedBranch === userBranchDef.code ? '1px solid #1e40af' : '1px solid #cbd5e1',
+                  padding: '6px 12px',
+                  borderRadius: '6px',
+                  fontSize: '0.78rem',
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                Reset to {userBranchDef.code}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedBranch('All');
+                  setSelectedCategory('All');
+                }}
+                style={{
+                  background: selectedBranch === 'All' ? '#1e40af' : '#ffffff',
+                  color: selectedBranch === 'All' ? '#ffffff' : '#334155',
+                  border: selectedBranch === 'All' ? '1px solid #1e40af' : '1px solid #cbd5e1',
+                  padding: '6px 12px',
+                  borderRadius: '6px',
+                  fontSize: '0.78rem',
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                All Branches
+              </button>
             </div>
           </div>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <button
-            onClick={() => {
-              setSelectedBranch(userBranchDef.code);
-              setSelectedCategory('All');
-            }}
-            style={{
-              background: selectedBranch === userBranchDef.code ? '#15803d' : '#ffffff',
-              color: selectedBranch === userBranchDef.code ? '#ffffff' : '#15803d',
-              border: '1px solid #15803d',
-              padding: '6px 14px',
-              borderRadius: '6px',
-              fontSize: '0.8rem',
-              fontWeight: 600,
-              cursor: 'pointer'
-            }}
-          >
-            Show My Branch Roles ({userBranchDef.code})
-          </button>
-          <button
-            onClick={() => {
-              setSelectedBranch('All');
-              setSelectedCategory('All');
-            }}
-            style={{
-              background: selectedBranch === 'All' ? '#1e40af' : '#ffffff',
-              color: selectedBranch === 'All' ? '#ffffff' : '#334155',
-              border: selectedBranch === 'All' ? '1px solid #1e40af' : '1px solid #cbd5e1',
-              padding: '6px 14px',
-              borderRadius: '6px',
-              fontSize: '0.8rem',
-              fontWeight: 600,
-              cursor: 'pointer'
-            }}
-          >
-            View All Disciplines
-          </button>
-        </div>
-      </div>
 
       {/* Filter Toolbar: Search, Branch Dropdown & Category Tabs */}
       <div className="panel-card" style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -479,7 +606,7 @@ export const CareerExplorerPage: React.FC = () => {
                 {/* Actions */}
                 <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
                   <button
-                    onClick={() => handleSetTarget(cid)}
+                    onClick={() => handleSetTarget(cid, c)}
                     className={isTarget ? 'btn-secondary' : 'btn-primary'}
                     style={{ flex: 1, padding: '7px 10px', fontSize: '0.8rem', fontWeight: 600 }}
                   >

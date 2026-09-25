@@ -270,26 +270,15 @@ export const Navbar: React.FC = () => {
           <Link
             to="/login"
             id="nav-signin-link"
-            className="btn-secondary"
-            style={{
-              padding: '7px 16px',
-              fontSize: '13px',
-              textDecoration: 'none',
-            }}
-          >
-            Sign In
-          </Link>
-          <Link
-            to="/register"
-            id="nav-register-link"
             className="btn-primary"
             style={{
-              padding: '7px 18px',
+              padding: '8px 20px',
               fontSize: '13px',
               textDecoration: 'none',
+              fontWeight: 700,
             }}
           >
-            Get Started
+            Official Sign In
           </Link>
         </div>
       )}

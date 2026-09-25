@@ -1350,13 +1350,74 @@ ALL_BRANCHES.forEach(branch => {
   }
 });
 
-export function getBranchByCode(code: string): BranchDefinition | undefined {
-  if (!code) return undefined;
-  const clean = code.toUpperCase().trim();
-  return (
-    ALL_BRANCHES.find(b => b.code.toUpperCase() === clean) ||
-    ALL_BRANCHES.find(b => b.name.toUpperCase().includes(clean)) ||
-    ALL_BRANCHES[0] // fallback to CSE
-  );
+export function getBranchByCode(code: string): BranchDefinition {
+  if (!code) return ALL_BRANCHES[0];
+  const clean = code.trim();
+  const upper = clean.toUpperCase();
+
+  // 1. Exact code match
+  const directMatch = ALL_BRANCHES.find(b => b.code.toUpperCase() === upper);
+  if (directMatch) return directMatch;
+
+  // 2. Extract code in parentheses if available e.g. "Biotechnology (BIOTECH)" -> "BIOTECH"
+  const parenMatch = upper.match(/\(([^)]+)\)/);
+  if (parenMatch && parenMatch[1]) {
+    const extractedCode = parenMatch[1].trim();
+    const fromParen = ALL_BRANCHES.find(b => b.code.toUpperCase() === extractedCode);
+    if (fromParen) return fromParen;
+  }
+
+  // 3. Name or shortName exact / substring matching
+  const nameMatch = ALL_BRANCHES.find(b => {
+    const bName = b.name.toUpperCase();
+    const bShort = b.shortName.toUpperCase();
+    return upper === bName || upper === bShort || upper.includes(bName) || bName.includes(upper);
+  });
+  if (nameMatch) return nameMatch;
+
+  // 4. Domain & keyword heuristics for accurate discipline resolution
+  if (upper.includes('BIOTECH') || upper.includes('BIO-TECH') || upper.includes('BIOLOGY')) {
+    const b = ALL_BRANCHES.find(x => x.code === 'BIOTECH' || x.code === 'BT');
+    if (b) return b;
+  }
+  if (upper.includes('BIOINFO') || upper.includes('BIO-INFO') || upper.includes('BIOINFORMATICS')) {
+    const b = ALL_BRANCHES.find(x => x.code === 'BIOINFO' || x.code === 'BIO');
+    if (b) return b;
+  }
+  if (upper.includes('CHEMICAL') || upper.includes('CHEM') || upper.includes('PROCESS')) {
+    const b = ALL_BRANCHES.find(x => x.code === 'CHEM');
+    if (b) return b;
+  }
+  if (upper.includes('AEROSPACE') || upper.includes('AERO') || upper.includes('AVIONICS')) {
+    const b = ALL_BRANCHES.find(x => x.code === 'AERO' || x.code === 'AVIONICS');
+    if (b) return b;
+  }
+  if (upper.includes('CIVIL')) {
+    const b = ALL_BRANCHES.find(x => x.code === 'CIVIL');
+    if (b) return b;
+  }
+  if (upper.includes('MECHANICAL') || upper.includes('MECH')) {
+    const b = ALL_BRANCHES.find(x => x.code === 'MECH');
+    if (b) return b;
+  }
+  if (upper.includes('ELECTRICAL') || upper.includes('EEE')) {
+    const b = ALL_BRANCHES.find(x => x.code === 'EEE');
+    if (b) return b;
+  }
+  if (upper.includes('ELECTRONIC') || upper.includes('ECE')) {
+    const b = ALL_BRANCHES.find(x => x.code === 'ECE');
+    if (b) return b;
+  }
+  if (upper.includes('DATA SCIENCE') || upper.includes(' DS')) {
+    const b = ALL_BRANCHES.find(x => x.code === 'DS' || x.code === 'AIDS');
+    if (b) return b;
+  }
+  if (upper.includes('ARTIFICIAL INTELLIGENCE') || upper.includes('AIML')) {
+    const b = ALL_BRANCHES.find(x => x.code === 'AIML');
+    if (b) return b;
+  }
+
+  return ALL_BRANCHES[0];
 }
+
 
