@@ -4,6 +4,7 @@ import { GoogleGenAI } from '@google/genai';
 import { TOPIC_ASSESSMENTS } from './assessmentData.js';
 import { store } from './store.js';
 import { verifyResumeATS } from './resumeAtsEngine.js';
+import { generateEngineeringAIResponse } from './universalAIEngine.js';
 
 export const placementOpsRouter = Router();
 
@@ -1054,106 +1055,22 @@ placementOpsRouter.post(['/ai/chat', '/api/ai/chat'], async (req, res) => {
     return res.status(400).json({ error: 'Message cannot be empty.' });
   }
 
-  const activeBranch = branch || 'Engineering';
-  const activeRole = role || 'Engineering Specialist';
-  const activeSubject = subject || 'Core Engineering Subject';
+  const activeBranch = branch || 'Computer Science (CSE)';
+  const activeRole = role || 'Software Engineer';
+  const activeSubject = subject || 'Core Computer Science & Engineering';
 
-  // Real Gemini AI Integration
-  const ai = getAI();
-  if (ai) {
-    try {
-      const contents: Array<{ role: 'user' | 'model'; parts: Array<{ text: string }> }> = [];
+  try {
+    const reply = await generateEngineeringAIResponse({
+      query,
+      branch: activeBranch,
+      role: activeRole,
+      subject: activeSubject,
+      history
+    });
 
-      // Append multi-turn history
-      if (Array.isArray(history) && history.length > 0) {
-        for (const item of history.slice(-10)) {
-          const itemText = item.content || item.message || item.text;
-          if (!itemText) continue;
-          const role = (item.role === 'assistant' || item.role === 'model') ? 'model' : 'user';
-          contents.push({
-            role,
-            parts: [{ text: String(itemText).trim() }]
-          });
-        }
-      }
-
-      // Append user prompt
-      contents.push({
-        role: 'user',
-        parts: [{ text: query }]
-      });
-
-      const systemInstruction = `You are Skill2Career Universal AI Engineering & Educational Mentor, an elite, comprehensive conversational tutor and advisor across ALL engineering branches (Computer Science, Electronics & Communication, Mechanical, Civil, Electrical, Chemical, Biotechnology, Aerospace, Robotics, and Data Science).
-
-Active Student Context:
-- Discipline / Branch: ${activeBranch}
-- Focus Subject / Topic: ${activeSubject}
-- Target Career Role: ${activeRole}
-
-Educational & Conversational Guidelines:
-1. Provide rich, deep, and conversational answers just like ChatGPT or Gemini across ANY engineering discipline.
-2. If asked about an engineering concept or theory, explain the physical intuition, mathematical governing equations, thermodynamic/fluid/electrical laws, and real-world industrial relevance.
-3. If asked for formula derivations or mathematical problems, provide step-by-step proofs with clear notation, boundary conditions, and units.
-4. If asked about lab/simulation software (MATLAB, Simulink, ANSYS, SolidWorks, AutoCAD, ETABS, Revit, Cadence, Aspen Plus, ROS2, PyTorch, Docker, etc.), provide clear step-by-step software workflows.
-5. If asked about semester exam preparation or competitive exams (GATE, ESE, FE/PE), provide high-yield question patterns, formulas, and shortcut techniques.
-6. If asked for resume advice, formulate high-impact Google STAR / X-Y-Z bullet points tailored specifically to their engineering branch.
-7. Format responses cleanly with GitHub Markdown headers, LaTeX-style equations, and bullet points.`;
-
-      const candidateModels = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'];
-      for (const modelCandidate of candidateModels) {
-        try {
-          const response = await withTimeout(
-            ai.models.generateContent({
-              model: modelCandidate,
-              contents,
-              config: {
-                systemInstruction,
-                temperature: 0.7,
-              }
-            }),
-            25000
-          );
-
-          if (response && response.text) {
-            const text = response.text.trim();
-            return res.json({ reply: text, message: text });
-          }
-        } catch (mErr: any) {
-          console.warn(`Model ${modelCandidate} in placementOpsRouter failed:`, mErr?.message || mErr);
-        }
-      }
-    } catch (err: any) {
-      console.error('Gemini Chat in placementOpsRouter encountered an error:', err?.message || err);
-    }
+    res.json({ reply, message: reply });
+  } catch (err: any) {
+    console.error('Error generating AI response in placementOpsRouter:', err);
+    res.status(500).json({ error: 'Failed to generate AI response' });
   }
-
-  // Grounded Deterministic Multi-Branch Intelligence Engine
-  const msgLower = query.toLowerCase();
-  let reply = '';
-
-  if (/\b(rankine|brayton|carnot|thermodynamic|thermodynamics)\b/i.test(msgLower)) {
-    reply = `### ⚙️ Mechanical Engineering: Rankine vs. Brayton Power Cycles\n\n- **Rankine Cycle (Vapor Power)**: Theoretical basis for steam turbine power plants. Operating stages: 1-2 Isentropic pumping, 2-3 Constant-pressure boiler heating, 3-4 Isentropic expansion in turbine, 4-1 Constant-pressure condensation. Thermal efficiency $\\eta = 1 - \\frac{q_{out}}{q_{in}} = \\frac{w_{net}}{q_{in}}$.\n- **Brayton Cycle (Gas Power)**: Basis of jet aircraft engines and gas turbines. Uses continuous adiabatic compression, isobaric combustion, and expansion. Pressure ratio $r_p = P_2/P_1$ dictates efficiency: $\\eta_{Brayton} = 1 - \\frac{1}{r_p^{(\\gamma-1)/\\gamma}}$.`;
-  } else if (/\b(concrete|structural|beam|truss|is 456|eurocode|soil mechanics|terzaghi|etabs|staad|civil)\b/i.test(msgLower)) {
-    reply = `### 🏗️ Civil Engineering: Reinforced Concrete Limit State Design\n\n- **Governing Bending Equation**: $\\frac{M}{I} = \\frac{\\sigma}{y} = \\frac{E}{R}$.\n- **Simply Supported UDL**: Maximum bending moment $M_{max} = \\frac{w L^2}{8}$ at mid-span; Maximum shear force $V_{max} = \\frac{w L}{2}$ at support faces.\n- **Limit State Method (LSM)**: Structures are designed for ultimate limit states of collapse (flexure, shear, compression) using partial safety factors for concrete (1.5) and steel (1.15), and serviceability limit states (deflection, cracking).`;
-  } else if (/\b(vlsi|verilog|timing closure|setup time|hold time|asic|cmos|fpga)\b/i.test(msgLower)) {
-    reply = `### ⚡ ECE: Static Timing Analysis & Setup/Hold Slack\n\n- **Setup Time ($T_{setup}$)**: Minimum time data must be stable *before* active clock edge. Condition: $T_{clk} + T_{skew} \\ge T_{cq} + T_{comb(max)} + T_{setup}$. Slack = Required Time - Arrival Time (must be $\\ge 0$).\n- **Hold Time ($T_{hold}$)**: Minimum time data must be stable *after* active clock edge. Condition: $T_{cq} + T_{comb(min)} \\ge T_{hold} + T_{skew}$. Hold violations are independent of clock period and must be resolved by adding delay buffers in fast data paths.`;
-  } else if (/\b(power system|transformer|buck|boost|inverter|grid|scada|bldc|substation)\b/i.test(msgLower)) {
-    reply = `### 🔌 Electrical Engineering: Power Conversion & Grid Analysis\n\n- **DC-DC Buck Converter**: $V_{out} = D \\cdot V_{in}$. Inductor sizing $L = \\frac{(V_{in} - V_{out}) D}{\\Delta I_L \\cdot f_{sw}}$ ensures Continuous Conduction Mode (CCM).\n- **Load Flow Analysis**: Solves non-linear nodal power balance equations $P_i - jQ_i = V_i^* \\sum Y_{ik} V_k$ using Newton-Raphson (quadratic convergence) or Fast Decoupled Load Flow.`;
-  } else if (/\b(cstr|pfr|distillation|mccabe|aspen|reflux|hazop|kinetics)\b/i.test(msgLower)) {
-    reply = `### ⚗️ Chemical Engineering: Reactor Design & Mass Transfer\n\n- **CSTR Design Equation**: $V = \\frac{F_{A0} X}{-r_A}$. Operating continuously at exit concentration, requiring larger volume for positive-order kinetics.\n- **PFR Design Equation**: $V = F_{A0} \\int_0^X \\frac{dX}{-r_A}$. Progressive conversion along reactor length minimizes volume requirements.\n- **McCabe-Thiele Distillation**: Relates operating lines to vapor-liquid equilibrium (VLE). Minimum reflux $R_{min}$ intersects equilibrium curve at feed pinch point.`;
-  } else if (/\b(crispr|monod|bioreactor|blast|fermentation|protein|fplc)\b/i.test(msgLower)) {
-    reply = `### 🧬 Biotechnology: Bioprocess Kinetics & Molecular Tools\n\n- **Monod Microbial Growth Kinetics**: $\\mu = \\mu_{max} \\frac{S}{K_s + S}$. At high substrate ($S \\gg K_s$), growth follows zero-order kinetics; at low substrate, it follows first-order kinetics.\n- **CRISPR-Cas9 Mechanism**: 20-nt guide RNA targets genomic DNA adjacent to NGG PAM sequence, inducing double-strand breaks for NHEJ or HDR repair.`;
-  } else if (/\b(rocket|propulsion|aerodynamics|airfoil|mach|orbital|hohmann|nozzle)\b/i.test(msgLower)) {
-    reply = `### 🚀 Aerospace Engineering: Propulsion & Astrodynamics\n\n- **Tsiolkovsky Rocket Equation**: $\\Delta v = I_{sp} g_0 \\ln \\left(\\frac{m_0}{m_f}\\right)$.\n- **de Laval Supersonic Nozzle**: Area-Mach relation $\\frac{dA}{A} = (M^2 - 1) \\frac{dV}{V}$. In diverging section ($dA > 0$), fluid accelerates to supersonic ($M > 1$) because compressible density decreases faster than velocity increases.`;
-  } else if (/\b(kinematics|ros|ros2|slam|robot|dh parameter|actuator)\b/i.test(msgLower)) {
-    reply = `### 🤖 Robotics Engineering: Kinematics & Autonomous Systems\n\n- **Denavit-Hartenberg (DH) Transformation**: Homogeneous matrix $T = Rot_z(\\theta) \\cdot Trans_z(d) \\cdot Trans_x(a) \\cdot Rot_x(\\alpha)$.\n- **ROS2 Navigation Stack (Nav2)**: Employs costmaps (global/local), behavior trees, and motion planners (A*, DWB) with real-time sensor fusion via Extended Kalman Filter (EKF).`;
-  } else if (msgLower.includes('what to prepare today') || msgLower.includes('daily plan') || msgLower.includes('study plan today')) {
-    reply = `### 📅 High-Yield Daily Preparation Plan (${activeBranch})\n\n1. **Core Governing Theory (60 min)**: Review the physical laws and mathematical derivations for your current subject.\n2. **Engineering Simulation / Tool Workflow (90 min)**: Execute hands-on drills in domain CAE / IDE / CAD software (MATLAB, ANSYS, SolidWorks, Revit, Cadence, ROS2, etc.).\n3. **GATE & Placement Problem Solving (45 min)**: Solve 3-4 numerical problems checking dimensional analysis.\n4. **Diagnostic Verification (15 min)**: Take today's topic assessment in the **Assessment Center** to prove competency!`;
-  } else if (msgLower.includes('resume') || msgLower.includes('ats') || msgLower.includes('bullet')) {
-    reply = `### 📄 Engineering Resume Optimization (${activeBranch})\n\nStructure your resume bullets using the **Google X-Y-Z / STAR Formula**:\n> *"Accomplished [X], as measured by [Y], by doing [Z]"*\n\n- ❌ **Before**: *"Designed mechanical components and ran simulations."*\n- ✅ **After**: *"Engineered high-pressure die cast battery housing using **SolidWorks** and **ANSYS FEA**, reducing structural weight by **18%** while maintaining a safety factor of **2.4** under 50g dynamic crash load requirements."*`;
-  } else {
-    reply = `### 🎓 Skill2Career Universal Engineering Advisor (${activeBranch})\n\nI am configured for your discipline (**${activeBranch}**) and target role (**${activeRole}**).\n\nYou can ask me for:\n1. 📐 **Formula Derivations & Calculations**: Governing differential equations, proofs, and unit consistency.\n2. 🔬 **Lab & Simulation Software**: Guidance on MATLAB, Simulink, ANSYS, SolidWorks, Revit, ETABS, Cadence, Aspen Plus, ROS2, etc.\n3. 🎯 **Semester Exams & GATE / Competitive Exams**: Key formulas, high-weightage topics, and problem-solving patterns.\n4. 💼 **Resume STAR Bullets & Interview Preparation**: Tailored project descriptions highlighting measurable engineering impact.`;
-  }
-
-  res.json({ reply, message: reply });
 });

@@ -30,6 +30,7 @@ import { GoogleGenAI } from '@google/genai';
 import { store } from './server/store.js';
 import { placementOpsRouter } from './server/placementOpsRoutes.js';
 import { jobsRouter } from './server/jobsRoutes.js';
+import { generateEngineeringAIResponse } from './server/universalAIEngine.js';
 import {
   SKILLS_CATALOG,
   CAREER_ROLES,
@@ -1075,114 +1076,32 @@ const handleAIChat = async (req: express.Request, res: express.Response) => {
   const profile = store.getProfile(userId);
   const gap = store.calculateSkillGap(userId, target_career_id);
 
-  const activeBranch = branch || profile?.major_or_branch || 'Engineering';
-  const activeRole = role || gap?.career_title || profile?.target_career_title || 'Engineering Specialist';
-  const activeSubject = subject || 'Core Engineering';
+  const activeBranch = branch || profile?.major_or_branch || 'Computer Science (CSE)';
+  const activeRole = role || gap?.career_title || profile?.target_career_title || 'Software Engineer';
+  const activeSubject = subject || 'Core Computer Science & Engineering';
 
-  let reply = '';
-  const ai = getAI();
+  try {
+    const reply = await generateEngineeringAIResponse({
+      query: message.trim(),
+      branch: activeBranch,
+      role: activeRole,
+      subject: activeSubject,
+      history
+    });
 
-  if (ai) {
-    try {
-      // Build conversation contents for multi-turn chat
-      const contents: Array<{ role: 'user' | 'model'; parts: Array<{ text: string }> }> = [];
-
-      // Append multi-turn history if provided
-      if (Array.isArray(history) && history.length > 0) {
-        for (const item of history.slice(-10)) {
-          const itemText = item.content || item.message || item.text;
-          if (!itemText) continue;
-          const role = (item.role === 'assistant' || item.role === 'model') ? 'model' : 'user';
-          contents.push({
-            role,
-            parts: [{ text: String(itemText).trim() }]
-          });
-        }
-      }
-
-      // Append current user message
-      contents.push({
-        role: 'user',
-        parts: [{ text: message.trim() }]
-      });
-
-      const systemInstruction = `You are Skill2Career Universal AI Engineering & Educational Mentor, an elite, comprehensive conversational tutor and advisor across ALL engineering branches (Computer Science, Electronics & Communication, Mechanical, Civil, Electrical, Chemical, Biotechnology, Aerospace, Robotics, and Data Science).
-
-Student Context & Discipline:
-- Student Name: ${profile?.full_name || 'Student'}
-- Academic Background: ${profile?.degree || 'B.Tech Engineering'}
-- Active Discipline / Branch: ${activeBranch}
-- Focus Subject / Topic: ${activeSubject}
-- Target Career Role: ${activeRole} (${gap?.domain || activeBranch})
-- Predicted Job Readiness: ${gap?.readiness_score ?? 74}%
-- Verified Skills: ${(profile?.skills || []).map((s: any) => s.name).slice(0, 10).join(', ') || 'Core Engineering Fundamentals'}
-
-Educational & Conversational Guidelines:
-1. Provide rich, deep, and conversational answers just like ChatGPT or Gemini across ANY engineering discipline.
-2. If the user asks about an engineering concept or theory, explain the physical intuition, mathematical governing equations, thermodynamic/fluid/electrical laws, and real-world industrial relevance.
-3. If the user asks for formula derivations or mathematical problems, provide step-by-step proofs with clear notation, boundary conditions, and units.
-4. If the user asks about lab/simulation software (MATLAB, Simulink, ANSYS, SolidWorks, AutoCAD, ETABS, Revit, Cadence, Aspen Plus, ROS2, PyTorch, Docker, etc.), provide clear step-by-step software workflows.
-5. If the user asks about semester exam preparation or competitive exams (GATE, ESE, FE/PE), provide high-yield question patterns, formulas, and shortcut techniques.
-6. If the user asks for resume advice, formulate high-impact Google STAR / X-Y-Z bullet points tailored specifically to their engineering branch.
-7. Format responses cleanly with GitHub Markdown headers, LaTeX-style equations, and bullet points.`;
-
-      const candidateModels = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'];
-      for (const model of candidateModels) {
-        try {
-          const response = await ai.models.generateContent({
-            model,
-            contents,
-            config: {
-              systemInstruction,
-              temperature: 0.7,
-            }
-          });
-
-          if (response && response.text) {
-            reply = response.text.trim();
-            break;
-          }
-        } catch (mErr: any) {
-          console.warn(`Model ${model} in handleAIChat encountered an error:`, mErr?.message || mErr);
-        }
-      }
-    } catch (err: any) {
-      console.error('Gemini API Error in AI Chat:', err?.message || err);
-    }
+    res.json({
+      conversation_id: conversation_id || 'conv_' + Math.random().toString(36).substring(2, 8),
+      reply,
+      message: reply,
+      suggested_actions: [
+        { label: `Take ${activeBranch} Assessment`, route: '/app/assessments' },
+        { label: 'View Skill Gap Roadmap', route: '/app/skill-gap' }
+      ]
+    });
+  } catch (err: any) {
+    console.error('Error generating AI response in server.ts:', err);
+    res.status(500).json({ error: 'Failed to generate AI response' });
   }
-
-  if (!reply) {
-    const q = message.toLowerCase();
-    if (q.includes('rankine') || q.includes('brayton') || q.includes('thermodynamic')) {
-      reply = `### ⚙️ Mechanical Engineering: Rankine vs. Brayton Power Cycles\n\n- **Rankine Cycle (Vapor Power)**: Theoretical basis for steam power plants. Operating stages: isentropic pumping, constant-pressure boiler heating, isentropic expansion in turbine, and constant-pressure condensation. Thermal efficiency $\\eta = 1 - \\frac{q_{out}}{q_{in}} = \\frac{w_{net}}{q_{in}}$.\n- **Brayton Cycle (Gas Power)**: Basis of jet aircraft engines and gas turbines. Uses continuous adiabatic compression, isobaric combustion, and expansion. Pressure ratio $r_p = P_2/P_1$ dictates efficiency: $\\eta_{Brayton} = 1 - \\frac{1}{r_p^{(\\gamma-1)/\\gamma}}$.`;
-    } else if (q.includes('vlsi') || q.includes('verilog') || q.includes('setup time') || q.includes('static timing') || q.includes(' sta ') || q.includes(' sta')) {
-      reply = `### ⚡ ECE: Static Timing Analysis & Setup/Hold Slack\n\n- **Setup Time ($T_{setup}$)**: Minimum time data must be stable *before* active clock edge. Condition: $T_{clk} + T_{skew} \\ge T_{cq} + T_{comb(max)} + T_{setup}$. Slack = Required Time - Arrival Time (must be $\\ge 0$).\n- **Hold Time ($T_{hold}$)**: Minimum time data must be stable *after* active clock edge. Condition: $T_{cq} + T_{comb(min)} \\ge T_{hold} + T_{skew}$. Hold violations are independent of clock period and must be resolved by adding delay buffers in fast data paths.`;
-    } else if (q.includes('concrete') || q.includes('structural') || q.includes('beam') || q.includes('etabs')) {
-      reply = `### 🏗️ Civil Engineering: Reinforced Concrete Limit State Design\n\n- **Governing Bending Equation**: $\\frac{M}{I} = \\frac{\\sigma}{y} = \\frac{E}{R}$.\n- **Simply Supported UDL**: Maximum bending moment $M_{max} = \\frac{w L^2}{8}$ at mid-span; Maximum shear force $V_{max} = \\frac{w L}{2}$ at support faces.\n- **Limit State Method (LSM)**: Structures are designed for ultimate limit states of collapse (flexure, shear, compression) using partial safety factors for concrete (1.5) and steel (1.15), and serviceability limit states (deflection, cracking).`;
-    } else if (q.includes('power system') || q.includes('transformer') || q.includes('buck') || q.includes('inverter')) {
-      reply = `### 🔌 Electrical Engineering: Power Conversion & Grid Analysis\n\n- **DC-DC Buck Converter**: $V_{out} = D \\cdot V_{in}$. Inductor sizing $L = \\frac{(V_{in} - V_{out}) D}{\\Delta I_L \\cdot f_{sw}}$ ensures Continuous Conduction Mode (CCM).\n- **Load Flow Analysis**: Solves non-linear nodal power balance equations $P_i - jQ_i = V_i^* \\sum Y_{ik} V_k$ using Newton-Raphson (quadratic convergence) or Fast Decoupled Load Flow.`;
-    } else if (q.includes('cstr') || q.includes('pfr') || q.includes('distillation') || q.includes('aspen')) {
-      reply = `### ⚗️ Chemical Engineering: Reactor Design & Mass Transfer\n\n- **CSTR Design Equation**: $V = \\frac{F_{A0} X}{-r_A}$. Operating continuously at exit concentration, requiring larger volume for positive-order kinetics.\n- **PFR Design Equation**: $V = F_{A0} \\int_0^X \\frac{dX}{-r_A}$. Progressive conversion along reactor length minimizes volume requirements.\n- **McCabe-Thiele Distillation**: Relates operating lines to vapor-liquid equilibrium (VLE). Minimum reflux $R_{min}$ intersects equilibrium curve at feed pinch point.`;
-    } else if (q.includes('crispr') || q.includes('monod') || q.includes('bioreactor') || q.includes('blast')) {
-      reply = `### 🧬 Biotechnology: Bioprocess Kinetics & Molecular Tools\n\n- **Monod Microbial Growth Kinetics**: $\\mu = \\mu_{max} \\frac{S}{K_s + S}$. At high substrate ($S \\gg K_s$), growth follows zero-order kinetics; at low substrate, it follows first-order kinetics.\n- **CRISPR-Cas9 Mechanism**: 20-nt guide RNA targets genomic DNA adjacent to NGG PAM sequence, inducing double-strand breaks for NHEJ or HDR repair.`;
-    } else if (q.includes('rocket') || q.includes('aerodynamics') || q.includes('mach') || q.includes('orbital')) {
-      reply = `### 🚀 Aerospace Engineering: Propulsion & Astrodynamics\n\n- **Tsiolkovsky Rocket Equation**: $\\Delta v = I_{sp} g_0 \\ln \\left(\\frac{m_0}{m_f}\\right)$.\n- **de Laval Supersonic Nozzle**: Area-Mach relation $\\frac{dA}{A} = (M^2 - 1) \\frac{dV}{V}$. In diverging section ($dA > 0$), fluid accelerates to supersonic ($M > 1$) because compressible density decreases faster than velocity increases.`;
-    } else if (q.includes('kinematics') || q.includes('ros') || q.includes('slam') || q.includes('robot')) {
-      reply = `### 🤖 Robotics Engineering: Kinematics & Autonomous Systems\n\n- **Denavit-Hartenberg (DH) Transformation**: Homogeneous matrix $T = Rot_z(\\theta) \\cdot Trans_z(d) \\cdot Trans_x(a) \\cdot Rot_x(\\alpha)$.\n- **ROS2 Navigation Stack (Nav2)**: Employs costmaps (global/local), behavior trees, and motion planners (A*, DWB) with real-time sensor fusion via Extended Kalman Filter (EKF).`;
-    } else {
-      reply = `### 🎓 Skill2Career Universal Engineering Advisor (${activeBranch})\n\nI am configured for your engineering branch (**${activeBranch}**) and target role (**${activeRole}**).\n\nYou can ask me for:\n1. 📐 **Formula Derivations & Numerical Problems**: Ask any governing law, differential equation, or calculation.\n2. 🔬 **Lab & Simulation Software**: Workflows for MATLAB, ANSYS, SolidWorks, Revit, ETABS, Cadence, Aspen, ROS2, etc.\n3. 🎯 **Semester Exams & GATE / ESE Prep**: High-weightage topics, syllabus breakdowns, and past question patterns.\n4. 💼 **Resume STAR Bullets & Interview Questions**: Tailored project descriptions demonstrating deep engineering mastery.`;
-    }
-  }
-
-  res.json({
-    conversation_id: conversation_id || 'conv_' + Math.random().toString(36).substring(2, 8),
-    reply,
-    message: reply,
-    suggested_actions: [
-      { label: `Take ${activeBranch} Assessment`, route: '/app/assessments' },
-      { label: 'View Skill Gap Roadmap', route: '/app/skill-gap' }
-    ]
-  });
 };
 
 app.post('/api/v1/ai/chat', handleAIChat);
