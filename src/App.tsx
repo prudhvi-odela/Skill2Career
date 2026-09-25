@@ -29,6 +29,7 @@ import { ResumeAIPage } from './pages/ResumeAIPage';
 import { AssessmentsPage } from './pages/AssessmentsPage';
 import { AICopilotPage } from './pages/AICopilotPage';
 import { JobsPage } from './pages/JobsPage';
+import { CodingPracticePage } from './pages/CodingPracticePage';
 import FacultyDiscoveryDashboard from './components/dashboards/FacultyDiscoveryDashboard';
 import { LogoLoader } from './components/LogoLoader';
 
@@ -87,7 +88,9 @@ export const App: React.FC = () => {
             <Route path="/resume-ai" element={<Navigate to="/app/resume-ai" replace />} />
             <Route path="/skills" element={<Navigate to="/app/skills" replace />} />
             <Route path="/curriculum" element={<Navigate to="/app/curriculum" replace />} />
-            <Route path="/compiler" element={<Navigate to="/app/compiler" replace />} />
+            <Route path="/compiler" element={<Navigate to="/app/practice" replace />} />
+            <Route path="/practice" element={<Navigate to="/app/practice" replace />} />
+            <Route path="/coding" element={<Navigate to="/app/practice" replace />} />
             <Route path="/skill-gap" element={<Navigate to="/app/skill-gap" replace />} />
             <Route path="/trajectory" element={<Navigate to="/app/trajectory" replace />} />
             <Route path="/job-readiness" element={<Navigate to="/app/job-readiness" replace />} />
@@ -104,6 +107,8 @@ export const App: React.FC = () => {
               <Route index element={<Navigate to="/app/dashboard" replace />} />
               <Route path="dashboard" element={<DashboardPage />} />
               <Route path="jobs" element={<JobsPage />} />
+              <Route path="practice" element={<CodingPracticePage />} />
+              <Route path="coding" element={<CodingPracticePage />} />
               <Route path="careers" element={<CareerExplorerPage />} />
               <Route path="careers/:careerId" element={<CareerDetailPage />} />
               <Route path="skill-gap" element={<SkillGapPage />} />
@@ -111,7 +116,7 @@ export const App: React.FC = () => {
               <Route path="job-readiness" element={<JobReadinessPage />} />
               <Route path="skills" element={<SkillsPage />} />
               <Route path="curriculum" element={<BranchCurriculumPage />} />
-              <Route path="compiler" element={<BranchCurriculumPage />} />
+              <Route path="compiler" element={<CodingPracticePage />} />
               <Route path="profile" element={<ProfilePage />} />
               <Route path="onboarding" element={<OnboardingPage />} />
 

@@ -6,7 +6,7 @@ import { ScoreGauge } from '../components/ScoreGauge';
 import { KPICard } from '../components/KPICard';
 import { ALL_BRANCHES } from '../data/engineeringBranches';
 import { getCareersForBranch } from '../data/branchCareerRoles';
-import { Terminal, BookOpen, ArrowRight } from 'lucide-react';
+import { Terminal, BookOpen, ArrowRight, Code2, Clock, Play } from 'lucide-react';
 
 export const DashboardPage: React.FC = () => {
   const { user, profile, updateProfile } = useAuth();
@@ -105,7 +105,27 @@ export const DashboardPage: React.FC = () => {
           </p>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          <Link
+            to="/app/practice"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              background: '#0f172a',
+              color: '#38bdf8',
+              border: '1px solid #334155',
+              padding: '8px 14px',
+              borderRadius: '6px',
+              fontSize: '13px',
+              fontWeight: 700,
+              textDecoration: 'none',
+              boxShadow: '0 2px 6px rgba(15, 23, 42, 0.2)',
+            }}
+          >
+            <Clock size={15} style={{ color: '#10b981' }} />
+            <span>Coding Practice & Stopwatch</span>
+          </Link>
           <Link to="/app/skills" className="btn-secondary">
             Update My Skills
           </Link>

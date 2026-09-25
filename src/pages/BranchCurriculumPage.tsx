@@ -7,9 +7,10 @@ import {
   getBranchByCode
 } from '../data/engineeringBranches';
 import { BranchCompilerLab } from '../components/branch/BranchCompilerLab';
+import { Link } from 'react-router-dom';
 import {
   BookOpen, Calendar, Terminal, Award, Search,
-  CheckCircle2, ArrowRight, Bookmark
+  CheckCircle2, ArrowRight, Bookmark, Clock, Code2
 } from 'lucide-react';
 
 export const BranchCurriculumPage: React.FC = () => {
@@ -315,55 +316,79 @@ export const BranchCurriculumPage: React.FC = () => {
         </div>
 
         {/* Navigation Tabs for Active Branch */}
-        <div style={{ display: 'flex', gap: '8px', marginTop: '20px', borderTop: '1px solid #e2e8f0', paddingTop: '16px', flexWrap: 'wrap' }}>
-          {[
-            { id: 'subjects', label: 'Subjects & What You Must Learn', icon: BookOpen, count: activeBranch.subjects.length },
-            { id: 'schedule', label: '12-Week Branch Schedule', icon: Calendar, count: activeBranch.schedule.length },
-            { id: 'compiler', label: 'Specialized Practice Lab & Compiler', icon: Terminal },
-            { id: 'challenges', label: 'Practice Challenges', icon: Award, count: activeBranch.challenges.length },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setActiveTab(tab.id as any)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '8px 16px',
-                  borderRadius: '8px',
-                  fontSize: '13px',
-                  fontWeight: isActive ? 700 : 500,
-                  border: '1px solid',
-                  borderColor: isActive ? '#006EFF' : '#cbd5e1',
-                  background: isActive ? '#006EFF' : '#ffffff',
-                  color: isActive ? '#ffffff' : '#475569',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease',
-                }}
-              >
-                <Icon size={15} />
-                <span>{tab.label}</span>
-                {tab.count !== undefined && (
-                  <span
-                    style={{
-                      fontSize: '10px',
-                      padding: '1px 6px',
-                      borderRadius: '10px',
-                      background: isActive ? 'rgba(255, 255, 255, 0.25)' : '#f1f5f9',
-                      color: isActive ? '#ffffff' : '#64748b',
-                      fontWeight: 700,
-                    }}
-                  >
-                    {tab.count}
-                  </span>
-                )}
-              </button>
-            );
-          })}
+        <div style={{ display: 'flex', gap: '8px', marginTop: '20px', borderTop: '1px solid #e2e8f0', paddingTop: '16px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            {[
+              { id: 'subjects', label: 'Subjects & What You Must Learn', icon: BookOpen, count: activeBranch.subjects.length },
+              { id: 'schedule', label: '12-Week Branch Schedule', icon: Calendar, count: activeBranch.schedule.length },
+              { id: 'compiler', label: 'Specialized Practice Lab & Compiler', icon: Terminal },
+              { id: 'challenges', label: 'Practice Challenges', icon: Award, count: activeBranch.challenges.length },
+            ].map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id as any)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                    fontSize: '13px',
+                    fontWeight: isActive ? 700 : 500,
+                    border: '1px solid',
+                    borderColor: isActive ? '#006EFF' : '#cbd5e1',
+                    background: isActive ? '#006EFF' : '#ffffff',
+                    color: isActive ? '#ffffff' : '#475569',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  <Icon size={15} />
+                  <span>{tab.label}</span>
+                  {tab.count !== undefined && (
+                    <span
+                      style={{
+                        fontSize: '10px',
+                        padding: '1px 6px',
+                        borderRadius: '10px',
+                        background: isActive ? 'rgba(255, 255, 255, 0.25)' : '#f1f5f9',
+                        color: isActive ? '#ffffff' : '#64748b',
+                        fontWeight: 700,
+                      }}
+                    >
+                      {tab.count}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          <Link
+            to="/app/practice"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '8px 16px',
+              borderRadius: '8px',
+              fontSize: '13px',
+              fontWeight: 800,
+              background: '#0f172a',
+              color: '#38bdf8',
+              border: '1px solid #334155',
+              textDecoration: 'none',
+              boxShadow: '0 2px 6px rgba(15, 23, 42, 0.25)',
+            }}
+          >
+            <Clock size={15} style={{ color: '#10b981' }} />
+            <span>Dedicated Coding Arena & Stopwatch</span>
+            <ArrowRight size={14} />
+          </Link>
         </div>
       </div>
 

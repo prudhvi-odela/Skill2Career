@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { NavLink, Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   Sparkles, LogOut, Compass,
-  LayoutDashboard, Menu, X, GraduationCap, Target, UserCheck, Terminal, Bot, ShieldCheck, Briefcase
+  LayoutDashboard, Menu, X, GraduationCap, Target, UserCheck, Terminal, Bot, ShieldCheck, Briefcase, Code2
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -39,10 +39,11 @@ export const Navbar: React.FC = () => {
   // Student-first navigation modules
   const requiredNav = [
     { to: '/app/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { to: '/app/practice', label: 'Coding Practice', icon: Code2 },
     { to: '/app/jobs', label: 'Jobs & Internships', icon: Briefcase },
     { to: '/app/ai-copilot', label: 'AI Copilot', icon: Bot },
     { to: '/app/assessments', label: 'Assessments', icon: ShieldCheck },
-    { to: '/app/curriculum', label: 'Branch & Compilers', icon: Terminal },
+    { to: '/app/curriculum', label: 'Branch Curricula', icon: Terminal },
     { to: '/app/careers', label: 'Careers', icon: Compass },
     { to: '/app/skill-gap', label: 'Skill Gap', icon: Target },
     { to: '/app/resume-ai', label: 'Resume AI', icon: Sparkles },
